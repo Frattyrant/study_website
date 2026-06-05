@@ -200,7 +200,8 @@ function renderDetail(post) {
 }
 
 function selectPostBySlug(slug) {
-  const normalized = slug?.replace(/^note-/, "");
+  const rawSlug = slug?.replace(/^#/, "").replace(/^note-/, "") || "";
+  const normalized = decodeURIComponent(rawSlug);
   const post = posts.find((item) => item.slug === normalized);
   renderDetail(post);
 }
@@ -225,13 +226,16 @@ filterRow.addEventListener("click", (event) => {
 grid.addEventListener("click", (event) => {
   const card = event.target.closest(".article-card[data-slug]");
   if (!card) return;
-  window.location.hash = `note-${card.dataset.slug}`;
+  const post = posts.find((item) => item.slug === card.dataset.slug);
+  if (!post) return;
+  renderDetail(post);
+  history.pushState(null, "", `#note-${encodeURIComponent(post.slug)}`);
 });
 
 backToArticles.addEventListener("click", () => {
   selectedPost = null;
   noteDetail.hidden = true;
-  window.location.hash = "articles";
+  history.pushState(null, "", "#articles");
   document.querySelector("#articles").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
@@ -255,6 +259,8 @@ renderPosts();
 window.addEventListener("hashchange", () => {
   if (window.location.hash.startsWith("#note-")) {
     selectPostBySlug(window.location.hash.slice(1));
+  } else if (window.location.hash === "#articles") {
+    renderDetail(null);
   }
 });
 

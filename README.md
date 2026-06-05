@@ -1,4 +1,6 @@
-这是一个个人的学习博客网站,后续会持续更新
+这是一个个人的学习静态博客网站,后续会持续更新
+
+网站链接为:[https://frattyrant.github.io/study_website/](https://frattyrant.github.io/study_website/)
 
 包括但不限于:
 
@@ -9,7 +11,6 @@
 项目复盘(需要斟酌)
 
 个人日记之类的balabala以后再考虑吧
-
 
 obsidian同步:
 
