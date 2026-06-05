@@ -151,7 +151,8 @@ input {
 
 .icon-button:hover,
 .filter-row button:hover,
-.filter-row button.is-active {
+.filter-row button.is-active,
+.category-action.is-active {
   border-color: var(--green);
   color: var(--green-dark);
   background: var(--surface-strong);
@@ -479,24 +480,59 @@ h3 {
   cursor: pointer;
 }
 
-.category-tree button {
+.category-node {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 4px;
+  align-items: center;
+  padding-left: calc(var(--level) * 16px);
+}
+
+.category-toggle,
+.category-toggle-placeholder {
+  width: 28px;
+  height: 32px;
+}
+
+.category-toggle {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.category-toggle i {
+  width: 16px;
+  height: 16px;
+  transition: transform 160ms ease;
+}
+
+.category-toggle.is-expanded i {
+  transform: rotate(90deg);
+}
+
+.category-action {
   width: 100%;
   min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 7px 10px 7px calc(10px + var(--level) * 16px);
+  padding: 7px 10px;
   text-align: left;
   border-color: transparent;
 }
 
-.category-tree button small {
+.category-action small {
   color: var(--muted);
   font-size: 0.76rem;
 }
 
-.category-tree button.is-active small {
+.category-action.is-active small {
   color: var(--green-dark);
 }
 

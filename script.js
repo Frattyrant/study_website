@@ -5,6 +5,7 @@ const categoryTree = vaultStats.categoryTree || { key: "全部", label: "全部"
 let activeCategory = "全部";
 let query = "";
 let selectedPost = null;
+const expandedCategories = new Set();
 
 const grid = document.querySelector("#articleGrid");
 const filterRow = document.querySelector("#filterRow");
@@ -28,21 +29,41 @@ const themeToggle = document.querySelector("#themeToggle");
 function renderFilters() {
   function renderNode(node, level = 0) {
     const children = node.children || [];
-    const button = `
-      <button
-        class="${node.key === activeCategory ? "is-active" : ""}"
-        type="button"
-        data-category="${node.key}"
-        style="--level:${level}"
-      >
-        <span>${node.label}</span>
-        <small>${node.count}</small>
-      </button>
+    const hasChildren = children.length > 0;
+    const isExpanded = expandedCategories.has(node.key);
+    const childMarkup = hasChildren && (node.key === "全部" || isExpanded) ? children.map((child) => renderNode(child, level + 1)).join("") : "";
+    const toggle = hasChildren && node.key !== "全部"
+      ? `<button
+          class="category-toggle ${isExpanded ? "is-expanded" : ""}"
+          type="button"
+          data-toggle-category="${node.key}"
+          aria-label="${isExpanded ? "收起" : "展开"}${node.label}"
+          aria-expanded="${isExpanded}"
+        >
+          <i data-lucide="chevron-right"></i>
+        </button>`
+      : `<span class="category-toggle-placeholder"></span>`;
+
+    const row = `
+      <div class="category-node" style="--level:${level}">
+        ${toggle}
+        <button
+          class="category-action ${node.key === activeCategory ? "is-active" : ""}"
+          type="button"
+          data-category="${node.key}"
+        >
+          <span>${node.label}</span>
+          <small>${node.count}</small>
+        </button>
+      </div>
     `;
-    return `${button}${children.map((child) => renderNode(child, level + 1)).join("")}`;
+    return `${row}${childMarkup}`;
   }
 
   filterRow.innerHTML = renderNode(categoryTree);
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 }
 
 function getFilteredPosts() {
@@ -225,6 +246,18 @@ function setTheme(nextTheme) {
 }
 
 filterRow.addEventListener("click", (event) => {
+  const toggle = event.target.closest("button[data-toggle-category]");
+  if (toggle) {
+    const key = toggle.dataset.toggleCategory;
+    if (expandedCategories.has(key)) {
+      expandedCategories.delete(key);
+    } else {
+      expandedCategories.add(key);
+    }
+    renderFilters();
+    return;
+  }
+
   const button = event.target.closest("button[data-category]");
   if (!button) return;
   activeCategory = button.dataset.category;
