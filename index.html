@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="一个无服务器、纯静态的个人学习博客模板，适合记录技术文章、项目复盘、面试总结和学习路线。"
+    />
+    <title>个人学习博客 | Static Learning Blog</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2319553d'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial' font-size='20' font-weight='700' fill='white'%3ELB%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preload" href="assets/learning-desk.png" as="image" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="返回首页">
+        <span class="brand-mark">LB</span>
+        <span>
+          <strong>Learning Blog</strong>
+          <small>Markdown / GitHub Pages</small>
+        </span>
+      </a>
+
+      <nav class="site-nav" aria-label="主要导航">
+        <a href="#articles">文章</a>
+        <a href="#roadmap">路线</a>
+        <a href="#projects">项目</a>
+        <a href="#deploy">部署</a>
+      </nav>
+
+      <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗主题">
+        <i data-lucide="sun"></i>
+      </button>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="assets/learning-desk.png" alt="摆放着笔记本、电脑和学习资料的开发者书桌" />
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <p class="eyebrow">无服务器个人学习站</p>
+          <h1 id="hero-title">把学习路线、项目复盘和技术文章沉淀成一个可发布的静态博客。</h1>
+          <p class="hero-copy">
+            基于共享方案中的 GitHub Pages + Markdown + 静态博客思路，当前版本先用纯 HTML/CSS/JS 搭出可运行站点。
+          </p>
+          <div class="hero-actions" aria-label="快捷入口">
+            <a class="primary-action" href="#articles">
+              <i data-lucide="book-open"></i>
+              浏览文章
+            </a>
+            <a class="secondary-action" href="#deploy">
+              <i data-lucide="rocket"></i>
+              查看部署
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="站点概览">
+        <article>
+          <span id="articleCount">0</span>
+          <p>篇示例内容</p>
+        </article>
+        <article>
+          <span>5</span>
+          <p>阶段学习路线</p>
+        </article>
+        <article>
+          <span>0</span>
+          <p>后端服务器依赖</p>
+        </article>
+        <article>
+          <span>1</span>
+          <p>命令即可预览</p>
+        </article>
+      </section>
+
+      <section class="section-shell intro-grid" aria-label="推荐架构">
+        <div>
+          <p class="section-kicker">Recommended Stack</p>
+          <h2>当前静态实现，未来可平滑迁移到 VitePress。</h2>
+        </div>
+        <div class="stack-list">
+          <div>
+            <i data-lucide="file-text"></i>
+            <strong>Markdown</strong>
+            <span>写文章、笔记、复盘</span>
+          </div>
+          <div>
+            <i data-lucide="git-branch"></i>
+            <strong>Git / GitHub</strong>
+            <span>版本管理与公开仓库</span>
+          </div>
+          <div>
+            <i data-lucide="layout-template"></i>
+            <strong>Static Site</strong>
+            <span>纯前端页面，无需服务器</span>
+          </div>
+          <div>
+            <i data-lucide="globe-2"></i>
+            <strong>GitHub Pages</strong>
+            <span>免费托管与域名绑定</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell article-workbench" id="articles">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Knowledge Base</p>
+            <h2>文章索引</h2>
+          </div>
+          <label class="search-box">
+            <i data-lucide="search"></i>
+            <input id="searchInput" type="search" placeholder="搜索 Git、Linux、复盘..." autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="filter-row" id="filterRow" aria-label="文章分类筛选"></div>
+        <div class="article-grid" id="articleGrid" aria-live="polite"></div>
+        <p class="empty-state" id="emptyState" hidden>没有匹配的内容，换个关键词试试。</p>
+      </section>
+
+      <section class="section-shell roadmap" id="roadmap">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Learning Path</p>
+            <h2>从笔记到博客的路线</h2>
+          </div>
+        </div>
+        <div class="roadmap-grid">
+          <article>
+            <span>01</span>
+            <h3>Markdown</h3>
+            <p>先把学习记录写成稳定文本，统一标题、代码块、链接和复盘格式。</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Git</h3>
+            <p>每次学习或项目改动都提交一次，保留成长轨迹，也为部署做准备。</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>HTML / CSS</h3>
+            <p>理解静态页面结构、响应式布局和基础交互，掌握博客外观控制权。</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>VitePress</h3>
+            <p>当文章变多后，引入静态站生成器，让 Markdown 自动变成页面。</p>
+          </article>
+          <article>
+            <span>05</span>
+            <h3>GitHub Pages</h3>
+            <p>把构建产物发布出去，形成一个长期可维护的公开技术履历。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell projects" id="projects">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Portfolio Notes</p>
+            <h2>项目复盘模板</h2>
+          </div>
+        </div>
+        <div class="project-layout">
+          <article class="project-panel">
+            <i data-lucide="target"></i>
+            <h3>背景与目标</h3>
+            <p>项目为什么做，解决什么问题，验收标准是什么。</p>
+          </article>
+          <article class="project-panel">
+            <i data-lucide="layers-3"></i>
+            <h3>技术选择</h3>
+            <p>列出框架、数据结构、部署方式，以及你做这些选择的理由。</p>
+          </article>
+          <article class="project-panel">
+            <i data-lucide="bug"></i>
+            <h3>问题记录</h3>
+            <p>记录踩坑、调试路径、最终修复方式和仍需优化的地方。</p>
+          </article>
+          <article class="project-panel">
+            <i data-lucide="badge-check"></i>
+            <h3>结果沉淀</h3>
+            <p>写清楚成果截图、上线地址、代码仓库和下次可复用的经验。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell deploy" id="deploy">
+        <div>
+          <p class="section-kicker">Publish Checklist</p>
+          <h2>发布到 GitHub Pages</h2>
+          <p>
+            这个版本是纯静态文件，上传到仓库后可以直接用 GitHub Pages 发布。以后换成 VitePress 时，仍然沿用同一套写作和部署习惯。
+          </p>
+        </div>
+        <ol class="deploy-steps">
+          <li>
+            <span>1</span>
+            <p>新建 GitHub 仓库，把当前目录提交到默认分支。</p>
+          </li>
+          <li>
+            <span>2</span>
+            <p>进入仓库 Settings / Pages，选择从分支发布。</p>
+          </li>
+          <li>
+            <span>3</span>
+            <p>Source 选择默认分支，目录选择根目录或 docs 目录。</p>
+          </li>
+          <li>
+            <span>4</span>
+            <p>等待 Pages 构建完成，获得公开访问地址。</p>
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Built as a static learning blog. No server, no database, just files you can own.</p>
+      <a href="#top" aria-label="回到顶部">
+        <i data-lucide="arrow-up"></i>
+      </a>
+    </footer>
+  </body>
+</html>
