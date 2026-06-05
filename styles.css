@@ -410,13 +410,16 @@ h3 {
 
 .article-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: 0;
 }
 
 .article-card {
+  min-width: 0;
   min-height: 264px;
   display: flex;
   flex-direction: column;
   padding: 22px;
+  overflow: hidden;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -431,6 +434,7 @@ h3 {
 
 .article-topline,
 .article-meta,
+.article-source,
 .article-tags {
   display: flex;
   align-items: center;
@@ -458,17 +462,37 @@ h3 {
 
 .article-card h3 {
   font-size: 1.18rem;
+  overflow-wrap: anywhere;
 }
 
 .article-card p {
   margin: 12px 0 18px;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .article-meta {
   margin-top: auto;
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.article-source {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.article-source span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-meta span,
+.article-tags span {
+  overflow-wrap: anywhere;
 }
 
 .article-tags {
