@@ -1,8 +1,8 @@
 const posts = window.learningPosts || [];
 const vaultStats = window.vaultStats || {};
 
-const tagList = ["全部", ...Array.from(new Set(posts.flatMap((post) => post.tags)))];
-let activeTag = "全部";
+const categoryTree = vaultStats.categoryTree || { key: "全部", label: "全部", count: posts.length, children: [] };
+let activeCategory = "全部";
 let query = "";
 let selectedPost = null;
 
@@ -26,23 +26,32 @@ const lastUpdated = document.querySelector("#lastUpdated");
 const themeToggle = document.querySelector("#themeToggle");
 
 function renderFilters() {
-  filterRow.innerHTML = tagList
-    .map(
-      (tag) => `
-        <button class="${tag === activeTag ? "is-active" : ""}" type="button" data-tag="${tag}">
-          ${tag}
-        </button>
-      `,
-    )
-    .join("");
+  function renderNode(node, level = 0) {
+    const children = node.children || [];
+    const button = `
+      <button
+        class="${node.key === activeCategory ? "is-active" : ""}"
+        type="button"
+        data-category="${node.key}"
+        style="--level:${level}"
+      >
+        <span>${node.label}</span>
+        <small>${node.count}</small>
+      </button>
+    `;
+    return `${button}${children.map((child) => renderNode(child, level + 1)).join("")}`;
+  }
+
+  filterRow.innerHTML = renderNode(categoryTree);
 }
 
 function getFilteredPosts() {
   const normalizedQuery = query.trim().toLowerCase();
   return posts.filter((post) => {
-    const matchesTag = activeTag === "全部" || post.tags.includes(activeTag);
-    const searchable = `${post.title} ${post.type} ${post.summary} ${post.source || ""} ${post.tags.join(" ")}`.toLowerCase();
-    return matchesTag && (!normalizedQuery || searchable.includes(normalizedQuery));
+    const matchesCategory = activeCategory === "全部" || post.category === activeCategory || post.category?.startsWith(`${activeCategory}/`);
+    const searchable =
+      `${post.title} ${post.type} ${post.summary} ${post.source || ""} ${(post.categoryPath || []).join(" ")}`.toLowerCase();
+    return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
   });
 }
 
@@ -159,7 +168,7 @@ function renderPosts() {
               : ""
           }
           <div class="article-tags">
-            ${post.tags.map((tag) => `<span>${tag}</span>`).join("")}
+            ${(post.categoryPath || post.tags).map((tag) => `<span>${tag}</span>`).join("")}
           </div>
           <span class="read-more">
             阅读笔记
@@ -188,7 +197,7 @@ function renderDetail(post) {
   detailTitle.textContent = post.title;
   detailMinutes.textContent = `${post.minutes} 分钟阅读`;
   detailSource.textContent = post.source || "";
-  detailTags.innerHTML = post.tags.map((tag) => `<span>${tag}</span>`).join("");
+  detailTags.innerHTML = (post.categoryPath || post.tags).map((tag) => `<span>${tag}</span>`).join("");
   detailBody.innerHTML = markdownToHtml(post.body);
   noteDetail.hidden = false;
 
@@ -216,9 +225,9 @@ function setTheme(nextTheme) {
 }
 
 filterRow.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-tag]");
+  const button = event.target.closest("button[data-category]");
   if (!button) return;
-  activeTag = button.dataset.tag;
+  activeCategory = button.dataset.category;
   renderFilters();
   renderPosts();
 });

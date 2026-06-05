@@ -3,16 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="一个无服务器、纯静态的个人学习博客模板，适合记录技术文章、项目复盘、面试总结和学习路线。"
-    />
-    <title>个人学习博客 | Static Learning Blog</title>
+    <meta name="description" content="pawn的个人学习网站，记录 Linux 入门和 Python 后端学习笔记。" />
+    <title>pawn的个人学习网站</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2319553d'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial' font-size='20' font-weight='700' fill='white'%3ELB%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2319553d'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial' font-size='20' font-weight='700' fill='white'%3EPW%3C/text%3E%3C/svg%3E"
     />
-    <link rel="preload" href="assets/learning-desk.png" as="image" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="content.js" defer></script>
@@ -20,20 +16,13 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="#top" aria-label="返回首页">
-        <span class="brand-mark">LB</span>
+      <a class="brand" href="#articles" aria-label="返回文章索引">
+        <span class="brand-mark">PW</span>
         <span>
-          <strong>Frattyrant Notes</strong>
-          <small>Obsidian / Backend / AI</small>
+          <strong>pawn的个人学习网站</strong>
+          <small>Linux / Python 后端</small>
         </span>
       </a>
-
-      <nav class="site-nav" aria-label="主要导航">
-        <a href="#articles">文章</a>
-        <a href="#roadmap">路线</a>
-        <a href="#projects">项目</a>
-        <a href="#deploy">部署</a>
-      </nav>
 
       <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗主题">
         <i data-lucide="sun"></i>
@@ -41,91 +30,36 @@
     </header>
 
     <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
-        <img class="hero-image" src="assets/learning-desk.png" alt="摆放着笔记本、电脑和学习资料的开发者书桌" />
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <p class="eyebrow">无服务器个人学习站</p>
-          <h1 id="hero-title">把 FastAPI、Docker、Linux 和 AI 工具探索沉淀成公开学习轨迹。</h1>
-          <p class="hero-copy">
-            内容来自本地 Obsidian Vault：后端接口拆分、数据库接入、WSL 网络排障、Docker 验证和下一阶段工具方向。
-          </p>
-          <div class="hero-actions" aria-label="快捷入口">
-            <a class="primary-action" href="#articles">
-              <i data-lucide="book-open"></i>
-              浏览文章
-            </a>
-            <a class="secondary-action" href="#deploy">
-              <i data-lucide="rocket"></i>
-              查看部署
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section class="metrics" aria-label="站点概览">
-        <article>
-          <span id="articleCount">0</span>
-          <p>篇可展示笔记</p>
-        </article>
-        <article>
-          <span id="vaultNoteCount">0</span>
-          <p>篇 Vault 原始笔记</p>
-        </article>
-        <article>
-          <span id="focusCount">0</span>
-          <p>个学习方向</p>
-        </article>
-        <article>
-          <span id="lastUpdated">--</span>
-          <p>最近更新</p>
-        </article>
-      </section>
-
-      <section class="section-shell intro-grid" aria-label="推荐架构">
-        <div>
-          <p class="section-kicker">Current Focus</p>
-          <h2>当前学习内容围绕“Python 后端能跑起来、能拆开、能接数据库”。</h2>
-        </div>
-        <div class="stack-list">
-          <div>
-            <i data-lucide="server"></i>
-            <strong>FastAPI</strong>
-            <span>路由拆分、请求响应模型、CRUD 接口</span>
-          </div>
-          <div>
-            <i data-lucide="database"></i>
-            <strong>SQLAlchemy</strong>
-            <span>engine、SessionLocal、Base、SQLite 任务表</span>
-          </div>
-          <div>
-            <i data-lucide="container"></i>
-            <strong>Docker / WSL</strong>
-            <span>hello-world 验证、daemon 代理、端口映射</span>
-          </div>
-          <div>
-            <i data-lucide="sparkles"></i>
-            <strong>AI Workflow</strong>
-            <span>AI 工具订阅、视频制作、ERP 场景探索</span>
-          </div>
-        </div>
-      </section>
-
       <section class="section-shell article-workbench" id="articles">
         <div class="section-heading">
           <div>
-            <p class="section-kicker">Knowledge Base</p>
-            <h2>Obsidian 笔记索引</h2>
+            <p class="section-kicker">Articles</p>
+            <h1>pawn的个人学习网站</h1>
+            <p class="page-intro">记录 Linux 入门、Docker/WSL 排障、FastAPI、SQLAlchemy 和 Python 后端项目结构学习笔记。</p>
           </div>
           <label class="search-box">
             <i data-lucide="search"></i>
-            <input id="searchInput" type="search" placeholder="搜索 FastAPI、Docker、WSL、AI..." autocomplete="off" />
+            <input id="searchInput" type="search" placeholder="搜索 FastAPI、Docker、WSL、Linux..." autocomplete="off" />
           </label>
         </div>
 
-        <div class="filter-row" id="filterRow" aria-label="文章分类筛选"></div>
-        <div class="article-grid" id="articleGrid" aria-live="polite"></div>
-        <p class="empty-state" id="emptyState" hidden>没有匹配的内容，换个关键词试试。</p>
+        <div class="article-stats" aria-label="文章统计">
+          <span><strong id="articleCount">0</strong> 篇文章</span>
+          <span><strong id="vaultNoteCount">0</strong> 篇原始笔记</span>
+          <span><strong id="focusCount">0</strong> 个方向</span>
+          <span>最近更新 <strong id="lastUpdated">--</strong></span>
+        </div>
+
+        <div class="article-layout">
+          <aside class="category-panel" aria-label="文章分类">
+            <p class="category-title">分类</p>
+            <div class="filter-row category-tree" id="filterRow"></div>
+          </aside>
+          <div class="article-results">
+            <div class="article-grid" id="articleGrid" aria-live="polite"></div>
+            <p class="empty-state" id="emptyState" hidden>没有匹配的内容，换个关键词试试。</p>
+          </div>
+        </div>
       </section>
 
       <section class="section-shell note-detail" id="noteDetail" hidden aria-live="polite">
@@ -147,108 +81,6 @@
           <div class="note-body" id="detailBody"></div>
         </article>
       </section>
-
-      <section class="section-shell roadmap" id="roadmap">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Learning Path</p>
-            <h2>当前学习路线</h2>
-          </div>
-        </div>
-        <div class="roadmap-grid">
-          <article>
-            <span>01</span>
-            <h3>Linux 基础</h3>
-            <p>补齐常用命令、文件操作、网络排查和 WSL 环境理解。</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>FastAPI CRUD</h3>
-            <p>从任务接口开始，掌握 GET、POST、PUT、PATCH、DELETE 的完整链路。</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>项目结构拆分</h3>
-            <p>用 APIRouter 把接口从 main.py 拆到 routers/tasks.py，形成真实项目结构。</p>
-          </article>
-          <article>
-            <span>04</span>
-            <h3>数据库接入</h3>
-            <p>用 SQLAlchemy 建立 engine、SessionLocal、Base、模型和数据库会话依赖。</p>
-          </article>
-          <article>
-            <span>05</span>
-            <h3>Docker 部署前置</h3>
-            <p>先确认 WSL 中 Docker 可运行，再继续学习端口映射和容器化后端。</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-shell projects" id="projects">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Portfolio Notes</p>
-            <h2>笔记复盘方式</h2>
-          </div>
-        </div>
-        <div class="project-layout">
-          <article class="project-panel">
-            <i data-lucide="target"></i>
-            <h3>问题是什么</h3>
-            <p>先写清楚卡住的现象，比如路径重复、ForwardRef 报错、Docker 拉取超时。</p>
-          </article>
-          <article class="project-panel">
-            <i data-lucide="layers-3"></i>
-            <h3>用了什么知识点</h3>
-            <p>把 APIRouter、response_model、SessionLocal、Docker daemon 等概念拆开。</p>
-          </article>
-          <article class="project-panel">
-            <i data-lucide="bug"></i>
-            <h3>怎么解决</h3>
-            <p>保留关键代码、命令和配置，让下次遇到同类问题可以直接复用。</p>
-          </article>
-          <article class="project-panel">
-            <i data-lucide="badge-check"></i>
-            <h3>验证与下一步</h3>
-            <p>用 /docs、hello-world、curl 代理测试等方式确认结果，再写出下一步学习任务。</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-shell deploy" id="deploy">
-        <div>
-          <p class="section-kicker">Publish Checklist</p>
-          <h2>更新 Obsidian 后如何发布网站</h2>
-          <p>
-            GitHub Pages 只认识仓库里的静态文件，不能自动读取你电脑里的 Obsidian。更新笔记后，需要先同步生成网站数据，再提交并推送。
-          </p>
-        </div>
-        <ol class="deploy-steps">
-          <li>
-            <span>1</span>
-            <p>在 Obsidian 里更新或新增 Markdown 笔记。</p>
-          </li>
-          <li>
-            <span>2</span>
-            <p>在当前网站目录运行同步脚本，重新生成 content.js。</p>
-          </li>
-          <li>
-            <span>3</span>
-            <p>用 git add、commit、push 把更新后的静态文件推到 GitHub。</p>
-          </li>
-          <li>
-            <span>4</span>
-            <p>等待 GitHub Pages 自动重新部署，公开网站就会刷新。</p>
-          </li>
-        </ol>
-      </section>
     </main>
-
-    <footer class="site-footer">
-      <p>Content synced from Obsidian Vault. Static files hosted by GitHub Pages.</p>
-      <a href="#top" aria-label="回到顶部">
-        <i data-lucide="arrow-up"></i>
-      </a>
-    </footer>
   </body>
 </html>

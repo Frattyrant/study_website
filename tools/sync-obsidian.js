@@ -5,6 +5,19 @@ const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
 const vaultPath = process.argv[2] || defaultVault;
 const outputPath = path.resolve(__dirname, "..", "content.js");
 const allowedTopLevel = new Set(["Linux入门", "PYTHON后端"]);
+const categoryOrder = new Map([
+  ["Linux入门", 10],
+  ["Linux入门/问题记录", 11],
+  ["Linux入门/常用命令", 12],
+  ["PYTHON后端", 20],
+  ["PYTHON后端/DB", 21],
+  ["PYTHON后端/Docker", 22],
+  ["PYTHON后端/FASTAPI", 23],
+  ["PYTHON后端/FASTAPI/请求响应模型", 24],
+  ["PYTHON后端/FASTAPI/数据库接入", 25],
+  ["PYTHON后端/FASTAPI/CRUD接口", 26],
+  ["PYTHON后端/FASTAPI/routers", 27],
+]);
 
 function walk(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -71,22 +84,60 @@ function inferType(relativePath, title) {
   return "笔记";
 }
 
-function inferTags(relativePath, title, content) {
-  const source = `${relativePath} ${title} ${content}`;
-  const checks = [
-    ["FastAPI", /FASTAPI|FastAPI|APIRouter|response_model|router/i],
-    ["SQLAlchemy", /SQLAlchemy|SessionLocal|create_engine|declarative_base|SQLite/i],
-    ["CRUD", /CRUD|GET|POST|PUT|PATCH|DELETE|tasks/i],
-    ["Docker", /Docker|docker|container|image|daemon|hello-world/i],
-    ["WSL", /WSL|Ubuntu|apt|Clash|proxy|代理/i],
-    ["Linux", /Linux|shell|bash|命令|权限|进程/i],
-    ["数据库", /数据库|SQLite|ORM|模型|表/i],
-    ["项目结构", /项目结构|routers|main.py|模块/i],
-    ["AI", /(?:^|[^A-Za-z])AI(?:[^A-Za-z]|$)|workflow|视频|ERP|subscribe/i],
-    ["GitHub Pages", /GitHub Pages|VitePress|静态|域名/i],
-  ];
-  const tags = checks.filter(([, regex]) => regex.test(source)).map(([tag]) => tag);
-  return Array.from(new Set(tags)).slice(0, 4);
+function categoryPathFrom(relativePath) {
+  const parts = relativePath.split("\\");
+  const fileName = parts.at(-1) || "";
+  if (parts[0] === "Linux入门") {
+    if (parts.length === 2) return ["Linux入门", fileName.replace(/\.md$/i, "")];
+    if (parts[1]) return ["Linux入门", parts[1]];
+    return ["Linux入门"];
+  }
+  if (parts[0] === "PYTHON后端") {
+    if (parts[1] === "FASTAPI") {
+      if (parts[2] && !fileName.endsWith("LOGIC.md")) return ["PYTHON后端", "FASTAPI", parts[2]];
+      return ["PYTHON后端", "FASTAPI"];
+    }
+    if (parts[1]) return ["PYTHON后端", parts[1]];
+    return ["PYTHON后端"];
+  }
+  return [parts[0]].filter(Boolean);
+}
+
+function categoryKeyFrom(categoryPath) {
+  return categoryPath.join("/");
+}
+
+function buildCategoryTree(posts) {
+  const root = { key: "全部", label: "全部", count: posts.length, children: [] };
+  const nodeMap = new Map([["全部", root]]);
+
+  for (const post of posts) {
+    let parent = root;
+    for (let index = 0; index < post.categoryPath.length; index += 1) {
+      const pathParts = post.categoryPath.slice(0, index + 1);
+      const key = categoryKeyFrom(pathParts);
+      if (!nodeMap.has(key)) {
+        const node = { key, label: pathParts.at(-1), count: 0, children: [] };
+        nodeMap.set(key, node);
+        parent.children.push(node);
+      }
+      const node = nodeMap.get(key);
+      node.count += 1;
+      parent = node;
+    }
+  }
+
+  function sortChildren(node) {
+    node.children.sort((a, b) => {
+      const orderA = categoryOrder.get(a.key) ?? 999;
+      const orderB = categoryOrder.get(b.key) ?? 999;
+      return orderA - orderB || a.label.localeCompare(b.label, "zh-CN");
+    });
+    node.children.forEach(sortChildren);
+  }
+
+  sortChildren(root);
+  return root;
 }
 
 function titleFrom(content, filePath) {
@@ -138,13 +189,16 @@ const posts = files
     const content = fs.readFileSync(filePath, "utf8");
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
     const title = titleFrom(content, filePath);
+    const categoryPath = categoryPathFrom(relativePath);
     return {
       slug: slugFrom(relativePath),
       title,
       type: inferType(relativePath, title),
       date: toDate(filePath),
       minutes: minutesFor(content),
-      tags: inferTags(relativePath, title, content),
+      category: categoryKeyFrom(categoryPath),
+      categoryPath,
+      tags: categoryPath.slice(1),
       summary: summaryFrom(content, title),
       source: relativePath,
       body: detailMarkdown(content, title),
@@ -173,6 +227,7 @@ const data = `window.vaultStats = ${JSON.stringify(
     focusCount: Object.keys(topCounts).length,
     latestDate,
     topCounts,
+    categoryTree: buildCategoryTree(posts),
   },
   null,
   2,

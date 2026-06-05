@@ -1,27 +1,145 @@
 window.vaultStats = {
   "vaultPath": "C:\\Users\\LENOVO\\Documents\\Obsidian Vault",
-  "totalNotes": 35,
-  "publishableNotes": 29,
+  "totalNotes": 30,
+  "publishableNotes": 24,
   "focusCount": 2,
-  "latestDate": "2026-06-04",
+  "latestDate": "2026-06-05",
   "topCounts": {
     "Linux入门": 4,
-    "PYTHON后端": 31
+    "PYTHON后端": 26
+  },
+  "categoryTree": {
+    "key": "全部",
+    "label": "全部",
+    "count": 24,
+    "children": [
+      {
+        "key": "Linux入门",
+        "label": "Linux入门",
+        "count": 3,
+        "children": [
+          {
+            "key": "Linux入门/问题记录",
+            "label": "问题记录",
+            "count": 2,
+            "children": []
+          },
+          {
+            "key": "Linux入门/常用命令",
+            "label": "常用命令",
+            "count": 1,
+            "children": []
+          }
+        ]
+      },
+      {
+        "key": "PYTHON后端",
+        "label": "PYTHON后端",
+        "count": 21,
+        "children": [
+          {
+            "key": "PYTHON后端/DB",
+            "label": "DB",
+            "count": 1,
+            "children": []
+          },
+          {
+            "key": "PYTHON后端/Docker",
+            "label": "Docker",
+            "count": 1,
+            "children": []
+          },
+          {
+            "key": "PYTHON后端/FASTAPI",
+            "label": "FASTAPI",
+            "count": 19,
+            "children": [
+              {
+                "key": "PYTHON后端/FASTAPI/请求响应模型",
+                "label": "请求响应模型",
+                "count": 5,
+                "children": []
+              },
+              {
+                "key": "PYTHON后端/FASTAPI/数据库接入",
+                "label": "数据库接入",
+                "count": 9,
+                "children": []
+              },
+              {
+                "key": "PYTHON后端/FASTAPI/CRUD接口",
+                "label": "CRUD接口",
+                "count": 2,
+                "children": []
+              },
+              {
+                "key": "PYTHON后端/FASTAPI/routers",
+                "label": "routers",
+                "count": 2,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 };
 
 window.learningPosts = [
+  {
+    "slug": "python后端-fastapi-routers-apirouter-拆分项目结构",
+    "title": "APIRouter 拆分项目结构",
+    "type": "FastAPI",
+    "date": "2026-06-05",
+    "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/routers",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "routers"
+    ],
+    "tags": [
+      "FASTAPI",
+      "routers"
+    ],
+    "summary": "学习阶段把所有接口都写在 main.py 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 main.py ，后面会很难维护和查找。",
+    "source": "PYTHON后端\\FASTAPI\\routers\\APIRouter-拆分项目结构.md",
+    "body": "## 问题是什么\n\n学习阶段把所有接口都写在 `main.py` 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 `main.py`，后面会很难维护和查找。\n\n## 用了什么知识点\n\n- `APIRouter`：把一组相关接口拆成一个独立路由模块。\n- `prefix`：给一组接口统一添加路径前缀，例如 `/tasks`。\n- `tags`：给接口文档分组。\n- `app.include_router()`：把拆出去的路由挂回 FastAPI 应用。\n- 模块化项目结构：`main.py` 只负责应用入口，具体接口放到 `routers/`。\n\n## 怎么解决\n\n推荐把项目整理成：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中创建路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n原来的：\n\n```python\n@app.get(\"/tasks\")\n```\n\n拆出去后变成：\n\n```python\n@router.get(\"\")\n```\n\n因为 `/tasks` 已经放进了 `prefix`。\n\n最后在 `main.py` 中挂载：\n\n```python\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再承担所有业务接口，只保留应用入口、建表和路由挂载。任务相关接口集中到 `routers/tasks.py`，以后新增用户、认证、文章等模块时，也可以继续按同样方式拆分。\n\n## 易错点\n\n- 使用了 `prefix=\"/tasks\"` 后，`@router.get(\"\")` 才对应 `GET /tasks`。\n- 如果写成 `@router.get(\"/tasks\")`，最终路径会变成 `/tasks/tasks`。\n- 拆出去后要在 `main.py` 中执行 `app.include_router(tasks.router)`。\n- `routers` 文件夹需要有 `__init__.py`，这样 Python 才能稳定按包导入。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认任务接口仍然存在：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径没有变，说明拆分成功。"
+  },
+  {
+    "slug": "python后端-fastapi-routers-routers-taskspy-迁移任务接口",
+    "title": "routers tasks.py 迁移任务接口",
+    "type": "FastAPI",
+    "date": "2026-06-05",
+    "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/routers",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "routers"
+    ],
+    "tags": [
+      "FASTAPI",
+      "routers"
+    ],
+    "summary": "任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 response model 和 PATCH 。如果继续把所有接口都放在 main.py ，文件会越来越长，学习时也不容易区分“应用入口”和“业务接",
+    "source": "PYTHON后端\\FASTAPI\\routers\\routers-tasks.py-迁移任务接口.md",
+    "body": "## 问题是什么\n\n任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 `response_model` 和 `PATCH`。如果继续把所有接口都放在 `main.py`，文件会越来越长，学习时也不容易区分“应用入口”和“业务接口”。\n\n## 用了什么知识点\n\n- `APIRouter`：把同一类接口组织到单独模块。\n- `prefix=\"/tasks\"`：给任务接口统一加路径前缀。\n- `tags=[\"tasks\"]`：在 Swagger 文档中给任务接口分组。\n- `app.include_router()`：把拆出去的路由重新挂回 FastAPI 应用。\n- 项目分层：`main.py` 做入口，`routers/tasks.py` 写任务接口。\n\n## 怎么解决\n\n创建目录结构：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    ├── __init__.py\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中定义路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n把原来的任务接口从 `@app.get()`、`@app.post()` 等形式改为 `@router.get()`、`@router.post()`：\n\n```python\n@router.get(\"\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n在 `main.py` 中只保留应用入口和路由挂载：\n\n```python\nfrom fastapi import FastAPI\n\nimport models\nfrom database import engine\nfrom routers import tasks\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再堆满所有接口，任务相关代码有了自己的位置。以后继续扩展用户、登录、文章、文件上传等功能时，可以继续新增不同的 router 文件，而不是把所有内容混在一个文件里。\n\n## 易错点\n\n- `prefix=\"/tasks\"` 已经包含 `/tasks`，所以查询全部任务应写 `@router.get(\"\")`，不是 `@router.get(\"/tasks\")`。\n- 查询单个任务应写 `@router.get(\"/{task_id}\")`，最终路径才是 `/tasks/{task_id}`。\n- 拆分后别忘了在 `main.py` 里 `app.include_router(tasks.router)`。\n- `routers` 文件夹建议创建 `__init__.py`，让它成为稳定的 Python 包。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认原来的接口路径没有变化：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径仍然正常，说明迁移成功。\n\n## 下一步\n\n下一步做 FastAPI 入门收尾：整理最终项目结构，明确以后用 AI 开发时只需要掌握哪些核心判断点。"
+  },
   {
     "slug": "linux入门-问题记录-wsl代理-apt和docker下载卡住",
     "title": "WSL代理 apt和Docker下载卡住",
     "type": "问题记录",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "Linux入门/问题记录",
+    "categoryPath": [
+      "Linux入门",
+      "问题记录"
+    ],
     "tags": [
-      "Docker",
-      "WSL",
-      "Linux",
-      "数据库"
+      "问题记录"
     ],
     "summary": "在 WSL2 Ubuntu 26.04 里安装 Docker 时， sudo apt update 出现 Waiting for headers ，Docker 拉取 hello world 镜像时出现 TLS ha",
     "source": "Linux入门\\问题记录\\WSL代理-apt和Docker下载卡住.md",
@@ -33,29 +151,17 @@ window.learningPosts = [
     "type": "Docker",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/Docker",
+    "categoryPath": [
+      "PYTHON后端",
+      "Docker"
+    ],
     "tags": [
-      "Docker",
-      "WSL",
-      "Linux"
+      "Docker"
     ],
     "summary": "Docker 第一天的目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 docker version 提示",
     "source": "PYTHON后端\\Docker\\01-Docker第一天\\Docker安装与hello-world验证-WSL.md",
     "body": "## 问题是什么\n\nDocker 第一天的目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 `docker --version` 提示 `Command 'docker' not found`。\n\n## 用了什么知识点\n\nDocker 的最小运行链路是：Docker client 调用 Docker daemon，daemon 拉取 image，然后基于 image 创建并运行 container。\n\n本质理解：镜像是模板，容器是模板跑起来后的实例，daemon 是真正负责拉镜像和创建容器的后台服务。\n\n## 怎么解决\n\n安装路径选择：Docker 官方 apt 源不稳定时，先使用 Ubuntu 仓库包完成学习环境：\n\n```bash\nsudo env http_proxy=http://127.0.0.1:7897 https_proxy=http://127.0.0.1:7897 apt install -y docker.io docker-compose-v2\n```\n\n检查 Docker 服务：\n\n```bash\nsudo service docker status\n```\n\n如果需要启动：\n\n```bash\nsudo service docker start\n```\n\n验证容器运行：\n\n```bash\nsudo docker run hello-world\n```\n\n成功输出包括：\n\n```text\nHello from Docker!\n```\n\n## 解决了什么问题\n\n确认了 Docker 已经安装成功、Docker 服务正在运行、Docker daemon 可以拉取镜像并启动容器。\n\n## 易错点\n\n`docker --version` 只能说明 Docker CLI 存在，不等于 daemon 正常。`sudo service docker status` 看到 `active (running)` 才说明服务在运行。`hello-world` 本地没有镜像时会先拉取，这是正常现象；如果出现 `TLS handshake timeout`，通常是 Docker daemon 没有配置代理。\n\n## 验证方式\n\n```bash\ndocker --version\ndocker compose version\nsudo service docker status\nsudo docker run hello-world\n```\n\n期望结果：Docker 服务状态是 `active (running)`，`hello-world` 输出 `Hello from Docker!`。\n\n## 下一步\n\n运行 nginx 容器，学习端口映射 `-p 8080:80`。"
-  },
-  {
-    "slug": "python后端-fastapi-请求响应模型",
-    "title": "请求响应模型",
-    "type": "FastAPI",
-    "date": "2026-06-04",
-    "minutes": 3,
-    "tags": [
-      "FastAPI",
-      "数据库",
-      "项目结构"
-    ],
-    "summary": "该模块已拆分为一步一步的学习笔记。",
-    "source": "PYTHON后端\\FASTAPI\\请求响应模型.md",
-    "body": "该模块已拆分为一步一步的学习笔记。\n\n入口：[[请求响应模型/索引|请求响应模型索引]]"
   },
   {
     "slug": "python后端-fastapi-请求响应模型-patch-tasks-task-id-局部更新任务",
@@ -63,11 +169,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/请求响应模型",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "请求响应模型"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库",
-      "项目结构"
+      "FASTAPI",
+      "请求响应模型"
     ],
     "summary": "PUT 更新任务时通常要求前端提交完整任务数据，例如 title 、 description 、 done 都要传。实际开发中，经常只想修改一个字段，例如只把 done 改成 true ，这时继续使用 PUT 会显得",
     "source": "PYTHON后端\\FASTAPI\\请求响应模型\\PATCH-tasks-task_id-局部更新任务.md",
@@ -79,10 +189,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/请求响应模型",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "请求响应模型"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "请求响应模型"
     ],
     "summary": "接口虽然已经能返回数据，但 PUT 和 DELETE 如果不声明 response model ，返回结构就不够明确。这样会让自动文档不清楚，前端也不容易判断接口到底会返回哪些字段。",
     "source": "PYTHON后端\\FASTAPI\\请求响应模型\\response_model-完整规范所有接口.md",
@@ -94,11 +209,15 @@ window.learningPosts = [
     "type": "问题记录",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/请求响应模型",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "请求响应模型"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库",
-      "项目结构"
+      "FASTAPI",
+      "请求响应模型"
     ],
     "summary": "访问 /docs 时 FastAPI 生成 OpenAPI 文档失败，报出 PydanticUserError，并提示 ForwardRef('shcemas.TaskCreate') 没有完整定义。问题出现在接口参",
     "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas-拼写错误导致ForwardRef报错.md",
@@ -110,11 +229,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/请求响应模型",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "请求响应模型"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库",
-      "项目结构"
+      "FASTAPI",
+      "请求响应模型"
     ],
     "summary": "数据库版 CRUD 完成后， main.py 里开始混合 FastAPI app、数据库依赖、接口函数和 Pydantic 模型。代码继续变大时，所有内容堆在 main.py 会难以维护。",
     "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas.py-拆分请求模型.md",
@@ -126,11 +249,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/请求响应模型",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "请求响应模型"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "请求响应模型"
     ],
     "summary": "TaskCreate 只描述客户端提交的数据，但接口返回给客户端的数据也需要明确结构。数据库返回的是 SQLAlchemy ORM 对象，如果不声明响应模型，接口返回会不够规范，也不方便控制哪些字段应该暴露。",
     "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas.py-添加响应模型.md",
@@ -142,61 +269,19 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "数据库版 GET 、 POST 、 PUT 已经完成，但删除任务仍需要从内存列表写法切换为数据库写法。否则任务删除不会真正作用于 SQLite 数据库。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\DELETE-tasks-task_id-删除数据库任务.md",
     "body": "## 问题是什么\n\n数据库版 `GET`、`POST`、`PUT` 已经完成，但删除任务仍需要从内存列表写法切换为数据库写法。否则任务删除不会真正作用于 SQLite 数据库。\n\n## 用了什么知识点\n\n- FastAPI `DELETE` 接口用于删除资源。\n- 路径参数：`task_id: int`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter().first()` 查询待删除记录。\n- `db.delete()` 标记删除 ORM 对象。\n- `db.commit()` 提交删除事务。\n- `HTTPException(status_code=404)` 处理任务不存在。\n\n## 怎么解决\n\n先根据 `task_id` 查询任务是否存在。存在则删除并提交；不存在则返回 404。\n\n```python\n@app.delete(\"/tasks/{task_id}\")\ndef delete_task(task_id: int, db: Session = Depends(get_db)):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    db.delete(task)\n    db.commit()\n\n    return {\"message\": \"任务删除成功\"}\n```\n\n## 解决了什么问题\n\n`DELETE /tasks/{task_id}` 可以真正删除数据库中的任务记录。至此，数据库版 `GET`、`POST`、`PUT`、`DELETE` 全部完成，任务管理 API 具备完整数据库 CRUD 能力。\n\n## 易错点\n\n- `db.delete(task)` 只是标记删除，必须 `db.commit()` 才会真正写入数据库。\n- 删除前必须先查任务是否存在。\n- 找不到任务要返回 404，而不是假装删除成功。\n- 删除成功后再查询同一个 id，应该返回 404。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回的 `id`。\n- 执行 `DELETE /tasks/{id}`。\n- 再执行 `GET /tasks/{id}`。\n- 如果返回 404，说明任务已从数据库删除。\n\n## 下一步\n\n把 Pydantic 请求/响应模型拆到 `schemas.py`，让 `main.py` 只负责接口逻辑，项目结构更清晰。"
-  },
-  {
-    "slug": "python后端-fastapi-项目结构",
-    "title": "项目结构",
-    "type": "FastAPI",
-    "date": "2026-06-04",
-    "minutes": 3,
-    "tags": [
-      "FastAPI",
-      "项目结构"
-    ],
-    "summary": "FastAPI 项目结构相关笔记入口。",
-    "source": "PYTHON后端\\FASTAPI\\项目结构.md",
-    "body": "# 项目结构\n\nFastAPI 项目结构相关笔记入口。\n\n- [[项目结构/索引|项目结构索引]]"
-  },
-  {
-    "slug": "python后端-fastapi-项目结构-apirouter-拆分项目结构",
-    "title": "APIRouter 拆分项目结构",
-    "type": "FastAPI",
-    "date": "2026-06-04",
-    "minutes": 3,
-    "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库",
-      "项目结构"
-    ],
-    "summary": "学习阶段把所有接口都写在 main.py 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 main.py ，后面会很难维护和查找。",
-    "source": "PYTHON后端\\FASTAPI\\项目结构\\APIRouter-拆分项目结构.md",
-    "body": "## 问题是什么\n\n学习阶段把所有接口都写在 `main.py` 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 `main.py`，后面会很难维护和查找。\n\n## 用了什么知识点\n\n- `APIRouter`：把一组相关接口拆成一个独立路由模块。\n- `prefix`：给一组接口统一添加路径前缀，例如 `/tasks`。\n- `tags`：给接口文档分组。\n- `app.include_router()`：把拆出去的路由挂回 FastAPI 应用。\n- 模块化项目结构：`main.py` 只负责应用入口，具体接口放到 `routers/`。\n\n## 怎么解决\n\n推荐把项目整理成：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中创建路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n原来的：\n\n```python\n@app.get(\"/tasks\")\n```\n\n拆出去后变成：\n\n```python\n@router.get(\"\")\n```\n\n因为 `/tasks` 已经放进了 `prefix`。\n\n最后在 `main.py` 中挂载：\n\n```python\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再承担所有业务接口，只保留应用入口、建表和路由挂载。任务相关接口集中到 `routers/tasks.py`，以后新增用户、认证、文章等模块时，也可以继续按同样方式拆分。\n\n## 易错点\n\n- 使用了 `prefix=\"/tasks\"` 后，`@router.get(\"\")` 才对应 `GET /tasks`。\n- 如果写成 `@router.get(\"/tasks\")`，最终路径会变成 `/tasks/tasks`。\n- 拆出去后要在 `main.py` 中执行 `app.include_router(tasks.router)`。\n- `routers` 文件夹需要有 `__init__.py`，这样 Python 才能稳定按包导入。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认任务接口仍然存在：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径没有变，说明拆分成功。"
-  },
-  {
-    "slug": "python后端-fastapi-项目结构-routers-taskspy-迁移任务接口",
-    "title": "routers/tasks.py 迁移任务接口",
-    "type": "FastAPI",
-    "date": "2026-06-04",
-    "minutes": 3,
-    "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库",
-      "项目结构"
-    ],
-    "summary": "任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 response model 和 PATCH 。如果继续把所有接口都放在 main.py ，文件会越来越长，学习时也不容易区分“应用入口”和“业务接",
-    "source": "PYTHON后端\\FASTAPI\\项目结构\\routers-tasks.py-迁移任务接口.md",
-    "body": "## 问题是什么\n\n任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 `response_model` 和 `PATCH`。如果继续把所有接口都放在 `main.py`，文件会越来越长，学习时也不容易区分“应用入口”和“业务接口”。\n\n## 用了什么知识点\n\n- `APIRouter`：把同一类接口组织到单独模块。\n- `prefix=\"/tasks\"`：给任务接口统一加路径前缀。\n- `tags=[\"tasks\"]`：在 Swagger 文档中给任务接口分组。\n- `app.include_router()`：把拆出去的路由重新挂回 FastAPI 应用。\n- 项目分层：`main.py` 做入口，`routers/tasks.py` 写任务接口。\n\n## 怎么解决\n\n创建目录结构：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    ├── __init__.py\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中定义路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n把原来的任务接口从 `@app.get()`、`@app.post()` 等形式改为 `@router.get()`、`@router.post()`：\n\n```python\n@router.get(\"\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n在 `main.py` 中只保留应用入口和路由挂载：\n\n```python\nfrom fastapi import FastAPI\n\nimport models\nfrom database import engine\nfrom routers import tasks\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再堆满所有接口，任务相关代码有了自己的位置。以后继续扩展用户、登录、文章、文件上传等功能时，可以继续新增不同的 router 文件，而不是把所有内容混在一个文件里。\n\n## 易错点\n\n- `prefix=\"/tasks\"` 已经包含 `/tasks`，所以查询全部任务应写 `@router.get(\"\")`，不是 `@router.get(\"/tasks\")`。\n- 查询单个任务应写 `@router.get(\"/{task_id}\")`，最终路径才是 `/tasks/{task_id}`。\n- 拆分后别忘了在 `main.py` 里 `app.include_router(tasks.router)`。\n- `routers` 文件夹建议创建 `__init__.py`，让它成为稳定的 Python 包。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认原来的接口路径没有变化：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径仍然正常，说明迁移成功。\n\n## 下一步\n\n下一步做 FastAPI 入门收尾：整理最终项目结构，明确以后用 AI 开发时只需要掌握哪些核心判断点。"
   },
   {
     "slug": "python后端-fastapi-logic",
@@ -204,30 +289,17 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-04",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "Linux",
-      "数据库"
+      "FASTAPI"
     ],
     "summary": "请求进来 schemas检查数据格式 创建数据库会话拿权限资源 ORM CRUD库 响应返回信息",
     "source": "PYTHON后端\\FASTAPI\\LOGIC.md",
     "body": "请求进来 -- schemas检查数据格式 -- 创建数据库会话拿权限资源 -- ORM CRUD库 -- 响应返回信息"
-  },
-  {
-    "slug": "python后端-fastapi-数据库接入",
-    "title": "数据库接入",
-    "type": "FastAPI",
-    "date": "2026-06-03",
-    "minutes": 3,
-    "tags": [
-      "FastAPI",
-      "数据库",
-      "项目结构"
-    ],
-    "summary": "该模块已拆分为一步一步的学习笔记。",
-    "source": "PYTHON后端\\FASTAPI\\数据库接入.md",
-    "body": "该模块已拆分为一步一步的学习笔记。\n\n入口：[[数据库接入/索引|数据库接入索引]]"
   },
   {
     "slug": "python后端-fastapi-数据库接入-databasepy-数据库连接配置",
@@ -235,11 +307,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "项目准备从内存列表切换到数据库存储，但在写数据库表模型和 CRUD 之前，需要先有一个统一的数据库连接入口。否则后续每个接口都会重复写连接逻辑，项目结构会越来越乱。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\database.py-数据库连接配置.md",
@@ -251,11 +327,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "数据库和表已经能创建，但接口函数还不能直接操作数据库。每次请求都需要一个数据库会话，并且请求结束后要关闭会话，否则连接管理会混乱。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\get_db-数据库会话依赖.md",
@@ -267,11 +347,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "接口已经能拿到数据库会话，但 GET /tasks 仍然可能在读取内存列表 tasks [] 。这样即使数据库表已经创建，查询接口也没有真正使用数据库。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\GET-tasks-查询数据库任务.md",
@@ -283,11 +367,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "GET /tasks 已经能查询数据库中的全部任务，但真实 API 还需要根据 id 查询单个任务。如果继续遍历内存列表，就没有真正使用数据库，也不能和数据库新增的数据保持一致。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\GET-tasks-task_id-查询单个数据库任务.md",
@@ -299,11 +387,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "已经定义了 database.py 和 models.py ，但数据库表还没有真正创建出来。仅仅写好 ORM 模型类，不等于 SQLite 数据库里已经有 tasks 表。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\main.py-自动创建数据库表.md",
@@ -315,11 +407,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "已经有了 database.py 的数据库连接配置，但数据库里还没有真正的任务表。后端需要告诉 SQLAlchemy：任务表叫什么、有哪些字段、每个字段是什么类型。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\models.py-定义任务表模型.md",
@@ -331,11 +427,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "GET /tasks 已经能从数据库查询任务，但数据库里还没有新增任务的入口。如果 POST /tasks 仍然把任务追加到内存列表 tasks [] ，新增的数据不会持久保存，服务重启后仍然会丢失。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\POST-tasks-新增数据库任务.md",
@@ -347,30 +447,19 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/数据库接入",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "数据库接入"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "数据库接入"
     ],
     "summary": "任务已经可以写入数据库、查询全部和查询单个，但修改任务仍然需要从内存列表写法切换到数据库写法。否则更新后的任务不会持久保存。",
     "source": "PYTHON后端\\FASTAPI\\数据库接入\\PUT-tasks-task_id-更新数据库任务.md",
     "body": "# PUT /tasks/{task_id} 更新数据库任务\n\n## 问题是什么\n\n任务已经可以写入数据库、查询全部和查询单个，但修改任务仍然需要从内存列表写法切换到数据库写法。否则更新后的任务不会持久保存。\n\n## 用了什么知识点\n\n- FastAPI `PUT` 接口用于更新资源。\n- 路径参数：`task_id: int`。\n- 请求体模型：`updated_task: Task`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter().first()` 查询待更新记录。\n- 修改 ORM 对象字段。\n- `db.commit()` 提交更新。\n- `db.refresh()` 刷新更新后的对象。\n- `HTTPException(status_code=404)` 处理任务不存在。\n\n## 怎么解决\n\n先根据 `task_id` 查询数据库中的任务。如果任务不存在，返回 404；如果存在，就修改 ORM 对象字段并提交。\n\n```python\n@app.put(\"/tasks/{task_id}\")\ndef update_task(\n    task_id: int,\n    updated_task: Task,\n    db: Session = Depends(get_db)\n):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    task.title = updated_task.title\n    task.description = updated_task.description\n    task.done = updated_task.done\n\n    db.commit()\n    db.refresh(task)\n\n    return task\n```\n\n## 解决了什么问题\n\n`PUT /tasks/{task_id}` 可以真正更新 SQLite 数据库中的任务记录。任务修改后，再通过 `GET /tasks/{task_id}` 查询，会看到持久化后的新内容。\n\n## 易错点\n\n- 不能再使用 `tasks[index] = {...}`，因为现在数据来源已经是数据库。\n- 必须先查询任务是否存在，不能直接创建一个新对象替换。\n- 修改 ORM 对象字段后要执行 `db.commit()`，否则数据库不会保存更新。\n- `db.refresh(task)` 用于拿到数据库提交后的最新对象。\n- 找不到任务时要返回 404，而不是返回空对象。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回的 `id`。\n- 执行 `PUT /tasks/{id}`，body 示例：\n\n```json\n{\n  \"title\": \"更新后的任务标题\",\n  \"description\": \"任务已经通过数据库更新\",\n  \"done\": true\n}\n```\n\n- 再执行 `GET /tasks/{id}`。\n- 如果返回内容已变成更新后的字段，说明数据库更新成功。\n\n## 下一步\n\n把 `DELETE /tasks/{task_id}` 改成数据库删除，完成数据库版 CRUD 的最后一步。"
-  },
-  {
-    "slug": "python后端-fastapi-crud接口",
-    "title": "CRUD 接口",
-    "type": "FastAPI",
-    "date": "2026-06-03",
-    "minutes": 3,
-    "tags": [
-      "FastAPI",
-      "CRUD",
-      "项目结构"
-    ],
-    "summary": "该模块已拆分为一步一步的学习笔记。",
-    "source": "PYTHON后端\\FASTAPI\\CRUD接口.md",
-    "body": "该模块已拆分为一步一步的学习笔记。\n\n入口：[[CRUD接口/索引|CRUD 接口索引]]"
   },
   {
     "slug": "python后端-fastapi-crud接口-delete-tasks-task-id-删除任务",
@@ -378,11 +467,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/CRUD接口",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "CRUD接口"
+    ],
     "tags": [
-      "FastAPI",
-      "SQLAlchemy",
-      "CRUD",
-      "数据库"
+      "FASTAPI",
+      "CRUD接口"
     ],
     "summary": "任务可以新增、查询、修改后，还需要能删除不再需要的任务。否则任务列表只能越堆越多，CRUD 也不完整。",
     "source": "PYTHON后端\\FASTAPI\\CRUD接口\\DELETE-tasks-task_id-删除任务.md",
@@ -394,11 +487,15 @@ window.learningPosts = [
     "type": "FastAPI",
     "date": "2026-06-03",
     "minutes": 3,
+    "category": "PYTHON后端/FASTAPI/CRUD接口",
+    "categoryPath": [
+      "PYTHON后端",
+      "FASTAPI",
+      "CRUD接口"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "数据库",
-      "项目结构"
+      "FASTAPI",
+      "CRUD接口"
     ],
     "summary": "前面已经能查询和新增任务，但还不能修改已有任务。真实任务管理 API 需要支持用户把任务标题、描述或完成状态改掉。",
     "source": "PYTHON后端\\FASTAPI\\CRUD接口\\PUT-tasks-task_id-更新任务.md",
@@ -410,42 +507,35 @@ window.learningPosts = [
     "type": "Linux",
     "date": "2026-06-02",
     "minutes": 6,
+    "category": "Linux入门/常用命令",
+    "categoryPath": [
+      "Linux入门",
+      "常用命令"
+    ],
     "tags": [
-      "FastAPI",
-      "CRUD",
-      "WSL",
-      "Linux"
+      "常用命令"
     ],
     "summary": "分类 命令 作用 常用示例 示例说明",
     "source": "Linux入门\\常用命令.md",
     "body": "| 分类    | *==**命令**==*                 | 作用          | 常用示例                               | 示例说明                |\n| ----- | ---------------------------- | ----------- | ---------------------------------- | ------------------- |\n| 文件/目录 | *==**`pwd`**==*              | 查看当前路径      | `pwd`                              | 显示当前所在目录            |\n| 文件/目录 | *==**`ls`**==*               | 查看目录内容      | `ls -l`                            | 以详细列表方式显示           |\n| 文件/目录 | *==**`ls -a`**==*            | 查看隐藏文件      | `ls -a`                            | 显示 `.git` 等隐藏文件     |\n| 文件/目录 | *==**`cd`**==*               | 切换目录        | `cd /home/user`                    | 进入指定目录              |\n| 文件/目录 | *==**`cd ..`**==*            | 返回上一级       | `cd ..`                            | 返回父目录               |\n| 文件/目录 | *==**`mkdir`**==*            | 创建目录        | `mkdir project`                    | 创建 `project` 文件夹    |\n| 文件/目录 | *==**`touch`**==*            | 创建文件        | `touch app.py`                     | 创建空文件               |\n| 文件/目录 | *==**`cp`**==*               | 复制文件/目录     | `cp a.txt b.txt`                   | 复制文件                |\n| 文件/目录 | *==**`cp -r`**==*            | 复制目录        | `cp -r src backup`                 | 递归复制目录              |\n| 文件/目录 | *==**`mv`**==*               | 移动/重命名      | `mv old.txt new.txt`               | 重命名文件               |\n| 文件/目录 | *==**`rm`**==*               | 删除文件        | `rm test.txt`                      | 删除文件                |\n| 文件/目录 | *==**`rm -r`**==*            | 删除目录        | `rm -r temp`                       | 删除目录及内容             |\n| 文件/目录 | *==**`find`**==*             | 查找文件        | `find . -name \"*.py\"`              | 查找当前目录下所有 Python 文件 |\n| 文件/目录 | *==**`tree`**==*             | 树状显示目录      | `tree`                             | 需要先安装               |\n| 文件查看  | *==**`cat`**==*              | 查看文件内容      | `cat app.py`                       | 输出整个文件              |\n| 文件查看  | *==**`less`**==*             | 分页查看文件      | `less log.txt`                     | 适合查看长日志             |\n| 文件查看  | *==**`head`**==*             | 查看前几行       | `head -n 10 log.txt`               | 查看前 10 行            |\n| 文件查看  | *==**`tail`**==*             | 查看后几行       | `tail -n 20 log.txt`               | 查看后 20 行            |\n| 文件查看  | *==**`tail -f`**==*          | 实时查看日志      | `tail -f app.log`                  | 动态跟踪日志              |\n| 文件查看  | *==**`grep`**==*             | 搜索文本        | `grep \"error\" app.log`             | 查找包含 error 的行       |\n| 文件查看  | *==**`wc`**==*               | 统计行数/单词数    | `wc -l app.py`                     | 统计行数                |\n| 权限管理  | *==**`chmod`**==*            | 修改权限        | `chmod +x run.sh`                  | 增加执行权限              |\n| 权限管理  | *==**`chown`**==*            | 修改所有者       | `sudo chown user:user file.txt`    | 修改文件拥有者             |\n| 系统信息  | *==**`uname -a`**==*         | 查看系统信息      | `uname -a`                         | 查看内核和系统版本           |\n| 系统信息  | *==**`top`**==*              | 查看进程占用      | `top`                              | 类似任务管理器             |\n| 系统信息  | *==**`htop`**==*             | 增强版进程查看     | `htop`                             | 更友好，需要安装            |\n| 系统信息  | *==**`df -h`**==*            | 查看磁盘空间      | `df -h`                            | 人类可读格式              |\n| 系统信息  | *==**`du -sh`**==*           | 查看目录大小      | `du -sh project/`                  | 查看项目占用空间            |\n| 系统信息  | *==**`free -h`**==*          | 查看内存        | `free -h`                          | 查看 RAM 使用情况         |\n| 进程管理  | *==**`ps aux`**==*           | 查看所有进程      | `ps aux                            | grep python`        |\n| 进程管理  | *==**`kill`**==*             | 结束进程        | `kill 1234`                        | 杀死 PID 为 1234 的进程   |\n| 进程管理  | *==**`kill -9`**==*          | 强制结束进程      | `kill -9 1234`                     | 强制杀死进程              |\n| 网络相关  | *==**`ping`**==*             | 测试网络        | `ping baidu.com`                   | 检查网络连接              |\n| 网络相关  | *==**`curl`**==*             | 请求 URL      | `curl https://example.com`         | 获取网页内容              |\n| 网络相关  | *==**`wget`**==*             | 下载文件        | `wget https://example.com/a.zip`   | 下载文件                |\n| 网络相关  | *==**`ssh`**==*              | 远程登录        | `ssh user@192.168.1.10`            | SSH 登录服务器           |\n| 网络相关  | *==**`scp`**==*              | 远程传文件       | `scp a.txt user@ip:/home/user`     | 上传文件                |\n| 压缩解压  | *==**`tar`**==*              | 打包压缩        | `tar -czvf app.tar.gz app/`        | 压缩目录                |\n| 压缩解压  | *==**`tar -xzvf`**==*        | 解压 tar.gz   | `tar -xzvf app.tar.gz`             | 解压文件                |\n| 压缩解压  | *==**`zip`**==*              | zip 压缩      | `zip -r test.zip test/`            | 压缩目录                |\n| 压缩解压  | *==**`unzip`**==*            | 解压 zip      | `unzip test.zip`                   | 解压 zip 文件           |\n| 软件管理  | *==**`sudo apt update`**==*  | 更新软件源       | `sudo apt update`                  | 更新包列表               |\n| 软件管理  | *==**`sudo apt upgrade`**==* | 升级软件        | `sudo apt upgrade`                 | 升级已安装软件             |\n| 软件管理  | *==**`sudo apt install`**==* | 安装软件        | `sudo apt install git`             | 安装 Git              |\n| 软件管理  | *==**`sudo apt remove`**==*  | 卸载软件        | `sudo apt remove git`              | 删除软件                |\n| 开发常用  | *==**`git clone`**==*        | 克隆仓库        | `git clone https://github.com/...` | 下载项目                |\n| 开发常用  | *==**`python3`**==*          | 运行 Python   | `python3 app.py`                   | 执行 Python 程序        |\n| 开发常用  | *==**`pip install`**==*      | 安装 Python 包 | `pip install fastapi`              | 安装依赖                |\n| 开发常用  | *==**`code .`**==*           | VSCode 打开目录 | `code .`                           | 当前目录打开 VSCode       |\n| 开发常用  | *==**`history`**==*          | 查看历史命令      | `history`                          | 查看执行过的命令            |\n| 开发常用  | *==**`clear`**==*            | 清空终端        | `clear`                            | 清屏                  |\n| 开发常用  | *==**`man`**==*              | 查看命令手册      | `man ls`                           | 查看 `ls` 帮助文档        |"
   },
   {
-    "slug": "linux入门-问题记录",
+    "slug": "linux入门-问题记录-问题记录",
     "title": "问题记录",
     "type": "问题记录",
     "date": "2026-06-02",
     "minutes": 3,
+    "category": "Linux入门/问题记录",
+    "categoryPath": [
+      "Linux入门",
+      "问题记录"
+    ],
     "tags": [
-      "Linux"
+      "问题记录"
     ],
     "summary": "python3 m venv .venv",
-    "source": "Linux入门\\问题记录.md",
+    "source": "Linux入门\\问题记录\\问题记录.md",
     "body": "1.创建虚拟环境\n- `python3 -m venv .venv`  \n    才是创建\n- `source .venv/bin/activate`  \n    只是激活已经存在的环境"
-  },
-  {
-    "slug": "python后端-db-数据库相关学习-mysql-py",
-    "title": "MYSQL +py",
-    "type": "数据库",
-    "date": "2026-03-24",
-    "minutes": 3,
-    "tags": [
-      "Docker",
-      "数据库"
-    ],
-    "summary": "except exception as e:",
-    "source": "PYTHON后端\\DB\\数据库相关学习\\MYSQL +py.md",
-    "body": "try:\n\nexcept exception as e:\n\nprint(e)\n\n-- 防止系统崩溃 查询报错信息\n\nconn  -- 数据库连接\n\n![[Pasted image 20260323212657.png]]%%  %%\n\ncursor（）-- 创建游标对象  ***cursor - conn.cursor ()***\n\nexecute（） -- 执行sql语句\n\n提取数据方法：\n\n| 方法             | 作用  |\n| -------------- | --- |\n| `fetchone()`   | 取一行 |\n| `fetchmany(n)` | 取n行 |\n| `fetchall()`   | 取全部 |\n\n\t*cursor.execute(\"SELECT * FROM emp\")*\n\n\t*print(cursor.fetchone())   # 第一行*\n\t*print(cursor.fetchmany(2)) # 接下来2行*\n\t*print(cursor.fetchall())   # 剩下所有*\n\t\ncommit（） -- 提交修改（数据库默认不会提交修改）"
   },
   {
     "slug": "python后端-db-数据库相关学习-mysql",
@@ -453,10 +543,13 @@ window.learningPosts = [
     "type": "数据库",
     "date": "2026-03-23",
     "minutes": 14,
+    "category": "PYTHON后端/DB",
+    "categoryPath": [
+      "PYTHON后端",
+      "DB"
+    ],
     "tags": [
-      "CRUD",
-      "Linux",
-      "数据库"
+      "DB"
     ],
     "summary": "·cd C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin",
     "source": "PYTHON后端\\DB\\数据库相关学习\\MYSQL.md",
