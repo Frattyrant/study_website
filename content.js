@@ -1,14 +1,12 @@
 window.vaultStats = {
   "vaultPath": "C:\\Users\\LENOVO\\Documents\\Obsidian Vault",
-  "totalNotes": 41,
-  "publishableNotes": 35,
-  "focusCount": 4,
+  "totalNotes": 35,
+  "publishableNotes": 29,
+  "focusCount": 2,
   "latestDate": "2026-06-04",
   "topCounts": {
     "Linux入门": 4,
-    "PYTHON后端": 31,
-    "学习方向": 5,
-    "静态web.md": 1
+    "PYTHON后端": 31
   }
 };
 
@@ -434,84 +432,6 @@ window.learningPosts = [
     "summary": "python3 m venv .venv",
     "source": "Linux入门\\问题记录.md",
     "body": "1.创建虚拟环境\n- `python3 -m venv .venv`  \n    才是创建\n- `source .venv/bin/activate`  \n    只是激活已经存在的环境"
-  },
-  {
-    "slug": "静态web",
-    "title": "静态web",
-    "type": "发布",
-    "date": "2026-06-01",
-    "minutes": 3,
-    "tags": [
-      "GitHub Pages"
-    ],
-    "summary": "第 1 阶段：Obsidian 记录学习",
-    "source": "静态web.md",
-    "body": "第 1 阶段：Obsidian 记录学习\n第 2 阶段：VitePress 搭建静态博客\n第 3 阶段：GitHub Pages 发布\n第 4 阶段：绑定个人域名，可选"
-  },
-  {
-    "slug": "学习方向-ai-与-erp",
-    "title": "AI 与 ERP：",
-    "type": "方向",
-    "date": "2026-05-28",
-    "minutes": 3,
-    "tags": [
-      "Docker",
-      "AI"
-    ],
-    "summary": "!Pasted image 20260528103103.png",
-    "source": "学习方向\\AI 与 ERP：.md",
-    "body": "![[Pasted image 20260528103103.png]]\n\nERP web整体技术栈：\n\n![[Pasted image 20260528103403.png]]\n\nERP 相关要求：\n![[Pasted image 20260528105051.png]]\n\n![[Pasted image 20260528104817.png]]\n 接入国外AI API参考：\n ![[Pasted image 20260528110724.png]]\n 、**核心原则：数据不出境，AI 调用境外**\n\n这两个目标本质上有张力，解决方案就是**脱敏层**——把客户姓名、身份证等 PII 数据替换为匿名 ID 后再送给 Claude，结果返回国内系统时再还原业务上下文。这样既满足 PIPL，又能充分利用 Claude 的智能能力。"
-  },
-  {
-    "slug": "学习方向-ai-workflow搭建",
-    "title": "AI workflow搭建",
-    "type": "方向",
-    "date": "2026-05-28",
-    "minutes": 3,
-    "tags": [
-      "数据库",
-      "AI"
-    ],
-    "summary": "将每个具体真实问题试着用AI解决， 记录哪种方法有用，那种方法没有用",
-    "source": "学习方向\\AI workflow搭建.md",
-    "body": "RULE1:\n结构化表达\n将每个具体真实问题试着用AI解决，**记录哪种方法有用，那种方法没有用**\nRULE2:\n熟悉开发架构\nworkflow：\n你描述需求 → AI写代码 → **你看懂逻辑** → 你测试和修改\nRULE3：\n**熟悉业务流程**\n深入理解系统是怎么运行的 识别痛点\n\n**%% prompt： %%**\n我现在的处境是什么？\n我具体要做什么？\n我要什么形式的输出？"
-  },
-  {
-    "slug": "学习方向-ai视频制作",
-    "title": "AI视频制作",
-    "type": "方向",
-    "date": "2026-05-28",
-    "minutes": 3,
-    "tags": [
-      "AI"
-    ],
-    "summary": "这篇笔记来自 Obsidian，等待继续补充正文和复盘。",
-    "source": "学习方向\\AI视频制作.md",
-    "body": ""
-  },
-  {
-    "slug": "学习方向-subscibe-ai",
-    "title": "SUBSCIBE AI",
-    "type": "方向",
-    "date": "2026-05-28",
-    "minutes": 3,
-    "tags": [
-      "AI"
-    ],
-    "summary": "1、直接订阅 需要有实体卡之类的 visa 万事达等 礼品卡",
-    "source": "学习方向\\SUBSCIBE AI.md",
-    "body": "1、直接订阅 需要有实体卡之类的 visa 万事达等 礼品卡\n2、平台订阅，检验平台是否有正规金融牌照（美国MSB、欧盟EMI）\n3、是否稳定过STRIPE\n4、充值损耗+换汇损耗+提现手续费"
-  },
-  {
-    "slug": "学习方向-vps-vpn搭建",
-    "title": "VPS VPN搭建",
-    "type": "方向",
-    "date": "2026-05-28",
-    "minutes": 3,
-    "tags": [],
-    "summary": "这篇笔记来自 Obsidian，等待继续补充正文和复盘。",
-    "source": "学习方向\\VPS VPN搭建.md",
-    "body": ""
   },
   {
     "slug": "python后端-db-数据库相关学习-mysql-py",

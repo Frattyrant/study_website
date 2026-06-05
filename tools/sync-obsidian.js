@@ -4,6 +4,7 @@ const path = require("node:path");
 const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
 const vaultPath = process.argv[2] || defaultVault;
 const outputPath = path.resolve(__dirname, "..", "content.js");
+const allowedTopLevel = new Set(["Linux入门", "PYTHON后端"]);
 
 function walk(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -116,7 +117,9 @@ function minutesFor(content) {
 }
 
 function shouldPublish(filePath) {
-  return path.basename(filePath, ".md") !== "索引";
+  const relativePath = path.relative(vaultPath, filePath);
+  const topLevel = relativePath.split(path.sep)[0];
+  return allowedTopLevel.has(topLevel) && path.basename(filePath, ".md") !== "索引";
 }
 
 if (!fs.existsSync(vaultPath)) {
@@ -125,7 +128,11 @@ if (!fs.existsSync(vaultPath)) {
 }
 
 const allFiles = walk(vaultPath);
-const files = allFiles.filter(shouldPublish);
+const scopedFiles = allFiles.filter((filePath) => {
+  const relativePath = path.relative(vaultPath, filePath);
+  return allowedTopLevel.has(relativePath.split(path.sep)[0]);
+});
+const files = scopedFiles.filter(shouldPublish);
 const posts = files
   .map((filePath) => {
     const content = fs.readFileSync(filePath, "utf8");
@@ -145,7 +152,7 @@ const posts = files
   })
   .sort((a, b) => b.date.localeCompare(a.date) || a.source.localeCompare(b.source, "zh-CN"));
 
-const topCounts = allFiles.reduce((acc, filePath) => {
+const topCounts = scopedFiles.reduce((acc, filePath) => {
   const relativePath = path.relative(vaultPath, filePath);
   const top = relativePath.split(path.sep)[0];
   acc[top] = (acc[top] || 0) + 1;
@@ -153,6 +160,7 @@ const topCounts = allFiles.reduce((acc, filePath) => {
 }, {});
 
 const latestDate = allFiles
+  .filter((filePath) => scopedFiles.includes(filePath))
   .map((filePath) => toDate(filePath))
   .sort()
   .at(-1);
@@ -160,7 +168,7 @@ const latestDate = allFiles
 const data = `window.vaultStats = ${JSON.stringify(
   {
     vaultPath,
-    totalNotes: allFiles.length,
+    totalNotes: scopedFiles.length,
     publishableNotes: posts.length,
     focusCount: Object.keys(topCounts).length,
     latestDate,
