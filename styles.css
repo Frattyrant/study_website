@@ -419,7 +419,10 @@ h3 {
   display: flex;
   flex-direction: column;
   padding: 22px;
+  color: inherit;
+  text-align: left;
   overflow: hidden;
+  cursor: pointer;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -430,6 +433,12 @@ h3 {
   transform: translateY(-4px);
   border-color: color-mix(in srgb, var(--green) 68%, var(--line));
   box-shadow: 0 14px 36px rgba(47, 125, 92, 0.13);
+}
+
+.article-card:focus-visible,
+.back-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--green) 62%, transparent);
+  outline-offset: 3px;
 }
 
 .article-topline,
@@ -505,6 +514,125 @@ h3 {
   border-radius: 6px;
   color: var(--blue);
   font-size: 0.78rem;
+}
+
+.read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--green-dark);
+  font-weight: 800;
+}
+
+.read-more i {
+  width: 18px;
+  height: 18px;
+}
+
+.note-detail {
+  scroll-margin-top: 96px;
+}
+
+.back-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.back-button:hover {
+  border-color: var(--green);
+  color: var(--green-dark);
+  background: var(--surface-strong);
+}
+
+.back-button i {
+  width: 18px;
+  height: 18px;
+}
+
+.note-paper {
+  padding: clamp(22px, 4vw, 44px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 14px 36px rgba(23, 32, 28, 0.08);
+}
+
+.note-paper h2 {
+  max-width: 900px;
+  overflow-wrap: anywhere;
+}
+
+.note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.note-meta span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.note-body {
+  max-width: 880px;
+  margin-top: 30px;
+  color: var(--text);
+}
+
+.note-body h3,
+.note-body h4,
+.note-body h5 {
+  margin: 30px 0 10px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.note-body p,
+.note-body li {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.note-body ul {
+  padding-left: 1.2rem;
+}
+
+.note-body code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--surface-strong);
+  color: var(--coral);
+  font-size: 0.92em;
+}
+
+.note-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0f1713;
+  color: #f1f6f3;
+}
+
+.note-body pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
 }
 
 .empty-state {

@@ -9,3 +9,10 @@
 项目复盘(需要斟酌)
 
 个人日记之类的balabala以后再考虑吧
+
+
+obsidian同步:
+
+```powershell
+node .\tools\sync-obsidian.js
+```

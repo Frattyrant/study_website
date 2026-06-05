@@ -4,11 +4,21 @@ const vaultStats = window.vaultStats || {};
 const tagList = ["全部", ...Array.from(new Set(posts.flatMap((post) => post.tags)))];
 let activeTag = "全部";
 let query = "";
+let selectedPost = null;
 
 const grid = document.querySelector("#articleGrid");
 const filterRow = document.querySelector("#filterRow");
 const searchInput = document.querySelector("#searchInput");
 const emptyState = document.querySelector("#emptyState");
+const noteDetail = document.querySelector("#noteDetail");
+const backToArticles = document.querySelector("#backToArticles");
+const detailType = document.querySelector("#detailType");
+const detailDate = document.querySelector("#detailDate");
+const detailTitle = document.querySelector("#detailTitle");
+const detailMinutes = document.querySelector("#detailMinutes");
+const detailSource = document.querySelector("#detailSource");
+const detailTags = document.querySelector("#detailTags");
+const detailBody = document.querySelector("#detailBody");
 const articleCount = document.querySelector("#articleCount");
 const vaultNoteCount = document.querySelector("#vaultNoteCount");
 const focusCount = document.querySelector("#focusCount");
@@ -31,9 +41,91 @@ function getFilteredPosts() {
   const normalizedQuery = query.trim().toLowerCase();
   return posts.filter((post) => {
     const matchesTag = activeTag === "全部" || post.tags.includes(activeTag);
-    const searchable = `${post.title} ${post.type} ${post.summary} ${post.tags.join(" ")}`.toLowerCase();
+    const searchable = `${post.title} ${post.type} ${post.summary} ${post.source || ""} ${post.tags.join(" ")}`.toLowerCase();
     return matchesTag && (!normalizedQuery || searchable.includes(normalizedQuery));
   });
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function inlineMarkdown(value) {
+  return escapeHtml(value)
+    .replace(/\[\[([^|\]]+\|)?([^\]]+)]]/g, "$2")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[([^\]]+)]\(([^)]+)\)/g, "$1");
+}
+
+function markdownToHtml(markdown) {
+  const lines = (markdown || "这篇笔记还没有可展示的正文。").split("\n");
+  const html = [];
+  let inCode = false;
+  let codeLines = [];
+  let listOpen = false;
+
+  function closeList() {
+    if (listOpen) {
+      html.push("</ul>");
+      listOpen = false;
+    }
+  }
+
+  for (const line of lines) {
+    if (line.trim().startsWith("```")) {
+      if (inCode) {
+        html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+        codeLines = [];
+        inCode = false;
+      } else {
+        closeList();
+        inCode = true;
+      }
+      continue;
+    }
+
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+
+    const trimmed = line.trim();
+    if (!trimmed) {
+      closeList();
+      continue;
+    }
+
+    if (/^#{2,4}\s+/.test(trimmed)) {
+      closeList();
+      const level = Math.min(4, trimmed.match(/^#+/)[0].length + 1);
+      html.push(`<h${level}>${inlineMarkdown(trimmed.replace(/^#+\s+/, ""))}</h${level}>`);
+      continue;
+    }
+
+    if (/^[-*]\s+/.test(trimmed)) {
+      if (!listOpen) {
+        html.push("<ul>");
+        listOpen = true;
+      }
+      html.push(`<li>${inlineMarkdown(trimmed.replace(/^[-*]\s+/, ""))}</li>`);
+      continue;
+    }
+
+    closeList();
+    html.push(`<p>${inlineMarkdown(trimmed)}</p>`);
+  }
+
+  closeList();
+  if (inCode) {
+    html.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+  }
+  return html.join("");
 }
 
 function renderPosts() {
@@ -47,7 +139,7 @@ function renderPosts() {
   grid.innerHTML = filtered
     .map(
       (post) => `
-        <article class="article-card">
+        <button class="article-card" type="button" data-slug="${post.slug}" aria-label="阅读 ${escapeHtml(post.title)}">
           <div class="article-topline">
             <span class="article-type">${post.type}</span>
             <time class="article-date" datetime="${post.date}">${post.date}</time>
@@ -69,7 +161,11 @@ function renderPosts() {
           <div class="article-tags">
             ${post.tags.map((tag) => `<span>${tag}</span>`).join("")}
           </div>
-        </article>
+          <span class="read-more">
+            阅读笔记
+            <i data-lucide="arrow-right"></i>
+          </span>
+        </button>
       `,
     )
     .join("");
@@ -77,6 +173,36 @@ function renderPosts() {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+}
+
+function renderDetail(post) {
+  selectedPost = post;
+  if (!post) {
+    noteDetail.hidden = true;
+    return;
+  }
+
+  detailType.textContent = post.type;
+  detailDate.textContent = post.date;
+  detailDate.dateTime = post.date;
+  detailTitle.textContent = post.title;
+  detailMinutes.textContent = `${post.minutes} 分钟阅读`;
+  detailSource.textContent = post.source || "";
+  detailTags.innerHTML = post.tags.map((tag) => `<span>${tag}</span>`).join("");
+  detailBody.innerHTML = markdownToHtml(post.body);
+  noteDetail.hidden = false;
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  noteDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function selectPostBySlug(slug) {
+  const normalized = slug?.replace(/^note-/, "");
+  const post = posts.find((item) => item.slug === normalized);
+  renderDetail(post);
 }
 
 function setTheme(nextTheme) {
@@ -96,6 +222,19 @@ filterRow.addEventListener("click", (event) => {
   renderPosts();
 });
 
+grid.addEventListener("click", (event) => {
+  const card = event.target.closest(".article-card[data-slug]");
+  if (!card) return;
+  window.location.hash = `note-${card.dataset.slug}`;
+});
+
+backToArticles.addEventListener("click", () => {
+  selectedPost = null;
+  noteDetail.hidden = true;
+  window.location.hash = "articles";
+  document.querySelector("#articles").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
 searchInput.addEventListener("input", (event) => {
   query = event.target.value;
   renderPosts();
@@ -112,3 +251,13 @@ const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 setTheme(savedTheme || (prefersDark ? "dark" : "light"));
 renderFilters();
 renderPosts();
+
+window.addEventListener("hashchange", () => {
+  if (window.location.hash.startsWith("#note-")) {
+    selectPostBySlug(window.location.hash.slice(1));
+  }
+});
+
+if (window.location.hash.startsWith("#note-")) {
+  selectPostBySlug(window.location.hash.slice(1));
+}

@@ -128,6 +128,26 @@
         <p class="empty-state" id="emptyState" hidden>没有匹配的内容，换个关键词试试。</p>
       </section>
 
+      <section class="section-shell note-detail" id="noteDetail" hidden aria-live="polite">
+        <button class="back-button" id="backToArticles" type="button">
+          <i data-lucide="arrow-left"></i>
+          返回文章索引
+        </button>
+        <article class="note-paper">
+          <div class="article-topline">
+            <span class="article-type" id="detailType"></span>
+            <time class="article-date" id="detailDate"></time>
+          </div>
+          <h2 id="detailTitle"></h2>
+          <div class="note-meta">
+            <span id="detailMinutes"></span>
+            <span id="detailSource"></span>
+          </div>
+          <div class="article-tags" id="detailTags"></div>
+          <div class="note-body" id="detailBody"></div>
+        </article>
+      </section>
+
       <section class="section-shell roadmap" id="roadmap">
         <div class="section-heading">
           <div>

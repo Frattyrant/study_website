@@ -28,6 +28,25 @@ function cleanMarkdown(value) {
     .trim();
 }
 
+function slugFrom(value) {
+  return value
+    .toLowerCase()
+    .replace(/\.md$/i, "")
+    .replace(/[\\/\s_]+/g, "-")
+    .replace(/[^\w\u4e00-\u9fa5-]+/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 90);
+}
+
+function detailMarkdown(content, title) {
+  return content
+    .replace(/^#\s+.+$/m, "")
+    .trim()
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
 function firstParagraphAfter(content, heading) {
   const pattern = new RegExp(`##\\s*${heading}([\\s\\S]*?)(?=\\n##\\s|$)`);
   const match = content.match(pattern);
@@ -113,6 +132,7 @@ const posts = files
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
     const title = titleFrom(content, filePath);
     return {
+      slug: slugFrom(relativePath),
       title,
       type: inferType(relativePath, title),
       date: toDate(filePath),
@@ -120,6 +140,7 @@ const posts = files
       tags: inferTags(relativePath, title, content),
       summary: summaryFrom(content, title),
       source: relativePath,
+      body: detailMarkdown(content, title),
     };
   })
   .sort((a, b) => b.date.localeCompare(a.date) || a.source.localeCompare(b.source, "zh-CN"));
