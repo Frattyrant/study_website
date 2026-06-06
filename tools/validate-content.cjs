@@ -20,6 +20,34 @@ for (const [index, post] of data.posts.entries()) {
   slugs.add(post.slug);
 }
 
+const noteSlugs = new Set();
+function validateCategoryNode(node, isRoot = false) {
+  if (!["root", "module", "note"].includes(node.kind)) {
+    throw new Error(`Category "${node.label}" has an invalid kind: ${node.kind}`);
+  }
+  if (isRoot && node.kind !== "root") {
+    throw new Error("The category tree root must use kind=root.");
+  }
+  if (!isRoot && node.kind === "root") {
+    throw new Error(`Only the category tree root may use kind=root: ${node.label}`);
+  }
+  if (node.kind === "note") {
+    if (!node.postSlug || !slugs.has(node.postSlug)) {
+      throw new Error(`Note category "${node.label}" has an invalid postSlug.`);
+    }
+    if (node.children.length > 0) {
+      throw new Error(`Note category "${node.label}" cannot have children.`);
+    }
+    noteSlugs.add(node.postSlug);
+  }
+  for (const child of node.children) validateCategoryNode(child);
+}
+
+validateCategoryNode(data.vaultStats.categoryTree, true);
+if (noteSlugs.size !== data.posts.length) {
+  throw new Error("Every post must appear exactly once as a note leaf in the category tree.");
+}
+
 if (data.vaultStats.publishableNotes !== data.posts.length) {
   throw new Error("publishableNotes does not match the generated post count.");
 }

@@ -136,7 +136,7 @@ const posts = files
     const content = fs.readFileSync(filePath, "utf8");
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
     const title = titleFrom(content, filePath);
-    const categoryPath = moduleRegistry.categoryPathFor(relativePath, title);
+    const categoryPath = moduleRegistry.categoryPathFor(relativePath);
     return {
       slug: slugFrom(relativePath),
       title,

@@ -9,7 +9,7 @@ interface CategoryTreeProps {
   activeCategory: string;
   expandedCategories: Set<string>;
   level?: number;
-  onSelect: (category: string) => void;
+  onSelect: (category: CategoryNode) => void;
   onToggle: (category: string) => void;
 }
 
@@ -21,9 +21,8 @@ export function CategoryTree({
   onSelect,
   onToggle,
 }: CategoryTreeProps) {
-  const hasChildren = node.children.length > 0;
-  const isRoot = level === 0;
-  const isExpanded = isRoot || expandedCategories.has(node.key);
+  const isDirectory = node.kind !== "note";
+  const isExpanded = expandedCategories.has(node.key);
   const childrenId = `category-children-${encodeURIComponent(node.key)}`;
 
   return (
@@ -32,7 +31,7 @@ export function CategoryTree({
         className="grid grid-cols-[28px_1fr] items-center gap-1"
         style={{ paddingLeft: `${level * 16}px` }}
       >
-        {hasChildren && !isRoot ? (
+        {isDirectory ? (
           <button
             className="grid h-9 w-8 cursor-pointer place-items-center rounded-lg text-muted transition hover:bg-surface-strong hover:text-green-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
             type="button"
@@ -57,13 +56,13 @@ export function CategoryTree({
               : "border-transparent text-muted hover:border-green hover:bg-surface-strong hover:text-green-dark"
           }`}
           type="button"
-          onClick={() => onSelect(node.key)}
+          onClick={() => onSelect(node)}
         >
           <span>{node.label}</span>
           <small className="text-xs">{node.count}</small>
         </button>
       </div>
-      {hasChildren && isExpanded ? (
+      {isDirectory && isExpanded && node.children.length > 0 ? (
         <div className="grid gap-1" id={childrenId}>
           {node.children.map((child) => (
             <CategoryTree

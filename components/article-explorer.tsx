@@ -1,8 +1,10 @@
 "use client";
 
 import { Search } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useState, type ReactNode } from "react";
 
+import siteBackground from "@/public/images/pawn-site-background.jpg";
 import { ArticleCard } from "@/components/article-card";
 import { CategoryTree } from "@/components/category-tree";
 import type { Post, VaultStats } from "@/lib/types";
@@ -13,14 +15,15 @@ interface ArticleExplorerProps {
 }
 
 export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
-  const [activeCategory, setActiveCategory] = useState(stats.categoryTree.key);
+  const [activeCategory, setActiveCategory] = useState(stats.categoryTree);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () =>
-      new Set(
-        stats.categoryTree.children
-          .filter((category) => category.children.length > 0)
+      new Set([
+        stats.categoryTree.key,
+        ...stats.categoryTree.children
+          .filter((category) => category.kind === "module")
           .map((category) => category.key),
-      ),
+      ]),
   );
   const [query, setQuery] = useState("");
 
@@ -28,9 +31,11 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
     const normalizedQuery = query.trim().toLocaleLowerCase("zh-CN");
     return posts.filter((post) => {
       const matchesCategory =
-        activeCategory === stats.categoryTree.key ||
-        post.category === activeCategory ||
-        post.category.startsWith(`${activeCategory}/`);
+        activeCategory.kind === "root" ||
+        (activeCategory.kind === "note"
+          ? post.slug === activeCategory.postSlug
+          : post.category === activeCategory.key ||
+            post.category.startsWith(`${activeCategory.key}/`));
       const searchable = [
         post.title,
         post.type,
@@ -42,7 +47,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         .toLocaleLowerCase("zh-CN");
       return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
     });
-  }, [activeCategory, posts, query, stats.categoryTree.key]);
+  }, [activeCategory, posts, query]);
 
   const toggleCategory = (category: string) => {
     setExpandedCategories((current) => {
@@ -55,30 +60,42 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
 
   return (
     <section className="mx-auto mt-14 w-[min(1180px,calc(100%-36px))] pb-20" id="articles">
-      <div className="mb-6 flex items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
-        <div>
-          <p className="mb-3 text-xs font-extrabold uppercase text-green">Articles</p>
-          <h1 className="text-3xl font-bold sm:text-4xl">pawn的个人学习网站</h1>
-          <p className="mt-4 max-w-3xl text-muted">
-            记录学习IT过程
-          </p>
+      <div className="relative mb-6 min-h-80 overflow-hidden rounded-xl border border-line shadow-[0_18px_50px_rgba(23,32,28,0.14)]">
+        <Image
+          className="object-cover object-center"
+          src={siteBackground}
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 1200px) 100vw, 1180px"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,8,38,0.82),rgba(32,12,54,0.46)_58%,rgba(32,12,54,0.16))]" />
+        <div className="relative z-10 flex min-h-80 items-end justify-between gap-8 p-[clamp(24px,5vw,56px)] max-md:flex-col max-md:items-stretch max-md:justify-end">
+          <div className="text-white">
+            <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-yellow-300">
+              Notes
+            </p>
+            <h1 className="text-3xl font-bold drop-shadow-sm sm:text-5xl">
+              pawn的个人学习网站
+            </h1>
+            <p className="mt-4 max-w-2xl text-white/85">记录学习 IT 的过程</p>
+          </div>
+          <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm max-md:max-w-none">
+            <Search className="shrink-0 text-slate-600" size={20} />
+            <input
+              className="min-w-0 flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-500"
+              type="search"
+              placeholder="搜索笔记..."
+              autoComplete="off"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
         </div>
-        <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-line bg-surface px-3.5 max-sm:max-w-none">
-          <Search className="shrink-0 text-muted" size={20} />
-          <input
-            className="min-w-0 flex-1 bg-transparent text-text outline-none"
-            type="search"
-            placeholder="想搜啥?"
-            autoComplete="off"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
       </div>
 
       <div className="mb-5.5 flex flex-wrap gap-2.5" aria-label="笔记统计">
-        <StatChip><strong>{posts.length}</strong> 篇文章</StatChip>
-        <StatChip><strong>{stats.totalNotes || posts.length}</strong> 篇笔记</StatChip>
+        <StatChip><strong>{stats.publishableNotes || posts.length}</strong> 篇笔记</StatChip>
         <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
         <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
       </div>
@@ -89,7 +106,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           <div className="grid gap-1">
             <CategoryTree
               node={stats.categoryTree}
-              activeCategory={activeCategory}
+              activeCategory={activeCategory.key}
               expandedCategories={expandedCategories}
               onSelect={setActiveCategory}
               onToggle={toggleCategory}

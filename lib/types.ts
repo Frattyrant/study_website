@@ -2,6 +2,8 @@ export interface CategoryNode {
   key: string;
   label: string;
   count: number;
+  kind: "root" | "module" | "note";
+  postSlug?: string;
   children: CategoryNode[];
 }
 

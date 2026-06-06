@@ -50,17 +50,19 @@ class KnowledgeModuleRegistry {
     return modulePaths;
   }
 
-  categoryPathFor(relativePath, title) {
+  categoryPathFor(relativePath) {
     const parts = relativePath.split(/[\\/]/).filter(Boolean);
-    const directories = parts.slice(0, -1);
-
-    // Direct notes are selectable leaves; notes inside modules only affect counts.
-    if (directories.length === 1) return [...directories, title];
-    return directories;
+    return parts.slice(0, -1);
   }
 
   buildCategoryTree(posts, modulePaths = []) {
-    const root = { key: "全部", label: "全部", count: posts.length, children: [] };
+    const root = {
+      key: "全部",
+      label: "全部",
+      count: posts.length,
+      kind: "root",
+      children: [],
+    };
     const nodeMap = new Map([[root.key, root]]);
 
     const ensurePath = (pathParts, incrementCount) => {
@@ -69,7 +71,13 @@ class KnowledgeModuleRegistry {
         const currentParts = pathParts.slice(0, index + 1);
         const key = currentParts.join("/");
         if (!nodeMap.has(key)) {
-          const node = { key, label: currentParts.at(-1), count: 0, children: [] };
+          const node = {
+            key,
+            label: currentParts.at(-1),
+            count: 0,
+            kind: "module",
+            children: [],
+          };
           nodeMap.set(key, node);
           parent.children.push(node);
         }
@@ -85,17 +93,28 @@ class KnowledgeModuleRegistry {
 
     for (const post of posts) {
       ensurePath(post.categoryPath, true);
+      const parent = nodeMap.get(post.category);
+      if (!parent) continue;
+      parent.children.push({
+        key: `note:${post.slug}`,
+        label: post.title,
+        count: 1,
+        kind: "note",
+        postSlug: post.slug,
+        children: [],
+      });
     }
 
     const sortChildren = (node, level = 0) => {
-      node.children.sort((a, b) =>
-        level === 0
+      node.children.sort((a, b) => {
+        if (a.kind !== b.kind) return a.kind === "note" ? 1 : -1;
+        return level === 0
           ? this.compareLabels(a.label, b.label)
           : a.label.localeCompare(b.label, "zh-CN", {
               numeric: true,
               sensitivity: "base",
-            }),
-      );
+            });
+      });
       node.children.forEach((child) => sortChildren(child, level + 1));
     };
 

@@ -24,7 +24,7 @@ node .\tools\sync-obsidian.cjs "D:\path\to\vault"
 ### 知识模块自动注册
 
 - Vault 顶层知识目录会自动注册为公开知识域。
-- 知识域中的子文件夹会递归注册为可展开模块。
-- 模块内新增 Markdown 笔记只增加文章和模块计数，不会生成额外下拉层级。
+- `全部` 和知识域中的所有目录都会注册为可展开节点。
+- Markdown 笔记显示在所属目录下，作为没有下拉按钮的叶子节点。
 - `学习方向`、`问题记录` 和隐藏目录默认不公开；可在
   `tools/knowledge-module-registry.cjs` 的 `ignoredRoots` 中调整。

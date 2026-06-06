@@ -13,22 +13,44 @@
       "key": "全部",
       "label": "全部",
       "count": 34,
+      "kind": "root",
       "children": [
         {
           "key": "Linux入门",
           "label": "Linux入门",
           "count": 3,
+          "kind": "module",
           "children": [
-            {
-              "key": "Linux入门/常用命令",
-              "label": "常用命令",
-              "count": 1,
-              "children": []
-            },
             {
               "key": "Linux入门/问题记录",
               "label": "问题记录",
               "count": 2,
+              "kind": "module",
+              "children": [
+                {
+                  "key": "note:linux入门-问题记录-venv-激活",
+                  "label": "venv 激活",
+                  "count": 1,
+                  "kind": "note",
+                  "postSlug": "linux入门-问题记录-venv-激活",
+                  "children": []
+                },
+                {
+                  "key": "note:linux入门-问题记录-wsl代理-apt和docker下载卡住",
+                  "label": "WSL代理 apt和Docker下载卡住",
+                  "count": 1,
+                  "kind": "note",
+                  "postSlug": "linux入门-问题记录-wsl代理-apt和docker下载卡住",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "key": "note:linux入门-常用命令",
+              "label": "常用命令",
+              "count": 1,
+              "kind": "note",
+              "postSlug": "linux入门-常用命令",
               "children": []
             }
           ]
@@ -37,21 +59,42 @@
           "key": "PYTHON后端",
           "label": "PYTHON后端",
           "count": 31,
+          "kind": "module",
           "children": [
             {
               "key": "PYTHON后端/DB",
               "label": "DB",
               "count": 2,
+              "kind": "module",
               "children": [
                 {
                   "key": "PYTHON后端/DB/数据库相关学习",
                   "label": "数据库相关学习",
                   "count": 2,
+                  "kind": "module",
                   "children": [
                     {
                       "key": "PYTHON后端/DB/数据库相关学习/问题记录",
                       "label": "问题记录",
                       "count": 1,
+                      "kind": "module",
+                      "children": [
+                        {
+                          "key": "note:python后端-db-数据库相关学习-问题记录-sqlite锁冲突问题",
+                          "label": "SQlite锁冲突问题",
+                          "count": 1,
+                          "kind": "note",
+                          "postSlug": "python后端-db-数据库相关学习-问题记录-sqlite锁冲突问题",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "key": "note:python后端-db-数据库相关学习-mysql",
+                      "label": "MYSQL",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-db-数据库相关学习-mysql",
                       "children": []
                     }
                   ]
@@ -62,30 +105,127 @@
               "key": "PYTHON后端/Docker",
               "label": "Docker",
               "count": 11,
+              "kind": "module",
               "children": [
                 {
                   "key": "PYTHON后端/Docker/01-Docker基础",
                   "label": "01-Docker基础",
                   "count": 4,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-docker-01-docker基础-docker安装与hello-world验证-wsl",
+                      "label": "Docker 安装与 hello world 验证：WSL",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-01-docker基础-docker安装与hello-world验证-wsl",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-01-docker基础-docker后台运行与exec进入容器",
+                      "label": "Docker后台运行与exec进入容器",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-01-docker基础-docker后台运行与exec进入容器",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-01-docker基础-docker容器管理-查看启动日志停止删除",
+                      "label": "Docker容器管理 查看启动日志停止删除",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-01-docker基础-docker容器管理-查看启动日志停止删除",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-01-docker基础-nginx端口映射-8080到80",
+                      "label": "Nginx端口映射 8080到80",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-01-docker基础-nginx端口映射-8080到80",
+                      "children": []
+                    }
+                  ]
                 },
                 {
                   "key": "PYTHON后端/Docker/02-Dockerfile",
                   "label": "02-Dockerfile",
                   "count": 4,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-docker-02-dockerfile-镜像重建与dockerignore",
+                      "label": "镜像重建与dockerignore",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-02-dockerfile-镜像重建与dockerignore",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-02-dockerfile-docker-build-构建fastapi镜像",
+                      "label": "docker build 构建FastAPI镜像",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-02-dockerfile-docker-build-构建fastapi镜像",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-02-dockerfile-docker-run-运行fastapi容器",
+                      "label": "docker run 运行FastAPI容器",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-02-dockerfile-docker-run-运行fastapi容器",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-02-dockerfile-dockerfile-准备fastapi构建文件",
+                      "label": "Dockerfile 准备FastAPI构建文件",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-02-dockerfile-dockerfile-准备fastapi构建文件",
+                      "children": []
+                    }
+                  ]
                 },
                 {
                   "key": "PYTHON后端/Docker/03-Docker-Compose",
                   "label": "03-Docker-Compose",
                   "count": 2,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-docker-03-docker-compose-bind-mount-开发时同步代码",
+                      "label": "Bind Mount：开发时同步代码",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-03-docker-compose-bind-mount-开发时同步代码",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-docker-03-docker-compose-composeyaml-管理fastapi服务",
+                      "label": "compose.yaml 管理FastAPI服务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-03-docker-compose-composeyaml-管理fastapi服务",
+                      "children": []
+                    }
+                  ]
                 },
                 {
                   "key": "PYTHON后端/Docker/04-docker+fastapi",
                   "label": "04-docker+fastapi",
                   "count": 1,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-docker-04-dockerfastapi-fastapi-通过docker运行crud",
+                      "label": "FastAPI：通过 Docker 运行 CRUD",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-docker-04-dockerfastapi-fastapi-通过docker运行crud",
+                      "children": []
+                    }
+                  ]
                 }
               ]
             },
@@ -93,29 +233,182 @@
               "key": "PYTHON后端/FASTAPI",
               "label": "FASTAPI",
               "count": 18,
+              "kind": "module",
               "children": [
                 {
                   "key": "PYTHON后端/FASTAPI/请求响应模型",
                   "label": "请求响应模型",
                   "count": 5,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-fastapi-请求响应模型-patch-tasks-task-id-局部更新任务",
+                      "label": "PATCH tasks task_id 局部更新任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-请求响应模型-patch-tasks-task-id-局部更新任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-请求响应模型-response-model-完整规范所有接口",
+                      "label": "response_model 完整规范所有接口",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-请求响应模型-response-model-完整规范所有接口",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-请求响应模型-schemas-拼写错误导致forwardref报错",
+                      "label": "schemas 拼写错误导致ForwardRef报错",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-请求响应模型-schemas-拼写错误导致forwardref报错",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-请求响应模型-schemaspy-拆分请求模型",
+                      "label": "schemas.py 拆分请求模型",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-请求响应模型-schemaspy-拆分请求模型",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-请求响应模型-schemaspy-添加响应模型",
+                      "label": "schemas.py 添加响应模型",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-请求响应模型-schemaspy-添加响应模型",
+                      "children": []
+                    }
+                  ]
                 },
                 {
                   "key": "PYTHON后端/FASTAPI/数据库接入",
                   "label": "数据库接入",
                   "count": 9,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-delete-tasks-task-id-删除数据库任务",
+                      "label": "DELETE tasks task_id 删除数据库任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-delete-tasks-task-id-删除数据库任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-get-tasks-查询数据库任务",
+                      "label": "GET tasks 查询数据库任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-get-tasks-查询数据库任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-get-tasks-task-id-查询单个数据库任务",
+                      "label": "GET tasks task_id 查询单个数据库任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-get-tasks-task-id-查询单个数据库任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-get-db-数据库会话依赖",
+                      "label": "get_db 数据库会话依赖",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-get-db-数据库会话依赖",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-mainpy-自动创建数据库表",
+                      "label": "main.py 自动创建数据库表",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-mainpy-自动创建数据库表",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-modelspy-定义任务表模型",
+                      "label": "models.py 定义任务表模型",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-modelspy-定义任务表模型",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-post-tasks-新增数据库任务",
+                      "label": "POST tasks 新增数据库任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-post-tasks-新增数据库任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-put-tasks-task-id-更新数据库任务",
+                      "label": "PUT tasks task_id 更新数据库任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-put-tasks-task-id-更新数据库任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-数据库接入-databasepy-数据库连接配置",
+                      "label": "SQLite 数据库地址",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-数据库接入-databasepy-数据库连接配置",
+                      "children": []
+                    }
+                  ]
                 },
                 {
                   "key": "PYTHON后端/FASTAPI/CRUD接口",
                   "label": "CRUD接口",
                   "count": 2,
-                  "children": []
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-fastapi-crud接口-delete-tasks-task-id-删除任务",
+                      "label": "DELETE tasks task_id 删除任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-crud接口-delete-tasks-task-id-删除任务",
+                      "children": []
+                    },
+                    {
+                      "key": "note:python后端-fastapi-crud接口-put-tasks-task-id-更新任务",
+                      "label": "PUT 更新任务",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-crud接口-put-tasks-task-id-更新任务",
+                      "children": []
+                    }
+                  ]
                 },
                 {
                   "key": "PYTHON后端/FASTAPI/routers",
                   "label": "routers",
                   "count": 1,
+                  "kind": "module",
+                  "children": [
+                    {
+                      "key": "note:python后端-fastapi-routers-routers-taskspy-迁移任务接口",
+                      "label": "routers tasks.py 迁移任务接口",
+                      "count": 1,
+                      "kind": "note",
+                      "postSlug": "python后端-fastapi-routers-routers-taskspy-迁移任务接口",
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "key": "note:python后端-fastapi-logic",
+                  "label": "LOGIC",
+                  "count": 1,
+                  "kind": "note",
+                  "postSlug": "python后端-fastapi-logic",
                   "children": []
                 }
               ]
@@ -124,6 +417,7 @@
               "key": "PYTHON后端/Redis + Celery",
               "label": "Redis + Celery",
               "count": 0,
+              "kind": "module",
               "children": []
             }
           ]
@@ -756,14 +1050,11 @@
       "type": "Linux",
       "date": "2026-06-02",
       "minutes": 6,
-      "category": "Linux入门/常用命令",
+      "category": "Linux入门",
       "categoryPath": [
-        "Linux入门",
-        "常用命令"
+        "Linux入门"
       ],
-      "tags": [
-        "常用命令"
-      ],
+      "tags": [],
       "summary": "分类 命令 作用 常用示例 示例说明",
       "source": "Linux入门\\常用命令.md",
       "body": "| 分类    | *==**命令**==*                 | 作用          | 常用示例                               | 示例说明                |\n| ----- | ---------------------------- | ----------- | ---------------------------------- | ------------------- |\n| 文件/目录 | *==**`pwd`**==*              | 查看当前路径      | `pwd`                              | 显示当前所在目录            |\n| 文件/目录 | *==**`ls`**==*               | 查看目录内容      | `ls -l`                            | 以详细列表方式显示           |\n| 文件/目录 | *==**`ls -a`**==*            | 查看隐藏文件      | `ls -a`                            | 显示 `.git` 等隐藏文件     |\n| 文件/目录 | *==**`cd`**==*               | 切换目录        | `cd /home/user`                    | 进入指定目录              |\n| 文件/目录 | *==**`cd ..`**==*            | 返回上一级       | `cd ..`                            | 返回父目录               |\n| 文件/目录 | *==**`mkdir`**==*            | 创建目录        | `mkdir project`                    | 创建 `project` 文件夹    |\n| 文件/目录 | *==**`touch`**==*            | 创建文件        | `touch app.py`                     | 创建空文件               |\n| 文件/目录 | *==**`cp`**==*               | 复制文件/目录     | `cp a.txt b.txt`                   | 复制文件                |\n| 文件/目录 | *==**`cp -r`**==*            | 复制目录        | `cp -r src backup`                 | 递归复制目录              |\n| 文件/目录 | *==**`mv`**==*               | 移动/重命名      | `mv old.txt new.txt`               | 重命名文件               |\n| 文件/目录 | *==**`rm`**==*               | 删除文件        | `rm test.txt`                      | 删除文件                |\n| 文件/目录 | *==**`rm -r`**==*            | 删除目录        | `rm -r temp`                       | 删除目录及内容             |\n| 文件/目录 | *==**`find`**==*             | 查找文件        | `find . -name \"*.py\"`              | 查找当前目录下所有 Python 文件 |\n| 文件/目录 | *==**`tree`**==*             | 树状显示目录      | `tree`                             | 需要先安装               |\n| 文件查看  | *==**`cat`**==*              | 查看文件内容      | `cat app.py`                       | 输出整个文件              |\n| 文件查看  | *==**`less`**==*             | 分页查看文件      | `less log.txt`                     | 适合查看长日志             |\n| 文件查看  | *==**`head`**==*             | 查看前几行       | `head -n 10 log.txt`               | 查看前 10 行            |\n| 文件查看  | *==**`tail`**==*             | 查看后几行       | `tail -n 20 log.txt`               | 查看后 20 行            |\n| 文件查看  | *==**`tail -f`**==*          | 实时查看日志      | `tail -f app.log`                  | 动态跟踪日志              |\n| 文件查看  | *==**`grep`**==*             | 搜索文本        | `grep \"error\" app.log`             | 查找包含 error 的行       |\n| 文件查看  | *==**`wc`**==*               | 统计行数/单词数    | `wc -l app.py`                     | 统计行数                |\n| 权限管理  | *==**`chmod`**==*            | 修改权限        | `chmod +x run.sh`                  | 增加执行权限              |\n| 权限管理  | *==**`chown`**==*            | 修改所有者       | `sudo chown user:user file.txt`    | 修改文件拥有者             |\n| 系统信息  | *==**`uname -a`**==*         | 查看系统信息      | `uname -a`                         | 查看内核和系统版本           |\n| 系统信息  | *==**`top`**==*              | 查看进程占用      | `top`                              | 类似任务管理器             |\n| 系统信息  | *==**`htop`**==*             | 增强版进程查看     | `htop`                             | 更友好，需要安装            |\n| 系统信息  | *==**`df -h`**==*            | 查看磁盘空间      | `df -h`                            | 人类可读格式              |\n| 系统信息  | *==**`du -sh`**==*           | 查看目录大小      | `du -sh project/`                  | 查看项目占用空间            |\n| 系统信息  | *==**`free -h`**==*          | 查看内存        | `free -h`                          | 查看 RAM 使用情况         |\n| 进程管理  | *==**`ps aux`**==*           | 查看所有进程      | `ps aux                            | grep python`        |\n| 进程管理  | *==**`kill`**==*             | 结束进程        | `kill 1234`                        | 杀死 PID 为 1234 的进程   |\n| 进程管理  | *==**`kill -9`**==*          | 强制结束进程      | `kill -9 1234`                     | 强制杀死进程              |\n| 网络相关  | *==**`ping`**==*             | 测试网络        | `ping baidu.com`                   | 检查网络连接              |\n| 网络相关  | *==**`curl`**==*             | 请求 URL      | `curl https://example.com`         | 获取网页内容              |\n| 网络相关  | *==**`wget`**==*             | 下载文件        | `wget https://example.com/a.zip`   | 下载文件                |\n| 网络相关  | *==**`ssh`**==*              | 远程登录        | `ssh user@192.168.1.10`            | SSH 登录服务器           |\n| 网络相关  | *==**`scp`**==*              | 远程传文件       | `scp a.txt user@ip:/home/user`     | 上传文件                |\n| 压缩解压  | *==**`tar`**==*              | 打包压缩        | `tar -czvf app.tar.gz app/`        | 压缩目录                |\n| 压缩解压  | *==**`tar -xzvf`**==*        | 解压 tar.gz   | `tar -xzvf app.tar.gz`             | 解压文件                |\n| 压缩解压  | *==**`zip`**==*              | zip 压缩      | `zip -r test.zip test/`            | 压缩目录                |\n| 压缩解压  | *==**`unzip`**==*            | 解压 zip      | `unzip test.zip`                   | 解压 zip 文件           |\n| 软件管理  | *==**`sudo apt update`**==*  | 更新软件源       | `sudo apt update`                  | 更新包列表               |\n| 软件管理  | *==**`sudo apt upgrade`**==* | 升级软件        | `sudo apt upgrade`                 | 升级已安装软件             |\n| 软件管理  | *==**`sudo apt install`**==* | 安装软件        | `sudo apt install git`             | 安装 Git              |\n| 软件管理  | *==**`sudo apt remove`**==*  | 卸载软件        | `sudo apt remove git`              | 删除软件                |\n| 开发常用  | *==**`git clone`**==*        | 克隆仓库        | `git clone https://github.com/...` | 下载项目                |\n| 开发常用  | *==**`python3`**==*          | 运行 Python   | `python3 app.py`                   | 执行 Python 程序        |\n| 开发常用  | *==**`pip install`**==*      | 安装 Python 包 | `pip install fastapi`              | 安装依赖                |\n| 开发常用  | *==**`code .`**==*           | VSCode 打开目录 | `code .`                           | 当前目录打开 VSCode       |\n| 开发常用  | *==**`history`**==*          | 查看历史命令      | `history`                          | 查看执行过的命令            |\n| 开发常用  | *==**`clear`**==*            | 清空终端        | `clear`                            | 清屏                  |\n| 开发常用  | *==**`man`**==*              | 查看命令手册      | `man ls`                           | 查看 `ls` 帮助文档        |"
