@@ -61,6 +61,15 @@ function detailMarkdown(content, title) {
     .replace(/\n{3,}/g, "\n\n");
 }
 
+function redactForPublicSite(value) {
+  return value
+    .replace(/https?:\/\/(?:127\.0\.0\.1|localhost|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}):(?:7897|9097)\b/gi, "http://<local-proxy>")
+    .replace(/\b(?:127\.0\.0\.1|localhost|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}):(?:7897|9097)\b/gi, "<local-address>")
+    .replace(/\b((?:HTTP|HTTPS|NO)_PROXY=)([^\s"`]+)/gi, "$1<redacted>")
+    .replace(/\b((?:http|https)_proxy=)([^\s"`]+)/gi, "$1<redacted>")
+    .replace(/\bpassword\s+123456\b/gi, "password <redacted>");
+}
+
 function firstParagraphAfter(content, heading) {
   const pattern = new RegExp(`##\\s*${heading}([\\s\\S]*?)(?=\\n##\\s|$)`);
   const match = content.match(pattern);
@@ -199,9 +208,9 @@ const posts = files
       category: categoryKeyFrom(categoryPath),
       categoryPath,
       tags: categoryPath.slice(1),
-      summary: summaryFrom(content, title),
+      summary: redactForPublicSite(summaryFrom(content, title)),
       source: relativePath,
-      body: detailMarkdown(content, title),
+      body: redactForPublicSite(detailMarkdown(content, title)),
     };
   })
   .sort((a, b) => b.date.localeCompare(a.date) || a.source.localeCompare(b.source, "zh-CN"));
