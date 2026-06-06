@@ -3,20 +3,11 @@
 基于 Next.js App Router、TypeScript 和 Tailwind CSS 的静态学习博客，部署在 GitHub Pages：
 [https://frattyrant.github.io/study_website/](https://frattyrant.github.io/study_website/)
 
-## 本地开发
+## 本地浏览
 
 ```powershell
-npm install
 npm run dev
-```
-
-
-
-```powershell
-npm run validate-content
-npm run typecheck
-npm run lint
-npm run build
+http://localhost:3000
 ```
 
 ## Obsidian 同步
