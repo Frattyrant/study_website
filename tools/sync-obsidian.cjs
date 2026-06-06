@@ -3,7 +3,7 @@ const path = require("node:path");
 
 const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
 const vaultPath = process.argv[2] || defaultVault;
-const outputPath = path.resolve(__dirname, "..", "content.js");
+const outputPath = path.resolve(__dirname, "..", "data", "content.json");
 const allowedTopLevel = new Set(["Linux入门", "PYTHON后端"]);
 const categoryOrder = new Map([
   ["Linux入门", 10],
@@ -53,7 +53,7 @@ function slugFrom(value) {
     .slice(0, 90);
 }
 
-function detailMarkdown(content, title) {
+function detailMarkdown(content) {
   return content
     .replace(/^#\s+.+$/m, "")
     .trim()
@@ -210,7 +210,7 @@ const posts = files
       tags: categoryPath.slice(1),
       summary: redactForPublicSite(summaryFrom(content, title)),
       source: relativePath,
-      body: redactForPublicSite(detailMarkdown(content, title)),
+      body: redactForPublicSite(detailMarkdown(content)),
     };
   })
   .sort((a, b) => b.date.localeCompare(a.date) || a.source.localeCompare(b.source, "zh-CN"));
@@ -228,8 +228,8 @@ const latestDate = allFiles
   .sort()
   .at(-1);
 
-const data = `window.vaultStats = ${JSON.stringify(
-  {
+const data = {
+  vaultStats: {
     vaultPath,
     totalNotes: scopedFiles.length,
     publishableNotes: posts.length,
@@ -238,12 +238,9 @@ const data = `window.vaultStats = ${JSON.stringify(
     topCounts,
     categoryTree: buildCategoryTree(posts),
   },
-  null,
-  2,
-)};
+  posts,
+};
 
-window.learningPosts = ${JSON.stringify(posts, null, 2)};
-`;
-
-fs.writeFileSync(outputPath, data, "utf8");
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+fs.writeFileSync(outputPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 console.log(`Synced ${posts.length} publishable notes from ${allFiles.length} markdown files.`);

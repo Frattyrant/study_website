@@ -1,1 +1,6 @@
 qa/
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
