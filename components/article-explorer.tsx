@@ -14,7 +14,14 @@ interface ArticleExplorerProps {
 
 export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
   const [activeCategory, setActiveCategory] = useState(stats.categoryTree.key);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    () =>
+      new Set(
+        stats.categoryTree.children
+          .filter((category) => category.children.length > 0)
+          .map((category) => category.key),
+      ),
+  );
   const [query, setQuery] = useState("");
 
   const filteredPosts = useMemo(() => {

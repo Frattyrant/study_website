@@ -24,6 +24,7 @@ export function CategoryTree({
   const hasChildren = node.children.length > 0;
   const isRoot = level === 0;
   const isExpanded = isRoot || expandedCategories.has(node.key);
+  const childrenId = `category-children-${encodeURIComponent(node.key)}`;
 
   return (
     <>
@@ -33,10 +34,12 @@ export function CategoryTree({
       >
         {hasChildren && !isRoot ? (
           <button
-            className="grid h-8 w-7 cursor-pointer place-items-center rounded-lg text-muted hover:bg-surface-strong hover:text-green-dark"
+            className="grid h-9 w-8 cursor-pointer place-items-center rounded-lg text-muted transition hover:bg-surface-strong hover:text-green-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
             type="button"
             aria-label={`${isExpanded ? "收起" : "展开"}${node.label}`}
             aria-expanded={isExpanded}
+            aria-controls={childrenId}
+            title={`${isExpanded ? "收起" : "展开"}${node.label}`}
             onClick={() => onToggle(node.key)}
           >
             <ChevronRight
@@ -45,7 +48,7 @@ export function CategoryTree({
             />
           </button>
         ) : (
-          <span className="h-8 w-7" />
+          <span className="h-9 w-8" />
         )}
         <button
           className={`flex min-h-9 w-full cursor-pointer items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 text-left text-sm transition ${
@@ -60,8 +63,9 @@ export function CategoryTree({
           <small className="text-xs">{node.count}</small>
         </button>
       </div>
-      {hasChildren && isExpanded
-        ? node.children.map((child) => (
+      {hasChildren && isExpanded ? (
+        <div className="grid gap-1" id={childrenId}>
+          {node.children.map((child) => (
             <CategoryTree
               key={child.key}
               node={child}
@@ -71,8 +75,9 @@ export function CategoryTree({
               onSelect={onSelect}
               onToggle={onToggle}
             />
-          ))
-        : null}
+          ))}
+        </div>
+      ) : null}
     </>
   );
 }

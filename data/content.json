@@ -20,15 +20,15 @@
           "count": 3,
           "children": [
             {
-              "key": "Linux入门/问题记录",
-              "label": "问题记录",
-              "count": 2,
-              "children": []
-            },
-            {
               "key": "Linux入门/常用命令",
               "label": "常用命令",
               "count": 1,
+              "children": []
+            },
+            {
+              "key": "Linux入门/问题记录",
+              "label": "问题记录",
+              "count": 2,
               "children": []
             }
           ]
@@ -41,19 +41,58 @@
             {
               "key": "PYTHON后端/DB",
               "label": "DB",
-              "count": 1,
-              "children": []
+              "count": 2,
+              "children": [
+                {
+                  "key": "PYTHON后端/DB/数据库相关学习",
+                  "label": "数据库相关学习",
+                  "count": 2,
+                  "children": [
+                    {
+                      "key": "PYTHON后端/DB/数据库相关学习/问题记录",
+                      "label": "问题记录",
+                      "count": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
             },
             {
               "key": "PYTHON后端/Docker",
               "label": "Docker",
               "count": 11,
-              "children": []
+              "children": [
+                {
+                  "key": "PYTHON后端/Docker/01-Docker基础",
+                  "label": "01-Docker基础",
+                  "count": 4,
+                  "children": []
+                },
+                {
+                  "key": "PYTHON后端/Docker/02-Dockerfile",
+                  "label": "02-Dockerfile",
+                  "count": 4,
+                  "children": []
+                },
+                {
+                  "key": "PYTHON后端/Docker/03-Docker-Compose",
+                  "label": "03-Docker-Compose",
+                  "count": 2,
+                  "children": []
+                },
+                {
+                  "key": "PYTHON后端/Docker/04-docker+fastapi",
+                  "label": "04-docker+fastapi",
+                  "count": 1,
+                  "children": []
+                }
+              ]
             },
             {
               "key": "PYTHON后端/FASTAPI",
               "label": "FASTAPI",
-              "count": 19,
+              "count": 18,
               "children": [
                 {
                   "key": "PYTHON后端/FASTAPI/请求响应模型",
@@ -76,10 +115,16 @@
                 {
                   "key": "PYTHON后端/FASTAPI/routers",
                   "label": "routers",
-                  "count": 2,
+                  "count": 1,
                   "children": []
                 }
               ]
+            },
+            {
+              "key": "PYTHON后端/Redis + Celery",
+              "label": "Redis + Celery",
+              "count": 0,
+              "children": []
             }
           ]
         }
@@ -88,148 +133,204 @@
   },
   "posts": [
     {
+      "slug": "linux入门-问题记录-wsl代理-apt和docker下载卡住",
+      "title": "WSL代理 apt和Docker下载卡住",
+      "type": "问题记录",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "Linux入门/问题记录",
+      "categoryPath": [
+        "Linux入门",
+        "问题记录"
+      ],
+      "tags": [
+        "问题记录"
+      ],
+      "summary": "在 WSL2 Ubuntu 26.04 里安装 Docker 时， sudo apt update 出现 Waiting for headers ，Docker 拉取 hello world 镜像时出现 TLS ha",
+      "source": "Linux入门\\问题记录\\WSL代理-apt和Docker下载卡住.md",
+      "body": "## 问题是什么\n\n在 WSL2 Ubuntu 26.04 里安装 Docker 时，`sudo apt update` 出现 `Waiting for headers`，Docker 拉取 `hello-world` 镜像时出现 `TLS handshake timeout`。同时 Windows 浏览器可以访问 Google/YouTube，容易误以为 Linux 终端也应该自动可用。\n\n## 用了什么知识点\n\nWSL 和 Windows 浏览器不是同一个网络上下文。浏览器能走 Windows 系统代理，不代表 WSL 里的 `apt`、`curl`、Docker daemon 自动走同一个代理。\n\n本质理解：`apt` 下载软件包、普通 shell 命令访问网络、Docker daemon 拉镜像，是三类不同的网络请求，代理配置可以互不相同。\n\n## 怎么解决\n\n先确认系统：\n\n```bash\nuname -a\ncat /etc/os-release\n```\n\n确认是 WSL2 Ubuntu 26.04 后，发现开 VPN 时 `apt update` 卡住，关闭 VPN 后 Ubuntu 源恢复正常。后来需要通过 Clash Verge 代理加速安装，关键是测试可用代理地址：\n\n```bash\ncurl -x http://<local-proxy> -I https://www.google.com\n```\n\n成功后，用代理安装 Ubuntu 仓库里的 Docker 包：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\nDocker 拉镜像失败时，需要给 Docker daemon 单独配置代理：\n\n```bash\nsudo mkdir -p /etc/systemd/system/docker.service.d\nsudo nano /etc/systemd/system/docker.service.d/http-proxy.conf\n```\n\n写入：\n\n```ini\n[Service]\nEnvironment=\"HTTP_PROXY=<redacted>\"\nEnvironment=\"HTTPS_PROXY=<redacted>\"\nEnvironment=\"NO_PROXY=<redacted>\"\n```\n\n重启 Docker：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl restart docker\nsudo systemctl show --property=Environment docker\n```\n\n## 解决了什么问题\n\n解决了两个层面的网络问题：`apt` 能安装 Docker 软件包，Docker daemon 也能从 Docker Hub 拉取镜像。\n\n## 易错点\n\n不要认为“浏览器能上网”就等于 WSL 里所有命令都能上网。`http_proxy`/`https_proxy` 只对当前命令或进程有效，不会自动影响 Docker daemon。Clash Verge 中 `<local-address>` 测试失败，但 `<local-address>` 成功，所以当前环境优先使用 `<local-address>`。\n\n## 验证方式\n\n普通代理验证：\n\n```bash\ncurl -x http://<local-proxy> -I https://www.google.com\n```\n\nDocker daemon 验证：\n\n```bash\nsudo docker run hello-world\n```\n\n期望看到：\n\n```text\nHello from Docker!\n```"
+    },
+    {
+      "slug": "python后端-db-数据库相关学习-问题记录-sqlite锁冲突问题",
+      "title": "SQlite锁冲突问题",
+      "type": "问题记录",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/DB/数据库相关学习/问题记录",
+      "categoryPath": [
+        "PYTHON后端",
+        "DB",
+        "数据库相关学习",
+        "问题记录"
+      ],
+      "tags": [
+        "DB",
+        "数据库相关学习",
+        "问题记录"
+      ],
+      "summary": "主机 FastAPI 和 Docker FastAPI 如果同时连接并写入同一个 tasks.db ，可能出现：",
+      "source": "PYTHON后端\\DB\\数据库相关学习\\问题记录\\SQlite锁冲突问题.md",
+      "body": "## 问题是什么\n\n主机 FastAPI 和 Docker FastAPI 如果同时连接并写入同一个 `tasks.db`，可能出现：\n\n```text\nsqlite3.OperationalError: database is locked\n```\n\n## 用了什么知识点\n\n数据库锁是数据库为了避免多个操作同时修改数据造成冲突，而暂时限制其他操作的保护机制。SQLite 是单文件数据库，适合轻量应用，但并发写入能力有限。\n\n本质理解：数据库锁不是数据损坏，而是数据库在阻止多个写操作同时修改同一份数据；SQLite 通常同一时间只允许一个主要写入者。\n\n## 怎么解决\n\n当前项目中，Compose 使用：\n\n```yaml\nvolumes:\n  - .:/app\n```\n\n容器内 `/app/tasks.db` 对应主机 `~/fastapi/tasks.db`。因此不要同时运行主机版 FastAPI 和 Docker 版 FastAPI 去写入这个文件。\n\n保持 SQLAlchemy session 在请求结束后关闭，例如依赖函数使用 `try/finally`：\n\n```python\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n```\n\n如果项目需要多人或大量并发写入，应考虑 PostgreSQL 等客户端/服务器数据库，而不是继续让多个服务高频写同一个 SQLite 文件。\n\n## 解决了什么问题\n\n能够判断 `database is locked` 通常来自并发写入、事务未结束或数据库会话未及时关闭，而不是简单地认为数据库文件坏了。\n\n## 易错点\n\n锁本身是保护机制，不应通过粗暴删除数据库文件解决。读取通常可以并发，但写入更容易竞争。Docker 容器和主机程序可能因为绑定挂载而操作同一份数据库文件，不能只看它们运行在不同环境就认为数据库彼此隔离。\n\n## 验证方式\n\n确认当前是否有多个应用实例操作同一个数据库：\n\n```bash\nsudo docker compose ps\nps aux | grep uvicorn\n```\n\n如果主机 Uvicorn 和 Docker Uvicorn 同时运行，先停止其中一个，再重试 CRUD 操作。"
+    },
+    {
       "slug": "python后端-docker-01-docker基础-docker安装与hello-world验证-wsl",
       "title": "Docker 安装与 hello world 验证：WSL",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "summary": "学习 Docker 的第一个目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 docker version",
       "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker安装与hello-world验证-WSL.md",
-      "body": "## 问题是什么\n\n学习 Docker 的第一个目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 `docker --version` 提示 `Command 'docker' not found`。\n\n## 用了什么知识点\n\nDocker 的最小运行链路是：Docker client 调用 Docker daemon，daemon 拉取 image，然后基于 image 创建并运行 container。\n\n本质理解：镜像是模板，容器是模板跑起来后的实例，daemon 是真正负责拉镜像和创建容器的后台服务。\n\n主机是实际提供 CPU、内存和磁盘的电脑。当前层级是：\n\n```text\nWindows 主机\n└── WSL2 Linux\n    └── Docker\n        └── 容器\n```\n\n镜像是只读模板，本身不会运行。容器虽然拥有隔离的文件、进程和网络环境，但仍运行在本机，并使用本机的硬件资源，不是另一台远程主机。\n\n## 怎么解决\n\n安装路径选择：Docker 官方 apt 源不稳定时，先使用 Ubuntu 仓库包完成学习环境：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\n检查 Docker 服务：\n\n```bash\nsudo service docker status\n```\n\n如果需要启动：\n\n```bash\nsudo service docker start\n```\n\n验证容器运行：\n\n```bash\nsudo docker run hello-world\n```\n\n成功输出包括：\n\n```text\nHello from Docker!\n```\n\n## 解决了什么问题\n\n确认了 Docker 已经安装成功、Docker 服务正在运行、Docker daemon 可以拉取镜像并启动容器。\n\n## 易错点\n\n不要把镜像理解成另一台主机，也不要说程序“运行在镜像上”。准确说法是：Docker 根据镜像创建容器，程序运行在容器里，容器最终运行在本机上。\n\n`docker --version` 只能说明 Docker CLI 存在，不等于 daemon 正常。`sudo service docker status` 看到 `active (running)` 才说明服务在运行。`hello-world` 本地没有镜像时会先拉取，这是正常现象；如果出现 `TLS handshake timeout`，通常是 Docker daemon 没有配置代理。\n\n## 验证方式\n\n```bash\ndocker --version\ndocker compose version\nsudo service docker status\nsudo docker run hello-world\n```\n\n期望结果：Docker 服务状态是 `active (running)`，`hello-world` 输出 `Hello from Docker!`。\n\n## 下一步\n\n运行 nginx 容器，学习端口映射 `-p 8080:80`。"
+      "body": "## 问题是什么\n\n学习 Docker 的第一个目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 `docker --version` 提示 `Command 'docker' not found`。\n\n## 用了什么知识点\n\nDocker 的最小运行链路是：Docker client 调用 Docker daemon，daemon 拉取 image，然后基于 image 创建并运行 container。\n\n本质理解：镜像是模板，容器是模板跑起来后的实例，daemon 是真正负责拉镜像和创建容器的后台服务。\n\n主机是实际提供 CPU、内存和磁盘的电脑。当前层级是：\n\n```text\nWindows 主机\n└── WSL2 Linux\n    └── Docker\n        └── 容器\n```\n\n镜像是只读模板，本身不会运行。容器虽然拥有隔离的文件、进程和网络环境，但仍运行在本机，并使用本机的硬件资源，不是另一台远程主机。\n\n## 怎么解决\n\n安装路径选择：Docker 官方 apt 源不稳定时，先使用 Ubuntu 仓库包完成学习环境：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\n检查 Docker 服务：\n\n```bash\nsudo service docker status\n```\n\n如果需要启动：\n\n```bash\nsudo service docker start\n```\n\n验证容器运行：\n\n```bash\nsudo docker run hello-world\n```\n\n成功输出包括：\n\n```text\nHello from Docker!\n```\n\n## 解决了什么问题\n\n确认了 Docker 已经安装成功、Docker 服务正在运行、Docker daemon 可以拉取镜像并启动容器。\n\n## 易错点\n\n不要把镜像理解成另一台主机，也不要说程序“运行在镜像上”。准确说法是：Docker 根据镜像创建容器，程序运行在容器里，容器最终运行在本机上。\n\n`docker --version` 只能说明 Docker CLI 存在，不等于 daemon 正常。`sudo service docker status` 看到 `active (running)` 才说明服务在运行。`hello-world` 本地没有镜像时会先拉取，这是正常现象；如果出现 `TLS handshake timeout`，通常是 Docker daemon 没有配置代理。\n\n## 验证方式\n\n```bash\ndocker --version\ndocker compose version\nsudo service docker status\nsudo docker run hello-world\n```\n\n期望结果：Docker 服务状态是 `active (running)`，`hello-world` 输出 `Hello from Docker!`。"
     },
     {
       "slug": "python后端-docker-01-docker基础-docker后台运行与exec进入容器",
-      "title": "Docker 后台运行与 exec 进入容器",
+      "title": "Docker后台运行与exec进入容器",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "summary": "前台运行容器会占用当前终端，按 Ctrl+C 还会停止容器。实际开发中，服务通常需要在后台持续运行，同时开发者还要进入容器检查文件和运行环境。",
       "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker后台运行与exec进入容器.md",
-      "body": "## 问题是什么\n\n前台运行容器会占用当前终端，按 `Ctrl+C` 还会停止容器。实际开发中，服务通常需要在后台持续运行，同时开发者还要进入容器检查文件和运行环境。\n\n## 用了什么知识点\n\n后台运行表示容器持续工作，但不占用当前终端。`docker start` 启动已有容器时默认在后台运行；创建新容器时可使用 `docker run -d`。`docker exec` 用于在正在运行的容器内部执行命令。\n\n本质理解：`run` 创建新容器，`start` 启动已有容器，`exec` 进入或操作一个正在运行的容器。\n\n## 怎么解决\n\n启动已有容器：\n\n```bash\nsudo docker start my-nginx\nsudo docker ps\n```\n\n进入容器：\n\n```bash\nsudo docker exec -it my-nginx sh\n```\n\n其中：\n\n```text\n-i  保持输入通道\n-t  提供交互终端\nsh  启动容器内的 shell\n```\n\n进入后检查环境：\n\n```bash\npwd\nls\ncat /etc/os-release\nls /usr/share/nginx/html\n```\n\n退出容器终端：\n\n```bash\nexit\n```\n\n创建全新的后台容器时使用：\n\n```bash\nsudo docker run -d --name my-nginx -p 8080:80 nginx\n```\n\n## 解决了什么问题\n\n成功让 `my-nginx` 在后台运行，并进入容器查看文件。WSL 主机是 Ubuntu 26.04，而 Nginx 容器显示为 Debian 13，说明容器可以拥有与主机不同的用户空间和文件系统。\n\n## 易错点\n\n`docker exec` 只能操作正在运行的容器。容器处于 `Exited` 时，需要先执行 `docker start`。已有同名容器时，不能再次使用 `docker run --name my-nginx` 创建新容器，否则会发生名称冲突。\n\n退出容器中的 `sh` 只会结束这次交互，不会停止后台运行的 Nginx。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker exec -it my-nginx sh\ncat /etc/os-release\nexit\nsudo docker ps\n```\n\n期望结果：进入容器前后，`my-nginx` 都显示为 `Up`；容器内部显示 Debian 13；退出后 Nginx 仍在运行。\n\n## 下一步\n\n学习 Dockerfile，理解如何把 FastAPI 代码、Python 环境和依赖声明制作成自己的镜像。"
+      "body": "# Docker 后台运行与 exec 进入容器\n\n## 问题是什么\n\n前台运行容器会占用当前终端，按 `Ctrl+C` 还会停止容器。实际开发中，服务通常需要在后台持续运行，同时开发者还要进入容器检查文件和运行环境。\n\n## 用了什么知识点\n\n后台运行表示容器持续工作，但不占用当前终端。`docker start` 启动已有容器时默认在后台运行；创建新容器时可使用 `docker run -d`。`docker exec` 用于在正在运行的容器内部执行命令。\n\n本质理解：`run` 创建新容器，`start` 启动已有容器，`exec` 进入或操作一个正在运行的容器。\n\n## 怎么解决\n\n启动已有容器：\n\n```bash\nsudo docker start my-nginx\nsudo docker ps\n```\n\n进入容器：\n\n```bash\nsudo docker exec -it my-nginx sh\n```\n\n其中：\n\n```text\n-i  保持输入通道\n-t  提供交互终端\nsh  启动容器内的 shell\n```\n\n进入后检查环境：\n\n```bash\npwd\nls\ncat /etc/os-release\nls /usr/share/nginx/html\n```\n\n退出容器终端：\n\n```bash\nexit\n```\n\n创建全新的后台容器时使用：\n\n```bash\nsudo docker run -d --name my-nginx -p 8080:80 nginx\n```\n\n## 解决了什么问题\n\n成功让 `my-nginx` 在后台运行，并进入容器查看文件。WSL 主机是 Ubuntu 26.04，而 Nginx 容器显示为 Debian 13，说明容器可以拥有与主机不同的用户空间和文件系统。\n\n## 易错点\n\n`docker exec` 只能操作正在运行的容器。容器处于 `Exited` 时，需要先执行 `docker start`。已有同名容器时，不能再次使用 `docker run --name my-nginx` 创建新容器，否则会发生名称冲突。\n\n退出容器中的 `sh` 只会结束这次交互，不会停止后台运行的 Nginx。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker exec -it my-nginx sh\ncat /etc/os-release\nexit\nsudo docker ps\n```\n\n期望结果：进入容器前后，`my-nginx` 都显示为 `Up`；容器内部显示 Debian 13；退出后 Nginx 仍在运行。"
     },
     {
       "slug": "python后端-docker-01-docker基础-docker容器管理-查看启动日志停止删除",
-      "title": "Docker 容器管理：查看、启动、日志、停止和删除",
+      "title": "Docker容器管理 查看启动日志停止删除",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "summary": "容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。",
       "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker容器管理-查看启动日志停止删除.md",
-      "body": "## 问题是什么\n\n容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。\n\n## 用了什么知识点\n\n容器是镜像创建出来的运行实例。一个镜像可以创建多个容器，每个容器都有自己的容器 ID 和容器名。`docker ps`、`start`、`logs`、`stop`、`rm` 操作的是容器；`docker images` 查看的是镜像。\n\n本质理解：镜像是可重复使用的模板，容器是可以启动、停止和删除的实例；删除容器不会自动删除镜像。\n\n## 怎么解决\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker start my-nginx\nsudo docker logs my-nginx\nsudo docker stop my-nginx\nsudo docker rm my-nginx\nsudo docker images\n```\n\n命令含义：\n\n```text\ndocker ps       查看正在运行的容器\ndocker ps -a    查看全部容器，包括已停止的\ndocker start    启动已有容器\ndocker logs     查看容器日志\ndocker stop     停止容器，但保留容器\ndocker rm       删除已经停止的容器\ndocker images   查看本地镜像\n```\n\n## 解决了什么问题\n\n成功启动、查看并删除了 `my-nginx` 容器。删除后，`docker ps -a` 中不再出现 `my-nginx`，但 `docker images` 中仍保留 `nginx:latest`，证明容器和镜像相互独立。\n\n## 易错点\n\n`docker rm` 后面必须是容器 ID 或容器名。执行 `docker rm hello-world` 失败，是因为 `hello-world` 是镜像名；现存容器名是 Docker 自动生成的 `nifty_rosalind` 和 `cool_williams`。\n\n容器命令结构通常是：\n\n```text\ndocker <操作> <容器名或容器ID>\n```\n\n例如：\n\n```bash\nsudo docker rm nifty_rosalind\n```\n\n不要写成 `docker my-nginx status`；查看状态应使用 `docker ps` 或 `docker ps -a`。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker images\n```\n\n验证结果：当前没有正在运行的容器；两个 `hello-world` 容器处于 `Exited (0)`；本地仍有 `hello-world:latest` 和 `nginx:latest` 镜像。\n\n## 下一步\n\n学习使用 `-d` 让容器在后台运行，并使用 `docker exec` 进入运行中的容器。"
+      "body": "# Docker 容器管理：查看、启动、日志、停止和删除\n\n## 问题是什么\n\n容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。\n\n## 用了什么知识点\n\n容器是镜像创建出来的运行实例。一个镜像可以创建多个容器，每个容器都有自己的容器 ID 和容器名。`docker ps`、`start`、`logs`、`stop`、`rm` 操作的是容器；`docker images` 查看的是镜像。\n\n本质理解：镜像是可重复使用的模板，容器是可以启动、停止和删除的实例；删除容器不会自动删除镜像。\n\n## 怎么解决\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker start my-nginx\nsudo docker logs my-nginx\nsudo docker stop my-nginx\nsudo docker rm my-nginx\nsudo docker images\n```\n\n命令含义：\n\n```text\ndocker ps       查看正在运行的容器\ndocker ps -a    查看全部容器，包括已停止的\ndocker start    启动已有容器\ndocker logs     查看容器日志\ndocker stop     停止容器，但保留容器\ndocker rm       删除已经停止的容器\ndocker images   查看本地镜像\n```\n\n## 解决了什么问题\n\n成功启动、查看并删除了 `my-nginx` 容器。删除后，`docker ps -a` 中不再出现 `my-nginx`，但 `docker images` 中仍保留 `nginx:latest`，证明容器和镜像相互独立。\n\n## 易错点\n\n`docker rm` 后面必须是容器 ID 或容器名。执行 `docker rm hello-world` 失败，是因为 `hello-world` 是镜像名；现存容器名是 Docker 自动生成的 `nifty_rosalind` 和 `cool_williams`。\n\n容器命令结构通常是：\n\n```text\ndocker <操作> <容器名或容器ID>\n```\n\n例如：\n\n```bash\nsudo docker rm nifty_rosalind\n```\n\n不要写成 `docker my-nginx status`；查看状态应使用 `docker ps` 或 `docker ps -a`。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker images\n```\n\n验证结果：当前没有正在运行的容器；两个 `hello-world` 容器处于 `Exited (0)`；本地仍有 `hello-world:latest` 和 `nginx:latest` 镜像。"
     },
     {
       "slug": "python后端-docker-01-docker基础-nginx端口映射-8080到80",
-      "title": "Nginx 端口映射：8080 到 80",
+      "title": "Nginx端口映射 8080到80",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "01-Docker基础"
       ],
       "summary": "Docker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。",
       "source": "PYTHON后端\\Docker\\01-Docker基础\\Nginx端口映射-8080到80.md",
-      "body": "## 问题是什么\n\nDocker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。\n\n## 用了什么知识点\n\nNginx 是提供网页内容的 Web 服务器程序，本步骤中运行在 Docker 容器里。端口是程序提供网络服务的门牌号。端口映射是 Docker 在主机端口和容器端口之间建立的转发通道。\n\n本质理解：`-p 8080:80` 表示访问主机的 8080 端口时，Docker 把请求转发给容器内的 80 端口。\n\n## 怎么解决\n\n运行创建 Nginx 容器：\n\n```bash\nsudo docker run --name my-nginx -p 8080:80 nginx\n```\n\n命令含义：\n\n```text\ndocker run       创建并运行容器\n--name my-nginx  将容器命名为 my-nginx\n-p 8080:80       主机 8080 映射到容器 80\nnginx            使用 nginx 镜像\n```\n\n请求路径：\n\n```text\n浏览器 localhost:8080\n-> WSL 主机的 8080 端口\n-> Docker 转发\n-> Nginx 容器的 80 端口\n```\n\n## 解决了什么问题\n\n浏览器成功通过 `http://localhost:8080` 访问到容器中的 Nginx 欢迎页，证明容器持续运行且端口映射有效。\n\n## 易错点\n\n端口映射格式是 `主机端口:容器端口`，不要写反。终端在运行后持续显示日志不是卡死，而是 Nginx 正在前台运行；按 `Ctrl+C` 会停止这个前台容器。\n\n## 验证方式\n\n浏览器打开：\n\n```text\nhttp://localhost:8080\n```\n\n期望看到“欢迎来到 nginx!”页面。也可以另开一个 Linux 终端执行：\n\n```bash\ncurl http://localhost:8080\n```\n\n期望返回 Nginx 欢迎页的 HTML。\n\n## 下一步\n\n学习前台运行与后台运行的区别，并使用 `docker ps`、`docker logs`、`docker stop` 和 `docker rm` 管理容器。"
+      "body": "# Nginx 端口映射：8080 到 80\n\n## 问题是什么\n\nDocker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。\n\n## 用了什么知识点\n\nNginx 是提供网页内容的 Web 服务器程序，本步骤中运行在 Docker 容器里。端口是程序提供网络服务的门牌号。端口映射是 Docker 在主机端口和容器端口之间建立的转发通道。\n\n本质理解：`-p 8080:80` 表示访问主机的 8080 端口时，Docker 把请求转发给容器内的 80 端口。\n\n## 怎么解决\n\n运行创建 Nginx 容器：\n\n```bash\nsudo docker run --name my-nginx -p 8080:80 nginx\n```\n\n命令含义：\n\n```text\ndocker run       创建并运行容器\n--name my-nginx  将容器命名为 my-nginx\n-p 8080:80       主机 8080 映射到容器 80\nnginx            使用 nginx 镜像\n```\n\n请求路径：\n\n```text\n浏览器 localhost:8080\n-> WSL 主机的 8080 端口\n-> Docker 转发\n-> Nginx 容器的 80 端口\n```\n\n## 解决了什么问题\n\n浏览器成功通过 `http://localhost:8080` 访问到容器中的 Nginx 欢迎页，证明容器持续运行且端口映射有效。\n\n## 易错点\n\n端口映射格式是 `主机端口:容器端口`，不要写反。终端在运行后持续显示日志不是卡死，而是 Nginx 正在前台运行；按 `Ctrl+C` 会停止这个前台容器。\n\n## 验证方式\n\n浏览器打开：\n\n```text\nhttp://localhost:8080\n```\n\n期望看到“欢迎来到 nginx!”页面。也可以另开一个 Linux 终端执行：\n\n```bash\ncurl http://localhost:8080\n```\n\n期望返回 Nginx 欢迎页的 HTML。"
     },
     {
       "slug": "python后端-docker-02-dockerfile-镜像重建与dockerignore",
-      "title": "镜像重建与 .dockerignore",
+      "title": "镜像重建与dockerignore",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "summary": "代码通过 Dockerfile 的 COPY 进入镜像后，镜像中保存的是构建时的代码副本。修改 WSL 项目里的源代码，不会自动修改已经生成的镜像和容器。",
       "source": "PYTHON后端\\Docker\\02-Dockerfile\\镜像重建与dockerignore.md",
-      "body": "## 问题是什么\n\n代码通过 Dockerfile 的 `COPY` 进入镜像后，镜像中保存的是构建时的代码副本。修改 WSL 项目里的源代码，不会自动修改已经生成的镜像和容器。\n\n## 用了什么知识点\n\n镜像是固定的构建结果。`docker compose up -d --build` 会在启动服务前重新构建镜像。`.dockerignore` 用于排除不应进入构建上下文的文件。\n\n本质理解：源代码、镜像和容器是三个不同阶段；代码变化要进入新容器，通常需要重新构建镜像并重新创建容器。\n\n## 怎么解决\n\n代码修改后执行：\n\n```bash\nsudo docker compose up -d --build\nsudo docker compose logs\n```\n\n创建 `.dockerignore`：\n\n```text\n__pycache__/\n*.pyc\n.venv/\n.git/\n.env\n```\n\n## 解决了什么问题\n\n掌握了把最新代码重新放进镜像和容器的方法，并避免把虚拟环境、缓存、Git 文件和敏感环境变量文件发送到 Docker 构建上下文。\n\n## 易错点\n\n只执行 `docker compose up -d` 可能继续使用旧镜像。代码由 Dockerfile 的 `COPY` 固化进镜像时，修改后需要使用 `--build`。\n\n`.dockerignore` 只影响构建上下文，不等于删除主机上的文件。\n\n## 验证方式\n\n修改接口返回值后运行：\n\n```bash\nsudo docker compose up -d --build\n```\n\n重新访问接口，确认返回新内容。构建日志中发送的 context 大小也应保持精简。\n\n## 下一步\n\n学习 bind mount，让开发环境中的源代码目录直接挂载到容器中，减少每次修改代码都重新构建镜像的等待。"
+      "body": "# 镜像重建与 .dockerignore\n\n## 问题是什么\n\n代码通过 Dockerfile 的 `COPY` 进入镜像后，镜像中保存的是构建时的代码副本。修改 WSL 项目里的源代码，不会自动修改已经生成的镜像和容器。\n\n## 用了什么知识点\n\n镜像是固定的构建结果。`docker compose up -d --build` 会在启动服务前重新构建镜像。`.dockerignore` 用于排除不应进入构建上下文的文件。\n\n本质理解：源代码、镜像和容器是三个不同阶段；代码变化要进入新容器，通常需要重新构建镜像并重新创建容器。\n\n## 怎么解决\n\n代码修改后执行：\n\n```bash\nsudo docker compose up -d --build\nsudo docker compose logs\n```\n\n创建 `.dockerignore`：\n\n```text\n__pycache__/\n*.pyc\n.venv/\n.git/\n.env\n```\n\n## 解决了什么问题\n\n掌握了把最新代码重新放进镜像和容器的方法，并避免把虚拟环境、缓存、Git 文件和敏感环境变量文件发送到 Docker 构建上下文。\n\n## 易错点\n\n只执行 `docker compose up -d` 可能继续使用旧镜像。代码由 Dockerfile 的 `COPY` 固化进镜像时，修改后需要使用 `--build`。\n\n`.dockerignore` 只影响构建上下文，不等于删除主机上的文件。\n\n## 验证方式\n\n修改接口返回值后运行：\n\n```bash\nsudo docker compose up -d --build\n```\n\n重新访问接口，确认返回新内容。构建日志中发送的 context 大小也应保持精简。"
     },
     {
       "slug": "python后端-docker-02-dockerfile-docker-build-构建fastapi镜像",
-      "title": "docker build：构建 FastAPI 镜像",
+      "title": "docker build 构建FastAPI镜像",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "summary": "准备好 FastAPI 代码、依赖清单和 Dockerfile 后，需要让 Docker 按照说明实际生成镜像，并判断构建日志中的成功标志与警告信息。",
       "source": "PYTHON后端\\Docker\\02-Dockerfile\\docker-build-构建FastAPI镜像.md",
-      "body": "## 问题是什么\n\n准备好 FastAPI 代码、依赖清单和 Dockerfile 后，需要让 Docker 按照说明实际生成镜像，并判断构建日志中的成功标志与警告信息。\n\n## 用了什么知识点\n\n`docker build` 根据 Dockerfile 逐层构建镜像。镜像层是每条构建指令产生的可复用结果，后续构建可能显示 `Using cache`。构建上下文是 Docker 在构建过程中可以读取的本地文件集合，本步骤使用当前目录 `.`。\n\n本质理解：Dockerfile 是说明书，`docker build` 是执行说明书并产出镜像的过程。\n\n```\n## 怎么解决\n\n在项目目录执行：\n\n```bash\nsudo docker build -t fastapi-demo .\n```\n\n命令含义：\n\n```text\ndocker build   构建镜像\n-t             设置镜像名称和标签\nfastapi-demo   镜像名称\n.              当前目录作为构建上下文\n```\n\n构建依次完成基础镜像、工作目录、复制依赖、安装依赖、复制代码和设置启动命令六个步骤。\n\n查看镜像：\n\n```bash\nsudo docker images\n```\n\n## 解决了什么问题\n\n成功生成镜像 ID `ba6700123437`，并添加标签 `fastapi-demo:latest`。`docker images` 能看到该镜像，说明 FastAPI 代码、Python 3.12 环境和依赖已经被组合为可创建容器的模板。\n\n## 易错点\n\n真正的成功标志是：\n\n```text\nSuccessfully built ba6700123437\nSuccessfully tagged fastapi-demo:latest\n```\n\n`legacy builder is deprecated` 是旧构建器未来会被移除的提醒，不代表本次失败。后续可以再学习 BuildKit/buildx。\n\n构建过程中 pip 提示以 root 用户安装，是发生在隔离的镜像构建环境中，不是在 WSL 主机 Python 环境里直接安装，因此本步骤可以接受。\n```\n\n```\n## 验证方式\n\n```bash\nsudo docker images\n```\n\n期望看到：\n\n```text\nfastapi-demo:latest\npython:3.12-slim\n```\n\n其中 `python:3.12-slim` 是基础镜像，`fastapi-demo:latest` 是基于它构建出的应用镜像。\n\n## 下一步\n\n使用 `fastapi-demo` 镜像创建后台容器，把主机 8000 端口映射到容器 8000 端口，并访问 FastAPI 的 `/docs`。"
+      "body": "# docker build：构建 FastAPI 镜像\n\n## 问题是什么\n\n准备好 FastAPI 代码、依赖清单和 Dockerfile 后，需要让 Docker 按照说明实际生成镜像，并判断构建日志中的成功标志与警告信息。\n\n## 用了什么知识点\n\n`docker build` 根据 Dockerfile 逐层构建镜像。镜像层是每条构建指令产生的可复用结果，后续构建可能显示 `Using cache`。构建上下文是 Docker 在构建过程中可以读取的本地文件集合，本步骤使用当前目录 `.`。\n\n本质理解：Dockerfile 是说明书，`docker build` 是执行说明书并产出镜像的过程。\n\n```\n## 怎么解决\n\n在项目目录执行：\n\n```bash\nsudo docker build -t fastapi-demo .\n```\n\n命令含义：\n\n```text\ndocker build   构建镜像\n-t             设置镜像名称和标签\nfastapi-demo   镜像名称\n.              当前目录作为构建上下文\n```\n\n构建依次完成基础镜像、工作目录、复制依赖、安装依赖、复制代码和设置启动命令六个步骤。\n\n查看镜像：\n\n```bash\nsudo docker images\n```\n\n## 解决了什么问题\n\n成功生成镜像 ID `ba6700123437`，并添加标签 `fastapi-demo:latest`。`docker images` 能看到该镜像，说明 FastAPI 代码、Python 3.12 环境和依赖已经被组合为可创建容器的模板。\n\n## 易错点\n\n真正的成功标志是：\n\n```text\nSuccessfully built ba6700123437\nSuccessfully tagged fastapi-demo:latest\n```\n\n`legacy builder is deprecated` 是旧构建器未来会被移除的提醒，不代表本次失败。后续可以再学习 BuildKit/buildx。\n\n构建过程中 pip 提示以 root 用户安装，是发生在隔离的镜像构建环境中，不是在 WSL 主机 Python 环境里直接安装，因此本步骤可以接受。\n```\n\n```\n## 验证方式\n\n```bash\nsudo docker images\n```\n\n期望看到：\n\n```text\nfastapi-demo:latest\npython:3.12-slim\n```\n\n其中 `python:3.12-slim` 是基础镜像，`fastapi-demo:latest` 是基于它构建出的应用镜像。"
     },
     {
       "slug": "python后端-docker-02-dockerfile-docker-run-运行fastapi容器",
-      "title": "docker run：运行 FastAPI 容器",
+      "title": "docker run 运行FastAPI容器",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "summary": "成功构建 fastapi demo 镜像后，镜像仍只是静态模板。需要基于它创建并运行容器，才能真正启动 Uvicorn，并让浏览器访问 FastAPI 接口和自动文档。",
       "source": "PYTHON后端\\Docker\\02-Dockerfile\\docker-run-运行FastAPI容器.md",
-      "body": "## 问题是什么\n\n成功构建 `fastapi-demo` 镜像后，镜像仍只是静态模板。需要基于它创建并运行容器，才能真正启动 Uvicorn，并让浏览器访问 FastAPI 接口和自动文档。\n\n## 用了什么知识点\n\n`docker run` 根据镜像创建新容器。端口映射把主机 8000 端口连接到容器内 Uvicorn 监听的 8000 端口。容器日志用于判断应用是否正常启动。\n\n本质理解：`docker build` 负责生成镜像，`docker run` 负责让镜像成为正在运行的应用容器。\n\n## 怎么解决\n\n```bash\nsudo docker run -d --name fastapi-container -p 8000:8000 fastapi-demo\nsudo docker ps\nsudo docker logs fastapi-container\n```\n\n访问：\n\n```text\nhttp://localhost:8000/\nhttp://localhost:8000/docs\n```\n\n如果容器没有运行：\n\n```bash\nsudo docker ps -a\nsudo docker logs fastapi-container\n```\n\n## 解决了什么问题\n\n建立了从自定义镜像到可访问 FastAPI 服务的完整运行方法。。\n\n## 易错点\n\nDockerfile 中 Uvicorn 必须监听 `0.0.0.0`，否则即使设置端口映射，容器外也可能无法访问。容器名已存在时，再次执行相同的 `docker run --name fastapi-container` 会名称冲突，应启动、删除或改名。\n\n## 验证方式\n\n成功标准：\n\n```text\ndocker ps 显示 fastapi-container 状态为 Up\n日志包含 Uvicorn running on http://0.0.0.0:8000\n根路径返回 {\"message\":\"Hello from Docker\"}\n/docs 显示 FastAPI Swagger 页面\n```\n\n## 下一步\n\n学习 Docker Compose，用配置文件保存构建、容器名和端口映射，减少重复输入长命令。"
+      "body": "# docker run：运行 FastAPI 容器\n\n## 问题是什么\n\n成功构建 `fastapi-demo` 镜像后，镜像仍只是静态模板。需要基于它创建并运行容器，才能真正启动 Uvicorn，并让浏览器访问 FastAPI 接口和自动文档。\n\n## 用了什么知识点\n\n`docker run` 根据镜像创建新容器。端口映射把主机 8000 端口连接到容器内 Uvicorn 监听的 8000 端口。容器日志用于判断应用是否正常启动。\n\n本质理解：`docker build` 负责生成镜像，`docker run` 负责让镜像成为正在运行的应用容器。\n\n## 怎么解决\n\n```bash\nsudo docker run -d --name fastapi-container -p 8000:8000 fastapi-demo\nsudo docker ps\nsudo docker logs fastapi-container\n```\n\n访问：\n\n```text\nhttp://localhost:8000/\nhttp://localhost:8000/docs\n```\n\n如果容器没有运行：\n\n```bash\nsudo docker ps -a\nsudo docker logs fastapi-container\n```\n\n## 解决了什么问题\n\n建立了从自定义镜像到可访问 FastAPI 服务的完整运行方法。。\n\n## 易错点\n\nDockerfile 中 Uvicorn 必须监听 `0.0.0.0`，否则即使设置端口映射，容器外也可能无法访问。容器名已存在时，再次执行相同的 `docker run --name fastapi-container` 会名称冲突，应启动、删除或改名。\n\n## 验证方式\n\n成功标准：\n\n```text\ndocker ps 显示 fastapi-container 状态为 Up\n日志包含 Uvicorn running on http://0.0.0.0:8000\n根路径返回 {\"message\":\"Hello from Docker\"}\n/docs 显示 FastAPI Swagger 页面\n```"
     },
     {
       "slug": "python后端-docker-02-dockerfile-dockerfile-准备fastapi构建文件",
-      "title": "Dockerfile：准备 FastAPI 构建文件",
+      "title": "Dockerfile 准备FastAPI构建文件",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "02-Dockerfile"
       ],
       "summary": "会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。",
       "source": "PYTHON后端\\Docker\\02-Dockerfile\\Dockerfile-准备FastAPI构建文件.md",
-      "body": "## 问题是什么\n\n会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。\n\n## 用了什么知识点\n\n`Dockerfile` 是制作镜像的说明书，通常位于项目根目录。`main.py` 保存 FastAPI 应用代码，`requirements.txt` 声明 Python 依赖，`Dockerfile` 描述如何组合运行环境、依赖和代码。\n\n本质理解：Dockerfile 不运行 FastAPI，而是告诉 Docker 如何生成一个能够运行 FastAPI 的镜像。\n\n## 怎么解决\n\n项目结构：\n\n```text\ndocker-fastapi-demo/\n├── Dockerfile\n├── main.py\n└── requirements.txt\n```\n\n`main.py`：\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello from Docker\"}\n```\n\n`requirements.txt`：\n\n```text\nfastapi\nuvicorn[standard]\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY main.py .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000]\"\n```\n\n## 解决了什么问题\n\n准备好了制作 FastAPI 镜像所需的最小文件，并明确了代码、依赖清单和构建说明各自负责什么。\n\n## 易错点\n\n文件名必须是 `Dockerfile`，默认没有扩展名。`requirements.txt` 只声明依赖，不会自己安装依赖；真正的安装动作由 Dockerfile 中的 `RUN pip install ...` 完成。\n\n## 验证方式\n\n在项目目录执行：\n\n```bash\nls\ncat Dockerfile\n```\n\n应该看到 `Dockerfile`、`main.py` 和 `requirements.txt`，并确认 Dockerfile 内容完整。\n\n## 下一步\n\n逐行理解 Dockerfile 指令，然后使用 `docker build` 构建自己的 FastAPI 镜像。"
+      "body": "# Dockerfile：准备 FastAPI 构建文件\n\n## 问题是什么\n\n会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。\n\n## 用了什么知识点\n\n`Dockerfile` 是制作镜像的说明书，通常位于项目根目录。`main.py` 保存 FastAPI 应用代码，`requirements.txt` 声明 Python 依赖，`Dockerfile` 描述如何组合运行环境、依赖和代码。\n\n本质理解：Dockerfile 不运行 FastAPI，而是告诉 Docker 如何生成一个能够运行 FastAPI 的镜像。\n\n## 怎么解决\n\n项目结构：\n\n```text\ndocker-fastapi-demo/\n├── Dockerfile\n├── main.py\n└── requirements.txt\n```\n\n`main.py`：\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello from Docker\"}\n```\n\n`requirements.txt`：\n\n```text\nfastapi\nuvicorn[standard]\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY main.py .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000]\"\n```\n\n## 解决了什么问题\n\n准备好了制作 FastAPI 镜像所需的最小文件，并明确了代码、依赖清单和构建说明各自负责什么。\n\n## 易错点\n\n文件名必须是 `Dockerfile`，默认没有扩展名。`requirements.txt` 只声明依赖，不会自己安装依赖；真正的安装动作由 Dockerfile 中的 `RUN pip install ...` 完成。\n\n## 验证方式\n\n在项目目录执行：\n\n```bash\nls\ncat Dockerfile\n```\n\n应该看到 `Dockerfile`、`main.py` 和 `requirements.txt`，并确认 Dockerfile 内容完整。"
     },
     {
       "slug": "python后端-docker-03-docker-compose-bind-mount-开发时同步代码",
@@ -237,13 +338,15 @@
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/03-Docker-Compose",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "03-Docker-Compose"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "03-Docker-Compose"
       ],
       "summary": "代码通过 Dockerfile 的 COPY 进入镜像后，每次修改都需要重新构建。开发阶段频繁修改 FastAPI 代码时，这种流程等待时间较长。",
       "source": "PYTHON后端\\Docker\\03-Docker-Compose\\bind-mount-开发时同步代码.md",
@@ -251,39 +354,363 @@
     },
     {
       "slug": "python后端-docker-03-docker-compose-composeyaml-管理fastapi服务",
-      "title": "compose.yaml：管理 FastAPI 服务",
+      "title": "compose.yaml 管理FastAPI服务",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/03-Docker-Compose",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "03-Docker-Compose"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "03-Docker-Compose"
       ],
       "summary": "直接使用 docker run 时，需要反复输入镜像、容器名和端口映射。项目配置变多后，长命令不容易保存、复用和协作，因此需要把容器运行方式写成配置文件。",
       "source": "PYTHON后端\\Docker\\03-Docker-Compose\\compose.yaml-管理FastAPI服务.md",
-      "body": "## 问题是什么\n\n直接使用 `docker run` 时，需要反复输入镜像、容器名和端口映射。项目配置变多后，长命令不容易保存、复用和协作，因此需要把容器运行方式写成配置文件。\n\n## 用了什么知识点\n\nDocker Compose 使用 YAML 文件描述一个或多个服务。服务是 Compose 管理的应用单元，本步骤中的 `api` 服务会根据当前目录的 Dockerfile 构建镜像，并创建 FastAPI 容器。Compose 还会自动创建项目网络。\n\n本质理解：Dockerfile 描述“如何构建一个镜像”，`compose.yaml` 描述“项目里的服务应该如何构建和运行”。\n\n## 怎么解决\n\n`compose.yaml`：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-container\n    ports:\n      - \"8000:8000\"\n```\n\n清除可能冲突的旧容器：\n\n```bash\nsudo docker rm -f fastapi-container 2>/dev/null\n```\n\n启动、查看和停止：\n\n```bash\nsudo docker compose up -d\nsudo docker compose ps\nsudo docker compose logs\nsudo docker compose down\n```\n\n## 解决了什么问题\n\nCompose 成功完成了以下工作：\n\n```text\n构建 docker-fastapi-demo-api 镜像\n创建 docker-fastapi-demo_default 网络\n启动 fastapi-container 容器\n映射主机 8000 到容器 8000\n停止并删除容器及项目网络\n```\n\n日志显示 `Uvicorn running on http://0.0.0.0:8000`，证明 FastAPI 进程已经正常启动。\n\n## 易错点\n\n`Docker Compose is configured to build using Bake, but buildx isn't installed` 是构建能力提示，不是本次失败。输出中出现 `Built`、`Started` 和容器状态 `Up`，说明 Compose 正常完成任务。\n\n`docker compose down` 会删除 Compose 创建的容器和默认网络，但默认不会删除镜像、Dockerfile 或项目代码。\n\n## 验证方式\n\n已验证：\n\n```text\ncompose ps 显示 fastapi-container 为 Up\n端口显示 0.0.0.0:8000->8000/tcp\n日志显示 Application startup complete\n日志显示 Uvicorn running on http://0.0.0.0:8000\ncompose down 成功删除容器和网络\n```\n\n本轮未提供浏览器输出，仍可在下次运行后访问：\n\n```text\nhttp://localhost:8000/\nhttp://localhost:8000/docs\n```\n\n## 下一步\n\n学习镜像为何不会自动包含代码修改，以及如何使用重新构建和 `.dockerignore` 管理构建内容。"
+      "body": "# compose.yaml：管理 FastAPI 服务\n\n## 问题是什么\n\n直接使用 `docker run` 时，需要反复输入镜像、容器名和端口映射。项目配置变多后，长命令不容易保存、复用和协作，因此需要把容器运行方式写成配置文件。\n\n## 用了什么知识点\n\nDocker Compose 使用 YAML 文件描述一个或多个服务。服务是 Compose 管理的应用单元，本步骤中的 `api` 服务会根据当前目录的 Dockerfile 构建镜像，并创建 FastAPI 容器。Compose 还会自动创建项目网络。\n\n本质理解：Dockerfile 描述“如何构建一个镜像”，`compose.yaml` 描述“项目里的服务应该如何构建和运行”。\n\n## 怎么解决\n\n`compose.yaml`：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-container\n    ports:\n      - \"8000:8000\"\n```\n\n清除可能冲突的旧容器：\n\n```bash\nsudo docker rm -f fastapi-container 2>/dev/null\n```\n\n启动、查看和停止：\n\n```bash\nsudo docker compose up -d\nsudo docker compose ps\nsudo docker compose logs\nsudo docker compose down\n```\n\n## 解决了什么问题\n\nCompose 成功完成了以下工作：\n\n```text\n构建 docker-fastapi-demo-api 镜像\n创建 docker-fastapi-demo_default 网络\n启动 fastapi-container 容器\n映射主机 8000 到容器 8000\n停止并删除容器及项目网络\n```\n\n日志显示 `Uvicorn running on http://0.0.0.0:8000`，证明 FastAPI 进程已经正常启动。\n\n## 易错点\n\n`Docker Compose is configured to build using Bake, but buildx isn't installed` 是构建能力提示，不是本次失败。输出中出现 `Built`、`Started` 和容器状态 `Up`，说明 Compose 正常完成任务。\n\n`docker compose down` 会删除 Compose 创建的容器和默认网络，但默认不会删除镜像、Dockerfile 或项目代码。\n\n## 验证方式\n\n已验证：\n\n```text\ncompose ps 显示 fastapi-container 为 Up\n端口显示 0.0.0.0:8000->8000/tcp\n日志显示 Application startup complete\n日志显示 Uvicorn running on http://0.0.0.0:8000\ncompose down 成功删除容器和网络\n```\n\n本轮未提供浏览器输出，仍可在下次运行后访问：\n\n```text\nhttp://localhost:8000/\nhttp://localhost:8000/docs\n```"
     },
     {
-      "slug": "python后端-docker-04-dockerfastapi-拆分fastapi-通过docker运行crud",
-      "title": "拆分 FastAPI：通过 Docker 运行 CRUD",
+      "slug": "python后端-docker-04-dockerfastapi-fastapi-通过docker运行crud",
+      "title": "FastAPI：通过 Docker 运行 CRUD",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
-      "category": "PYTHON后端/Docker",
+      "category": "PYTHON后端/Docker/04-docker+fastapi",
       "categoryPath": [
         "PYTHON后端",
-        "Docker"
+        "Docker",
+        "04-docker+fastapi"
       ],
       "tags": [
-        "Docker"
+        "Docker",
+        "04-docker+fastapi"
       ],
       "summary": "目标是把已有的多文件 FastAPI CRUD 项目放进 Docker，而不是只运行演示项目。需要识别入口、依赖、SQLite 文件、Dockerfile 和 Compose 配置，并排查容器能启动但网页无法访问的问",
-      "source": "PYTHON后端\\Docker\\04-docker+fastapi\\拆分FastAPI-通过Docker运行CRUD.md",
-      "body": "## 问题是什么\n\n目标是把已有的多文件 FastAPI CRUD 项目放进 Docker，而不是只运行演示项目。需要识别入口、依赖、SQLite 文件、Dockerfile 和 Compose 配置，并排查容器能启动但网页无法访问的问题。\n\n## 用了什么知识点\n\n项目入口位于 `main.py` 的 `app = FastAPI()`，所以 Uvicorn 目标是 `main:app`。直接依赖是 FastAPI、Uvicorn 和 SQLAlchemy。SQLite 使用 `sqlite:///./tasks.db`，在 `/app` 工作目录中对应 `/app/tasks.db`。\n\nCompose 的 `ports` 决定主机是否能进入容器。日志显示 Uvicorn 启动成功，只能证明应用在容器内部正常；`docker compose ps` 的 `PORTS` 一栏有映射，才证明主机端口已开放。\n\n本质理解：Docker 化真实项目需要同时打通“应用入口、依赖、数据文件、容器启动、端口映射”五个环节。\n\n## 怎么解决\n\n`requirements.txt`：\n\n```text\nfastapi==0.136.3\nuvicorn==0.48.0\nSQLAlchemy==2.0.50\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n```\n\n`.dockerignore`：\n\n```text\n.venv/\n__pycache__/\n*.pyc\n.git/\n.env\n```\n\n`compose.yaml` 核心配置：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-tasks\n    ports:\n      - \"8000:8000\"\n    volumes:\n      - .:/app\n    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload\n```\n\n启动与排错：\n\n```bash\nsudo docker compose up -d --build\nsudo docker compose ps\nsudo docker compose logs\n```\n\n## 解决了什么问题\n\n最终成功通过 Docker 访问原有 FastAPI CRUD 项目。项目的多文件结构、SQLAlchemy 和 SQLite 数据库均能在容器环境中工作。\n\n## 易错点\n\n主机 8000 端口被其他容器占用时，会出现 `port is already allocated`，需要关闭旧容器或更换主机端口。\n\n如果日志显示应用启动成功，但 `docker compose ps` 的 `PORTS` 为空，说明 Compose 没有应用端口映射。修正 `ports` 后必须重新创建容器：\n\n```bash\nsudo docker compose down\nsudo docker compose up -d\n```\n\n简单的偶发输入或粘贴错误不作为长期笔记内容。\n\n## 验证方式\n\n```bash\nsudo docker compose ps\nsudo docker compose logs\n```\n\n成功标准：\n\n```text\n容器状态为 Up\nPORTS 显示 0.0.0.0:8000->8000/tcp\n日志显示 Application startup complete\n浏览器可以打开 /docs\n原有 CRUD 接口可以访问和操作\n```\n\n## 下一步\n\nDocker 当前目标已完成。"
+      "source": "PYTHON后端\\Docker\\04-docker+fastapi\\FastAPI-通过Docker运行CRUD.md",
+      "body": "## 问题是什么\n\n目标是把已有的多文件 FastAPI CRUD 项目放进 Docker，而不是只运行演示项目。需要识别入口、依赖、SQLite 文件、Dockerfile 和 Compose 配置，并排查容器能启动但网页无法访问的问题。\n\n## 用了什么知识点\n\n项目入口位于 `main.py` 的 `app = FastAPI()`，所以 Uvicorn 目标是 `main:app`。直接依赖是 FastAPI、Uvicorn 和 SQLAlchemy。SQLite 使用 `sqlite:///./tasks.db`，在 `/app` 工作目录中对应 `/app/tasks.db`。\n\nCompose 的 `ports` 决定主机是否能进入容器。日志显示 Uvicorn 启动成功，只能证明应用在容器内部正常；`docker compose ps` 的 `PORTS` 一栏有映射，才证明主机端口已开放。\n\n本质理解：Docker 化真实项目需要同时打通“应用入口、依赖、数据文件、容器启动、端口映射”五个环节。\n\n## 怎么解决\n\n`requirements.txt`：\n\n```text\nfastapi==0.136.3\nuvicorn==0.48.0\nSQLAlchemy==2.0.50\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n```\n\n`.dockerignore`：\n\n```text\n.venv/\n__pycache__/\n*.pyc\n.git/\n.env\n```\n\n`compose.yaml` 核心配置：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-tasks\n    ports:\n      - \"8000:8000\"\n    volumes:\n      - .:/app\n    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload\n```\n\n启动与排错：\n\n```bash\nsudo docker compose up -d --build\nsudo docker compose ps\nsudo docker compose logs\n```\n\n## 解决了什么问题\n\n最终成功通过 Docker 访问原有 FastAPI CRUD 项目。项目的多文件结构、SQLAlchemy 和 SQLite 数据库均能在容器环境中工作。\n\n## 易错点\n\n主机 8000 端口被其他容器占用时，会出现 `port is already allocated`，需要关闭旧容器或更换主机端口。\n\n如果日志显示应用启动成功，但 `docker compose ps` 的 `PORTS` 为空，说明 Compose 没有应用端口映射。修正 `ports` 后必须重新创建容器：\n\n```bash\nsudo docker compose down\nsudo docker compose up -d\n```\n\n简单的偶发输入或粘贴错误不作为长期笔记内容。\n\n## 验证方式\n\n```bash\nsudo docker compose ps\nsudo docker compose logs\n```\n\n成功标准：\n\n```text\n容器状态为 Up\nPORTS 显示 0.0.0.0:8000->8000/tcp\n日志显示 Application startup complete\n浏览器可以打开 /docs\n原有 CRUD 接口可以访问和操作\n```"
+    },
+    {
+      "slug": "python后端-fastapi-请求响应模型-patch-tasks-task-id-局部更新任务",
+      "title": "PATCH tasks task_id 局部更新任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/请求响应模型",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "tags": [
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "summary": "PUT 更新任务时通常要求前端提交完整任务数据，例如 title 、 description 、 done 都要传。实际开发中，经常只想修改一个字段，例如只把 done 改成 true ，这时继续使用 PUT 会显得",
+      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\PATCH-tasks-task_id-局部更新任务.md",
+      "body": "# PATCH /tasks/{task_id} 局部更新任务\n\n## 问题是什么\n\n`PUT` 更新任务时通常要求前端提交完整任务数据，例如 `title`、`description`、`done` 都要传。实际开发中，经常只想修改一个字段，例如只把 `done` 改成 `true`，这时继续使用 `PUT` 会显得繁琐。\n\n## 用了什么知识点\n\n- `PATCH`：表示局部更新资源。\n- `TaskUpdate`：专门给局部更新使用的请求模型。\n- 可选字段：`str | None = None`、`bool | None = None`。\n- `model_dump(exclude_unset=True)`：只取用户实际传入的字段。\n- `setattr()`：根据字段名动态修改 ORM 对象属性。\n\n## 怎么解决\n\n在 `schemas.py` 中新增局部更新模型：\n\n```python\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    description: str | None = None\n    done: bool | None = None\n```\n\n在 `main.py` 中新增 `PATCH` 接口：\n\n```python\n@app.patch(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\ndef patch_task(\n    task_id: int,\n    updated_task: schemas.TaskUpdate,\n    db: Session = Depends(get_db)\n):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(status_code=404, detail=\"任务不存在\")\n\n    update_data = updated_task.model_dump(exclude_unset=True)\n\n    for key, value in update_data.items():\n        setattr(task, key, value)\n\n    db.commit()\n    db.refresh(task)\n\n    return task\n```\n\n## 解决了什么问题\n\n现在前端可以只提交要修改的字段，不需要每次更新任务都传完整数据。比如只修改完成状态时，只需要传：\n\n```json\n{\n  \"done\": true\n}\n```\n\n## 易错点\n\n- 不要直接把所有字段都写回数据库，否则没传的字段可能会变成 `None`。\n- 关键是使用 `model_dump(exclude_unset=True)`，只保留用户真正传入的字段。\n- `PUT` 和 `PATCH` 不要混淆：`PUT` 更偏完整更新，`PATCH` 更偏局部更新。\n- `TaskUpdate` 的字段要设置为可选，否则前端仍然必须传完整数据。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n测试 `PATCH /tasks/{task_id}`，只提交一个字段：\n\n```json\n{\n  \"done\": true\n}\n```\n\n预期结果：接口返回完整任务对象，并且只有 `done` 被更新，其他字段保持原值。"
+    },
+    {
+      "slug": "python后端-fastapi-请求响应模型-response-model-完整规范所有接口",
+      "title": "response_model 完整规范所有接口",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/请求响应模型",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "tags": [
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "summary": "接口虽然已经能返回数据，但 PUT 和 DELETE 如果不声明 response model ，返回结构就不够明确。这样会让自动文档不清楚，前端也不容易判断接口到底会返回哪些字段。",
+      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\response_model-完整规范所有接口.md",
+      "body": "## 问题是什么\n\n接口虽然已经能返回数据，但 `PUT` 和 `DELETE` 如果不声明 `response_model`，返回结构就不够明确。这样会让自动文档不清楚，前端也不容易判断接口到底会返回哪些字段。\n\n## 用了什么知识点\n\n- `response_model`：声明接口响应数据结构。\n- `TaskRead`：任务对象的响应模型，包含数据库生成的 `id`。\n- `MessageResponse`：只返回消息时使用的响应模型。\n- Pydantic schema：用模型约束接口输入和输出。\n\n## 怎么解决\n\n在 `schemas.py` 中保留任务响应模型：\n\n```python\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    description: str\n    done: bool\n\n    model_config = ConfigDict(from_attributes=True)\n```\n\n新增删除接口使用的消息响应模型：\n\n```python\nclass MessageResponse(BaseModel):\n    message: str\n```\n\n给所有接口补齐响应模型：\n\n```python\n@app.get(\"/tasks\", response_model=list[schemas.TaskRead])\n@app.get(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\n@app.post(\"/tasks\", response_model=schemas.TaskRead)\n@app.put(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\n@app.delete(\"/tasks/{task_id}\", response_model=schemas.MessageResponse)\n```\n\n## 解决了什么问题\n\n现在每个接口返回什么结构都很清楚：查询、新增、更新返回任务对象；删除返回消息对象。FastAPI 文档也会自动展示准确的响应结构。\n\n## 易错点\n\n- 不要把 `TaskCreate` 当响应模型，它是请求模型，不包含数据库生成的 `id`。\n- `DELETE` 不适合返回 `TaskRead`，因为任务已经被删除了。\n- 如果返回 ORM 对象，需要在响应模型中开启 `from_attributes=True`。\n- 写类型注解时要注意 `schemas` 拼写，拼错会引发 Pydantic / ForwardRef 相关错误。\n\n## 验证方式\n\n启动 FastAPI 后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n检查接口文档中：\n\n- `GET /tasks` 返回 `array of TaskRead`\n- `GET /tasks/{task_id}` 返回 `TaskRead`\n- `POST /tasks` 返回 `TaskRead`\n- `PUT /tasks/{task_id}` 返回 `TaskRead`\n- `DELETE /tasks/{task_id}` 返回 `MessageResponse`\n\n也可以实际请求 `DELETE /tasks/{task_id}`，确认返回：\n\n```json\n{\n  \"message\": \"任务删除成功\"\n}\n```"
+    },
+    {
+      "slug": "python后端-fastapi-请求响应模型-schemas-拼写错误导致forwardref报错",
+      "title": "schemas 拼写错误导致ForwardRef报错",
+      "type": "问题记录",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/请求响应模型",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "tags": [
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "summary": "访问 /docs 时 FastAPI 生成 OpenAPI 文档失败，报出 PydanticUserError，并提示 ForwardRef('shcemas.TaskCreate') 没有完整定义。问题出现在接口参",
+      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas-拼写错误导致ForwardRef报错.md",
+      "body": "# schemas 拼写错误导致 ForwardRef 报错\n\n## 问题是什么\n\n访问 `/docs` 时 FastAPI 生成 OpenAPI 文档失败，报出 PydanticUserError，并提示 `ForwardRef('shcemas.TaskCreate')` 没有完整定义。问题出现在接口参数类型注解里引用了不存在的模块名。\n\n## 用了什么知识点\n\n- Python 类型注解。\n- FastAPI 根据类型注解生成 OpenAPI 文档。\n- Pydantic v2 的模型解析和 JSON Schema 生成。\n- ForwardRef：字符串形式或延迟解析的类型引用。\n- 请求模型模块命名：`schemas`。\n\n## 怎么解决\n\n检查报错中的关键线索：\n\n```text\nForwardRef('shcemas.TaskCreate')\nowner=<function update_task ...>\nalias='updated_task'\n```\n\n说明 `update_task` 函数里的 `updated_task` 参数类型写错了。\n\n错误写法：\n\n```python\ndef update_task(\n    task_id: int,\n    updated_task: shcemas.TaskCreate,\n    db: Session = Depends(get_db)\n):\n    ...\n```\n\n正确写法：\n\n```python\nimport schemas\n\ndef update_task(\n    task_id: int,\n    updated_task: schemas.TaskCreate,\n    db: Session = Depends(get_db)\n):\n    ...\n```\n\n## 解决了什么问题\n\n修正拼写后，FastAPI 能正确找到 `schemas.TaskCreate`，Pydantic 可以正常生成请求体 schema，`/docs` 也能恢复显示。\n\n## 易错点\n\n- `schemas` 很容易拼成 `shcemas`。\n- 这类错误不一定在启动服务时立刻暴露，可能在访问 `/docs` 生成 OpenAPI 时才爆出来。\n- 报错很长时要抓关键词：`ForwardRef`、函数名、参数名、拼错的类型名。\n- 这不是数据库错误，也不是 `response_model` 本身的问题。\n\n## 验证方式\n\n- 修正 `shcemas.TaskCreate` 为 `schemas.TaskCreate`。\n- 确认文件顶部有 `import schemas`。\n- 重启服务或等待 reload。\n- 打开 `/docs`，如果文档正常展示，说明类型引用恢复正常。"
+    },
+    {
+      "slug": "python后端-fastapi-请求响应模型-schemaspy-拆分请求模型",
+      "title": "schemas.py 拆分请求模型",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/请求响应模型",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "tags": [
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "summary": "数据库版 CRUD 完成后， main.py 里开始混合 FastAPI app、数据库依赖、接口函数和 Pydantic 模型。代码继续变大时，所有内容堆在 main.py 会难以维护。",
+      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas.py-拆分请求模型.md",
+      "body": "## 问题是什么\n\n数据库版 CRUD 完成后，`main.py` 里开始混合 FastAPI app、数据库依赖、接口函数和 Pydantic 模型。代码继续变大时，所有内容堆在 `main.py` 会难以维护。\n\n## 用了什么知识点\n\n- Pydantic `BaseModel`。\n- 请求体模型。\n- FastAPI 项目分层。\n- `schemas.py` 用于存放请求/响应数据结构。\n- `models.py` 和 `schemas.py` 的职责区分。\n\n## 怎么解决\n\n新建 `schemas.py`，把请求体模型从 `main.py` 中拆出去。\n\n```python\nfrom pydantic import BaseModel\n\nclass TaskCreate(BaseModel):\n    title: str\n    description: str\n    done: bool = False\n```\n\n然后在 `main.py` 中导入：\n\n```python\nimport schemas\n```\n\n把接口参数从原来的：\n\n```python\ntask: Task\nupdated_task: Task\n```\n\n改成：\n\n```python\ntask: schemas.TaskCreate\nupdated_task: schemas.TaskCreate\n```\n\n## 解决了什么问题\n\n`main.py` 不再负责定义请求体结构，接口逻辑和数据结构开始分离。项目从“能跑”继续向“结构清晰的小型后端项目”靠近。\n\n## 易错点\n\n- `models.TaskModel` 是数据库表模型，负责和数据库表对应。\n- `schemas.TaskCreate` 是请求体模型，负责校验客户端传来的 JSON。\n- `TaskCreate` 不应该包含数据库自动生成的 `id`。\n- 拆出 `schemas.py` 后，要记得删除或停止使用 `main.py` 里原来的 `Task` 类。\n\n## 验证方式\n\n- 启动服务。\n- 打开 `/docs`。\n- 执行 `POST /tasks` 和 `PUT /tasks/{task_id}`。\n- 如果请求体结构仍然正常展示，并且接口能正常新增/更新任务，说明请求模型拆分成功。"
+    },
+    {
+      "slug": "python后端-fastapi-请求响应模型-schemaspy-添加响应模型",
+      "title": "schemas.py 添加响应模型",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/请求响应模型",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "tags": [
+        "FASTAPI",
+        "请求响应模型"
+      ],
+      "summary": "TaskCreate 只描述客户端提交的数据，但接口返回给客户端的数据也需要明确结构。数据库返回的是 SQLAlchemy ORM 对象，如果不声明响应模型，接口返回会不够规范，也不方便控制哪些字段应该暴露。",
+      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas.py-添加响应模型.md",
+      "body": "## 问题是什么\n\n`TaskCreate` 只描述客户端提交的数据，但接口返回给客户端的数据也需要明确结构。数据库返回的是 SQLAlchemy ORM 对象，如果不声明响应模型，接口返回会不够规范，也不方便控制哪些字段应该暴露。\n\n## 用了什么知识点\n\n- Pydantic 响应模型。\n- FastAPI `response_model`。\n- 请求模型和响应模型分离。\n- SQLAlchemy ORM 对象转 Pydantic 模型。\n- `orm_mode = True`：Pydantic v1 中允许从 ORM 对象读取字段。\n\n## 怎么解决\n\n在 `schemas.py` 中保留 `TaskCreate`，再新增 `TaskRead`。\n\n```python\nfrom pydantic import BaseModel\n\nclass TaskCreate(BaseModel):\n    title: str\n    description: str\n    done: bool = False\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    description: str\n    done: bool\n\n    class Config:\n        orm_mode = True\n```\n\n然后在接口上声明 `response_model`。\n\n```python\n@app.get(\"/tasks\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n\n@app.get(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\ndef get_task(task_id: int, db: Session = Depends(get_db)):\n    ...\n\n@app.post(\"/tasks\", response_model=schemas.TaskRead)\ndef create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):\n    ...\n```\n\n## 解决了什么问题\n\n接口请求结构和响应结构分开管理。客户端创建任务时不用传 `id`，但服务器返回任务时会包含数据库生成的 `id`，接口文档也更清晰。\n\n## 易错点\n\n- `TaskCreate` 不包含 `id`，因为 `id` 由数据库生成。\n- `TaskRead` 包含 `id`，因为响应给客户端时需要展示任务唯一标识。\n- 接口返回 SQLAlchemy ORM 对象时，Pydantic v1 需要 `orm_mode = True`。\n- `response_model=list[schemas.TaskRead]` 用于返回列表，`response_model=schemas.TaskRead` 用于返回单个对象。\n\n## 验证方式\n\n- 启动服务并打开 `/docs`。\n- 查看 `GET /tasks` 的响应结构是否显示为任务列表。\n- 查看 `POST /tasks` 的请求体不要求 `id`，响应体包含 `id`。\n- 执行新增和查询接口，确认返回字段符合 `TaskRead`。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-databasepy-数据库连接配置",
+      "title": "SQLite 数据库地址",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "项目准备从内存列表切换到数据库存储，但在写数据库表模型和 CRUD 之前，需要先有一个统一的数据库连接入口。否则后续每个接口都会重复写连接逻辑，项目结构会越来越乱。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\database.py-数据库连接配置.md",
+      "body": "# database.py 数据库连接配置\n\n## 问题是什么\n\n项目准备从内存列表切换到数据库存储，但在写数据库表模型和 CRUD 之前，需要先有一个统一的数据库连接入口。否则后续每个接口都会重复写连接逻辑，项目结构会越来越乱。\n\n## 用了什么知识点\n\n- `create_engine()`：创建 SQLAlchemy 数据库引擎。\n- `sessionmaker()`：创建数据库会话工厂。\n- `declarative_base()`：创建 ORM 模型基类。\n- SQLite 连接地址：`sqlite:///./tasks.db`。\n- `connect_args={\"check_same_thread\": False}`：FastAPI 使用 SQLite 时常见的线程检查配置。\n- 模块分层：把数据库基础配置放到 `database.py`，不要继续堆在 `main.py`。\n\n## 怎么解决\n\n创建 `database.py`，集中保存数据库地址、引擎、会话工厂和 ORM 基类。\n\n```python\nfrom sqlalchemy import create_engine\nfrom sqlalchemy.orm import sessionmaker, declarative_base\n\nDATABASE_URL = \"sqlite:///./tasks.db\"\n\n# 创建数据库引擎\nengine = create_engine(\n    DATABASE_URL,\n    connect_args={\"check_same_thread\": False}\n)\n\n# 创建数据库会话 -- 每次请求数据库操作上下文\nSessionLocal = sessionmaker(\n    autocommit=False,\n    autoflush=False,\n    bind=engine\n)\n\n# ORM 基类\nBase = declarative_base()\n```\n\n## 解决了什么问题\n\n项目有了稳定的数据库基础层。后续 `models.py` 可以继承 `Base` 定义数据表，接口层可以通过 `SessionLocal` 创建数据库会话，不需要在每个接口里重新配置数据库连接。\n\n## 易错点\n\n- `SessionLocal` 是会话工厂，不是数据库连接结果本身。\n- `Base` 是 ORM 模型的基类，不代表具体的数据表。\n- `autocommit=False` 表示数据库修改后通常需要显式提交。\n- `autoflush=False` 可以先避免 SQLAlchemy 自动刷新带来的理解负担。\n- SQLite 的连接字符串是 `sqlite:///./tasks.db`，斜杠数量不要写错。\n\n## 验证方式\n\n- 确认项目根目录存在 `database.py`。\n- 确认文件中能正常导入 `engine`、`SessionLocal`、`Base`。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-delete-tasks-task-id-删除数据库任务",
+      "title": "DELETE tasks task_id 删除数据库任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "数据库版 GET 、 POST 、 PUT 已经完成，但删除任务仍需要从内存列表写法切换为数据库写法。否则任务删除不会真正作用于 SQLite 数据库。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\DELETE-tasks-task_id-删除数据库任务.md",
+      "body": "# DELETE /tasks/{task_id} 删除数据库任务\n\n## 问题是什么\n\n数据库版 `GET`、`POST`、`PUT` 已经完成，但删除任务仍需要从内存列表写法切换为数据库写法。否则任务删除不会真正作用于 SQLite 数据库。\n\n## 用了什么知识点\n\n- FastAPI `DELETE` 接口用于删除资源。\n- 路径参数：`task_id: int`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter().first()` 查询待删除记录。\n- `db.delete()` 标记删除 ORM 对象。\n- `db.commit()` 提交删除事务。\n- `HTTPException(status_code=404)` 处理任务不存在。\n\n## 怎么解决\n\n先根据 `task_id` 查询任务是否存在。存在则删除并提交；不存在则返回 404。\n\n```python\n@app.delete(\"/tasks/{task_id}\")\ndef delete_task(task_id: int, db: Session = Depends(get_db)):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    db.delete(task)\n    db.commit()\n\n    return {\"message\": \"任务删除成功\"}\n```\n\n## 解决了什么问题\n\n`DELETE /tasks/{task_id}` 可以真正删除数据库中的任务记录。至此，数据库版 `GET`、`POST`、`PUT`、`DELETE` 全部完成，任务管理 API 具备完整数据库 CRUD 能力。\n\n## 易错点\n\n- `db.delete(task)` 只是标记删除，必须 `db.commit()` 才会真正写入数据库。\n- 删除前必须先查任务是否存在。\n- 找不到任务要返回 404，而不是假装删除成功。\n- 删除成功后再查询同一个 id，应该返回 404。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回的 `id`。\n- 执行 `DELETE /tasks/{id}`。\n- 再执行 `GET /tasks/{id}`。\n- 如果返回 404，说明任务已从数据库删除。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-get-db-数据库会话依赖",
+      "title": "get_db 数据库会话依赖",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "数据库和表已经能创建，但接口函数还不能直接操作数据库。每次请求都需要一个数据库会话，并且请求结束后要关闭会话，否则连接管理会混乱。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\get_db-数据库会话依赖.md",
+      "body": "# get_db 数据库会话依赖\n\n## 问题是什么\n\n数据库和表已经能创建，但接口函数还不能直接操作数据库。每次请求都需要一个数据库会话，并且请求结束后要关闭会话，否则连接管理会混乱。\n\n## 用了什么知识点\n\n- `SessionLocal`：数据库会话工厂。\n- SQLAlchemy `Session`：数据库操作上下文。\n- FastAPI 依赖注入。\n- `yield` 依赖：请求前创建资源，请求后清理资源。\n- `try/finally`：保证接口执行结束后关闭数据库会话。\n\n## 怎么解决\n\n在 `main.py` 中创建 `get_db()` 函数。\n\n```python\nfrom sqlalchemy.orm import Session\nfrom database import SessionLocal\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n```\n\n## 解决了什么问题\n\n每个接口都可以通过依赖注入拿到一次请求范围内的数据库会话。接口执行完后，数据库会话会被自动关闭，避免连接泄漏。\n\n## 易错点\n\n- 这里用 `yield db`，不是 `return db`。\n- `finally: db.close()` 不要漏掉，否则会话不会被及时释放。\n- `SessionLocal()` 是创建会话，不是执行查询。\n- `get_db()` 本身不会操作数据库，只负责把数据库会话交给接口。\n\n## 验证方式\n\n- 确认 `main.py` 能导入 `SessionLocal`。\n- 确认 `get_db()` 写在接口函数之前。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-get-tasks-查询数据库任务",
+      "title": "GET tasks 查询数据库任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "接口已经能拿到数据库会话，但 GET /tasks 仍然可能在读取内存列表 tasks [] 。这样即使数据库表已经创建，查询接口也没有真正使用数据库。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\GET-tasks-查询数据库任务.md",
+      "body": "# GET /tasks 查询数据库任务\n\n## 问题是什么\n\n接口已经能拿到数据库会话，但 `GET /tasks` 仍然可能在读取内存列表 `tasks = []`。这样即使数据库表已经创建，查询接口也没有真正使用数据库。\n\n## 用了什么知识点\n\n- FastAPI `Depends(get_db)` 依赖注入。\n- SQLAlchemy `Session` 数据库会话。\n- `db.query(models.TaskModel)` 查询 ORM 模型对应的数据表。\n- `.all()` 获取全部查询结果。\n- 从内存数据切换到数据库数据。\n\n## 怎么解决\n\n给接口函数添加数据库会话参数，并用 SQLAlchemy 查询 `TaskModel`。\n\n```python\nfrom fastapi import Depends\nfrom sqlalchemy.orm import Session\n\n@app.get(\"/tasks\")\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n核心语句：\n\n```python\ndb.query(models.TaskModel).all()\n```\n\n## 解决了什么问题\n\n`GET /tasks` 不再依赖内存列表，而是开始读取 SQLite 数据库中的 `tasks` 表。项目的数据来源从临时内存转向持久化数据库。\n\n## 易错点\n\n- `Depends(get_db)` 不要写成直接调用 `get_db()`。\n- `models.TaskModel` 指的是 ORM 模型类，不是 Pydantic 请求模型。\n- `.all()` 返回列表，即使数据库为空也会返回 `[]`。\n- 数据库里还没有任务时，看到空列表是正常现象。\n\n## 验证方式\n\n- 启动服务。\n- 打开 `/docs`。\n- 执行 `GET /tasks`。\n- 如果返回 `[]`，说明接口已经能正常查询数据库，只是当前还没有数据。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-get-tasks-task-id-查询单个数据库任务",
+      "title": "GET tasks task_id 查询单个数据库任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "GET /tasks 已经能查询数据库中的全部任务，但真实 API 还需要根据 id 查询单个任务。如果继续遍历内存列表，就没有真正使用数据库，也不能和数据库新增的数据保持一致。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\GET-tasks-task_id-查询单个数据库任务.md",
+      "body": "# GET /tasks/{task_id} 查询单个数据库任务\n\n## 问题是什么\n\n`GET /tasks` 已经能查询数据库中的全部任务，但真实 API 还需要根据 id 查询单个任务。如果继续遍历内存列表，就没有真正使用数据库，也不能和数据库新增的数据保持一致。\n\n## 用了什么知识点\n\n- 路径参数：`task_id: int`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter()` 添加查询条件。\n- `models.TaskModel.id == task_id` 表示筛选指定 id。\n- `.first()` 获取第一条匹配结果。\n- `HTTPException(status_code=404)` 处理资源不存在。\n\n## 怎么解决\n\n把原来的内存遍历查询改成数据库条件查询。\n\n```python\n@app.get(\"/tasks/{task_id}\")\ndef get_task(task_id: int, db: Session = Depends(get_db)):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    return task\n```\n\n核心查询：\n\n```python\ndb.query(models.TaskModel).filter(\n    models.TaskModel.id == task_id\n).first()\n```\n\n## 解决了什么问题\n\n接口可以根据任务 id 从数据库中查询单条任务。数据库新增后的任务，现在既能通过 `GET /tasks` 查询全部，也能通过 `GET /tasks/{task_id}` 精确查询单个。\n\n## 易错点\n\n- `.first()` 找不到数据时返回 `None`，不是空列表。\n- `models.TaskModel.id == task_id` 是 SQLAlchemy 查询条件，不是普通赋值。\n- 找不到任务时要返回 404，不能直接返回 `None`。\n- `task_id` 来自 URL 路径，不来自请求体。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回结果里的 `id`。\n- 执行 `GET /tasks/{id}`。\n- 如果 id 存在，应返回单个任务；如果 id 不存在，应返回 404。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-mainpy-自动创建数据库表",
+      "title": "main.py 自动创建数据库表",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "已经定义了 database.py 和 models.py ，但数据库表还没有真正创建出来。仅仅写好 ORM 模型类，不等于 SQLite 数据库里已经有 tasks 表。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\main.py-自动创建数据库表.md",
+      "body": "# main.py 自动创建数据库表\n\n## 问题是什么\n\n已经定义了 `database.py` 和 `models.py`，但数据库表还没有真正创建出来。仅仅写好 ORM 模型类，不等于 SQLite 数据库里已经有 `tasks` 表。\n\n## 用了什么知识点\n\n- `import models`：让 SQLAlchemy 读取已经定义的 ORM 模型。\n- `engine`：数据库连接引擎。\n- `Base.metadata`：SQLAlchemy 收集到的所有表结构元数据。\n- `create_all(bind=engine)`：根据 ORM 模型自动创建数据库表。\n- FastAPI 启动阶段执行初始化逻辑。\n\n## 怎么解决\n\n在 `main.py` 中导入 `models` 和 `engine`，然后调用建表方法。\n\n```python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\nimport models\nfrom database import engine\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n```\n\n核心语句：\n\n```python\nmodels.Base.metadata.create_all(bind=engine)\n```\n\n它会读取所有继承 `Base` 的 ORM 模型，并通过 `engine` 在 SQLite 中创建对应的数据表。\n\n## 解决了什么问题\n\n项目从“只定义了表结构”进入到“数据库中真的可以生成表”。运行服务后，项目目录中会出现 `tasks.db`，后续接口就可以围绕真实数据库表进行增删改查。\n\n## 易错点\n\n- 必须 `import models`，否则 SQLAlchemy 可能不知道 `TaskModel` 已存在。\n- `create_all()` 只会创建不存在的表，不适合后期复杂数据库迁移。\n- `bind=engine` 不能漏掉，否则不知道连接哪个数据库。\n- 这一步只是建表，还没有把接口从 `tasks = []` 改成数据库操作。\n\n## 验证方式\n\n- 运行 `uvicorn main:app --reload`。\n- 查看项目目录是否出现 `tasks.db`。\n- 后续可以通过数据库工具或 SQLAlchemy 查询确认存在 `tasks` 表。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-modelspy-定义任务表模型",
+      "title": "models.py 定义任务表模型",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "已经有了 database.py 的数据库连接配置，但数据库里还没有真正的任务表。后端需要告诉 SQLAlchemy：任务表叫什么、有哪些字段、每个字段是什么类型。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\models.py-定义任务表模型.md",
+      "body": "# models.py 定义任务表模型\n\n## 问题是什么\n\n已经有了 `database.py` 的数据库连接配置，但数据库里还没有真正的任务表。后端需要告诉 SQLAlchemy：任务表叫什么、有哪些字段、每个字段是什么类型。\n\n## 用了什么知识点\n\n- ORM Model：用 Python 类映射数据库表。\n- `Base`：所有 ORM 模型类的基类。\n- `Column`：定义数据库表中的列。\n- `Integer`、`String`、`Boolean`：SQLAlchemy 字段类型。\n- `primary_key=True`：主键，唯一标识一条记录。\n- `index=True`：索引，方便后续查询。\n- `default=False`：字段默认值。\n\n## 怎么解决\n\n创建 `models.py`，定义 `TaskModel` 类，并继承 `database.py` 中的 `Base`。\n\n```python\nfrom sqlalchemy import Column, Integer, String, Boolean\n\nfrom database import Base\n\nclass TaskModel(Base):\n    __tablename__ = \"tasks\"\n\n    id = Column(Integer, primary_key=True, index=True)\n    title = Column(String, index=True)\n    description = Column(String)\n    done = Column(Boolean, default=False)\n```\n\n## 解决了什么问题\n\n项目第一次拥有了“数据库表结构”的定义。`TaskModel` 不只是普通 Python 类，它描述了数据库中的 `tasks` 表，为后续自动建表和数据库 CRUD 做准备。\n\n## 易错点\n\n- `TaskModel` 必须继承 `Base`，否则 SQLAlchemy 不会把它当成 ORM 表模型。\n- `__tablename__` 前后都是双下划线，不要写成 `_tablename_`。\n- `Column(String)` 里的 `String` 是 SQLAlchemy 类型，不是 Python 原生 `str`。\n- `id` 要设置 `primary_key=True`，否则数据库不知道哪一列唯一标识任务。\n- 定义模型并不会立刻创建数据库表；没有调用 `Base.metadata.create_all()` 时，数据库中不会生成对应表。\n\n## 验证方式\n\n- 确认项目根目录存在 `models.py`。\n- 确认 `models.py` 可以导入 `Base`。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-post-tasks-新增数据库任务",
+      "title": "POST tasks 新增数据库任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "GET /tasks 已经能从数据库查询任务，但数据库里还没有新增任务的入口。如果 POST /tasks 仍然把任务追加到内存列表 tasks [] ，新增的数据不会持久保存，服务重启后仍然会丢失。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\POST-tasks-新增数据库任务.md",
+      "body": "# POST /tasks 新增数据库任务\n\n## 问题是什么\n\n`GET /tasks` 已经能从数据库查询任务，但数据库里还没有新增任务的入口。如果 `POST /tasks` 仍然把任务追加到内存列表 `tasks = []`，新增的数据不会持久保存，服务重启后仍然会丢失。\n\n## 用了什么知识点\n\n- FastAPI `POST` 接口用于创建资源。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy ORM 对象创建：`models.TaskModel(...)`。\n- `db.add()`：把新对象加入数据库会话。\n- `db.commit()`：提交事务，真正写入数据库。\n- `db.refresh()`：刷新 ORM 对象，拿到数据库生成后的最新字段，例如 `id`。\n\n## 怎么解决\n\n把原来往内存列表 `tasks` 里追加字典的写法，改成创建 `TaskModel` 对象并提交到数据库。\n\n```python\n@app.post(\"/tasks\")\ndef create_task(task: Task, db: Session = Depends(get_db)):\n    db_task = models.TaskModel(\n        title=task.title,\n        description=task.description,\n        done=task.done\n    )\n\n    db.add(db_task)\n    db.commit()\n    db.refresh(db_task)\n\n    return db_task\n```\n\n核心三步：\n\n```python\ndb.add(db_task)\ndb.commit()\ndb.refresh(db_task)\n```\n\n## 解决了什么问题\n\n`POST /tasks` 开始真正把任务写入 SQLite 数据库。新增任务不再只存在内存里，后续再调用 `GET /tasks` 可以从数据库查到刚创建的任务。\n\n## 易错点\n\n- `db.add()` 只是加入会话，还没有真正写入数据库。\n- 必须执行 `db.commit()`，否则数据库不会保存这条任务。\n- `id` 通常由数据库生成，所以提交后要用 `db.refresh(db_task)` 拿到最新对象。\n- `task` 是请求体 Pydantic 模型，`db_task` 是 SQLAlchemy ORM 模型，不要混用。\n- 如果忘记 `db: Session = Depends(get_db)`，接口里就没有数据库会话可用。\n\n## 验证方式\n\n- 打开 `/docs`。\n- 执行 `POST /tasks`，body 示例：\n\n```json\n{\n  \"title\": \"学习数据库新增\",\n  \"description\": \"把任务保存到 SQLite\",\n  \"done\": false\n}\n```\n\n- 再执行 `GET /tasks`。\n- 如果能看到刚刚新增的任务，并且带有数据库生成的 `id`，说明新增成功。"
+    },
+    {
+      "slug": "python后端-fastapi-数据库接入-put-tasks-task-id-更新数据库任务",
+      "title": "PUT tasks task_id 更新数据库任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/数据库接入",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "tags": [
+        "FASTAPI",
+        "数据库接入"
+      ],
+      "summary": "任务已经可以写入数据库、查询全部和查询单个，但修改任务仍然需要从内存列表写法切换到数据库写法。否则更新后的任务不会持久保存。",
+      "source": "PYTHON后端\\FASTAPI\\数据库接入\\PUT-tasks-task_id-更新数据库任务.md",
+      "body": "# PUT /tasks/{task_id} 更新数据库任务\n\n## 问题是什么\n\n任务已经可以写入数据库、查询全部和查询单个，但修改任务仍然需要从内存列表写法切换到数据库写法。否则更新后的任务不会持久保存。\n\n## 用了什么知识点\n\n- FastAPI `PUT` 接口用于更新资源。\n- 路径参数：`task_id: int`。\n- 请求体模型：`updated_task: Task`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter().first()` 查询待更新记录。\n- 修改 ORM 对象字段。\n- `db.commit()` 提交更新。\n- `db.refresh()` 刷新更新后的对象。\n- `HTTPException(status_code=404)` 处理任务不存在。\n\n## 怎么解决\n\n先根据 `task_id` 查询数据库中的任务。如果任务不存在，返回 404；如果存在，就修改 ORM 对象字段并提交。\n\n```python\n@app.put(\"/tasks/{task_id}\")\ndef update_task(\n    task_id: int,\n    updated_task: Task,\n    db: Session = Depends(get_db)\n):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    task.title = updated_task.title\n    task.description = updated_task.description\n    task.done = updated_task.done\n\n    db.commit()\n    db.refresh(task)\n\n    return task\n```\n\n## 解决了什么问题\n\n`PUT /tasks/{task_id}` 可以真正更新 SQLite 数据库中的任务记录。任务修改后，再通过 `GET /tasks/{task_id}` 查询，会看到持久化后的新内容。\n\n## 易错点\n\n- 不能再使用 `tasks[index] = {...}`，因为现在数据来源已经是数据库。\n- 必须先查询任务是否存在，不能直接创建一个新对象替换。\n- 修改 ORM 对象字段后要执行 `db.commit()`，否则数据库不会保存更新。\n- `db.refresh(task)` 用于拿到数据库提交后的最新对象。\n- 找不到任务时要返回 404，而不是返回空对象。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回的 `id`。\n- 执行 `PUT /tasks/{id}`，body 示例：\n\n```json\n{\n  \"title\": \"更新后的任务标题\",\n  \"description\": \"任务已经通过数据库更新\",\n  \"done\": true\n}\n```\n\n- 再执行 `GET /tasks/{id}`。\n- 如果返回内容已变成更新后的字段，说明数据库更新成功。"
+    },
+    {
+      "slug": "python后端-fastapi-crud接口-delete-tasks-task-id-删除任务",
+      "title": "DELETE tasks task_id 删除任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/CRUD接口",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "CRUD接口"
+      ],
+      "tags": [
+        "FASTAPI",
+        "CRUD接口"
+      ],
+      "summary": "任务可以新增、查询、修改后，还需要能删除不再需要的任务。否则任务列表只能越堆越多，CRUD 也不完整。",
+      "source": "PYTHON后端\\FASTAPI\\CRUD接口\\DELETE-tasks-task_id-删除任务.md",
+      "body": "# DELETE 删除任务\n\n## 问题是什么\n\n任务可以新增、查询、修改后，还需要能删除不再需要的任务。否则任务列表只能越堆越多，CRUD 也不完整。\n\n## 用了什么知识点\n\n- FastAPI 的 `@app.delete()` 路由。\n- REST API 中 `DELETE` 表示删除资源。\n- 路径参数定位要删除的任务。\n- Python 的 `del` 关键字删除列表指定下标元素。\n- `enumerate()` 找到元素对应下标。\n- 404 异常表示目标资源不存在。\n\n## 怎么解决\n\n在 `main.py` 中新增删除接口，遍历任务列表，找到匹配 id 后删除该下标对应的元素。\n\n```python\n@app.delete(\"/tasks/{task_id}\")\ndef delete_task(task_id: int):\n    for index, task in enumerate(tasks):\n        if task[\"id\"] == task_id:\n            del tasks[index]\n            return {\"message\": \"任务删除成功\"}\n\n    raise HTTPException(status_code=404, detail=\"任务不存在\")\n```\n\n## 解决了什么问题\n\n项目拥有完整的基础 CRUD API：查询全部、查询单个、新增、修改、删除。这个阶段完成后，已经具备初级任务管理后端接口能力。\n\n## 易错点\n\n- 删除前要先确认任务存在。\n- `del tasks[index]` 会直接改变原列表，删除后不要继续依赖旧下标。\n- 删除成功后返回信息即可，不一定需要返回已删除对象。\n- 找不到任务时仍然要抛出 404。\n\n## 验证方式\n\n- 打开 `/docs`。\n- 执行 `DELETE /tasks/{task_id}`。\n- 再执行 `GET /tasks`。\n- 如果对应任务消失，说明删除成功。"
+    },
+    {
+      "slug": "python后端-fastapi-crud接口-put-tasks-task-id-更新任务",
+      "title": "PUT 更新任务",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/CRUD接口",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "CRUD接口"
+      ],
+      "tags": [
+        "FASTAPI",
+        "CRUD接口"
+      ],
+      "summary": "前面已经能查询和新增任务，但还不能修改已有任务。真实任务管理 API 需要支持用户把任务标题、描述或完成状态改掉。",
+      "source": "PYTHON后端\\FASTAPI\\CRUD接口\\PUT-tasks-task_id-更新任务.md",
+      "body": "## 问题是什么\n\n前面已经能查询和新增任务，但还不能修改已有任务。真实任务管理 API 需要支持用户把任务标题、描述或完成状态改掉。\n\n## 用了什么知识点\n\n- FastAPI 的 `@app.put()` 路由。\n- REST API 中 `PUT` 表示更新资源。\n- 路径参数：`task_id: int`。\n- 请求体模型：`updated_task: Task`。\n- Python 的 `enumerate()` 同时拿到列表下标和元素。\n- `HTTPException(status_code=404)` 处理资源不存在。\n\n## 怎么解决\n\n在 `main.py` 中新增更新接口，通过 URL 找到任务 id，再用请求体里的新数据替换原列表中的元素。\n\n```python\n@app.put(\"/tasks/{task_id}\")\ndef update_task(task_id: int, updated_task: Task):\n    for index, task in enumerate(tasks):\n        if task[\"id\"] == task_id:\n            tasks[index] = {\n                \"id\": task_id,\n                \"title\": updated_task.title,\n                \"description\": updated_task.description,\n                \"done\": updated_task.done,\n            }\n            return {\"message\": \"任务更新成功\", \"task\": tasks[index]}\n\n    raise HTTPException(status_code=404, detail=\"任务不存在\")\n```\n\n## 解决了什么问题\n\n项目从“只能创建和查看任务”升级为“可以修改已有任务”。这补上了 CRUD 中的 Update 能力，也练习了路径参数和请求体同时使用的接口写法。\n\n## 易错点\n\n- `task = xxx` 只会修改循环变量，不会修改原列表。\n- 必须用 `enumerate(tasks)` 拿到 `index`，再执行 `tasks[index] = xxx`。\n- 找不到任务时不要返回假成功，要抛出 404。\n- 请求体字段要和 `Task` 模型一致，否则 FastAPI 会校验失败。\n\n## 验证方式\n\n- 打开 `/docs`。\n- 执行 `PUT /tasks/{task_id}`。\n- 示例 body：\n\n```json\n{\n  \"title\": \"学习 FastAPI PUT\",\n  \"description\": \"正在学习更新接口\",\n  \"done\": true\n}\n```\n\n- 再执行 `GET /tasks`，确认对应任务内容已变化。"
     },
     {
       "slug": "python后端-fastapi-routers-routers-taskspy-迁移任务接口",
@@ -306,164 +733,6 @@
       "body": "## 问题是什么\n\n任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 `response_model` 和 `PATCH`。如果继续把所有接口都放在 `main.py`，文件会越来越长，学习时也不容易区分“应用入口”和“业务接口”。\n\n## 用了什么知识点\n\n- `APIRouter`：把同一类接口组织到单独模块。\n- `prefix=\"/tasks\"`：给任务接口统一加路径前缀。\n- `tags=[\"tasks\"]`：在 Swagger 文档中给任务接口分组。\n- `app.include_router()`：把拆出去的路由重新挂回 FastAPI 应用。\n- 项目分层：`main.py` 做入口，`routers/tasks.py` 写任务接口。\n\n## 怎么解决\n\n创建目录结构：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    ├── __init__.py\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中定义路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n把原来的任务接口从 `@app.get()`、`@app.post()` 等形式改为 `@router.get()`、`@router.post()`：\n\n```python\n@router.get(\"\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n在 `main.py` 中只保留应用入口和路由挂载：\n\n```python\nfrom fastapi import FastAPI\n\nimport models\nfrom database import engine\nfrom routers import tasks\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再堆满所有接口，任务相关代码有了自己的位置。以后继续扩展用户、登录、文章、文件上传等功能时，可以继续新增不同的 router 文件，而不是把所有内容混在一个文件里。\n\n## 易错点\n\n- `prefix=\"/tasks\"` 已经包含 `/tasks`，所以查询全部任务应写 `@router.get(\"\")`，不是 `@router.get(\"/tasks\")`。\n- 查询单个任务应写 `@router.get(\"/{task_id}\")`，最终路径才是 `/tasks/{task_id}`。\n- 拆分后别忘了在 `main.py` 里 `app.include_router(tasks.router)`。\n- `routers` 文件夹建议创建 `__init__.py`，让它成为稳定的 Python 包。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认原来的接口路径没有变化：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径仍然正常，说明迁移成功。"
     },
     {
-      "slug": "python后端-fastapi-routers-apirouter-拆分项目结构",
-      "title": "APIRouter 拆分项目结构",
-      "type": "FastAPI",
-      "date": "2026-06-05",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/routers",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "routers"
-      ],
-      "tags": [
-        "FASTAPI",
-        "routers"
-      ],
-      "summary": "学习阶段把所有接口都写在 main.py 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 main.py ，后面会很难维护和查找。",
-      "source": "PYTHON后端\\FASTAPI\\routers\\APIRouter-拆分项目结构.md",
-      "body": "## 问题是什么\n\n学习阶段把所有接口都写在 `main.py` 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 `main.py`，后面会很难维护和查找。\n\n## 用了什么知识点\n\n- `APIRouter`：把一组相关接口拆成一个独立路由模块。\n- `prefix`：给一组接口统一添加路径前缀，例如 `/tasks`。\n- `tags`：给接口文档分组。\n- `app.include_router()`：把拆出去的路由挂回 FastAPI 应用。\n- 模块化项目结构：`main.py` 只负责应用入口，具体接口放到 `routers/`。\n\n## 怎么解决\n\n推荐把项目整理成：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中创建路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n原来的：\n\n```python\n@app.get(\"/tasks\")\n```\n\n拆出去后变成：\n\n```python\n@router.get(\"\")\n```\n\n因为 `/tasks` 已经放进了 `prefix`。\n\n最后在 `main.py` 中挂载：\n\n```python\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再承担所有业务接口，只保留应用入口、建表和路由挂载。任务相关接口集中到 `routers/tasks.py`，以后新增用户、认证、文章等模块时，也可以继续按同样方式拆分。\n\n## 易错点\n\n- 使用了 `prefix=\"/tasks\"` 后，`@router.get(\"\")` 才对应 `GET /tasks`。\n- 如果写成 `@router.get(\"/tasks\")`，最终路径会变成 `/tasks/tasks`。\n- 拆出去后要在 `main.py` 中执行 `app.include_router(tasks.router)`。\n- `routers` 文件夹需要有 `__init__.py`，这样 Python 才能稳定按包导入。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认任务接口仍然存在：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径没有变，说明拆分成功。"
-    },
-    {
-      "slug": "linux入门-问题记录-wsl代理-apt和docker下载卡住",
-      "title": "WSL代理 apt和Docker下载卡住",
-      "type": "问题记录",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "Linux入门/问题记录",
-      "categoryPath": [
-        "Linux入门",
-        "问题记录"
-      ],
-      "tags": [
-        "问题记录"
-      ],
-      "summary": "在 WSL2 Ubuntu 26.04 里安装 Docker 时， sudo apt update 出现 Waiting for headers ，Docker 拉取 hello world 镜像时出现 TLS ha",
-      "source": "Linux入门\\问题记录\\WSL代理-apt和Docker下载卡住.md",
-      "body": "## 问题是什么\n\n在 WSL2 Ubuntu 26.04 里安装 Docker 时，`sudo apt update` 出现 `Waiting for headers`，Docker 拉取 `hello-world` 镜像时出现 `TLS handshake timeout`。同时 Windows 浏览器可以访问 Google/YouTube，容易误以为 Linux 终端也应该自动可用。\n\n## 用了什么知识点\n\nWSL 和 Windows 浏览器不是同一个网络上下文。浏览器能走 Windows 系统代理，不代表 WSL 里的 `apt`、`curl`、Docker daemon 自动走同一个代理。\n\n本质理解：`apt` 下载软件包、普通 shell 命令访问网络、Docker daemon 拉镜像，是三类不同的网络请求，代理配置可以互不相同。\n\n## 怎么解决\n\n先确认系统：\n\n```bash\nuname -a\ncat /etc/os-release\n```\n\n确认是 WSL2 Ubuntu 26.04 后，发现开 VPN 时 `apt update` 卡住，关闭 VPN 后 Ubuntu 源恢复正常。后来需要通过 Clash Verge 代理加速安装，关键是测试可用代理地址：\n\n```bash\ncurl -x http://<local-proxy> -I https://www.google.com\n```\n\n成功后，用代理安装 Ubuntu 仓库里的 Docker 包：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\nDocker 拉镜像失败时，需要给 Docker daemon 单独配置代理：\n\n```bash\nsudo mkdir -p /etc/systemd/system/docker.service.d\nsudo nano /etc/systemd/system/docker.service.d/http-proxy.conf\n```\n\n写入：\n\n```ini\n[Service]\nEnvironment=\"HTTP_PROXY=<redacted>\"\nEnvironment=\"HTTPS_PROXY=<redacted>\"\nEnvironment=\"NO_PROXY=<redacted>\"\n```\n\n重启 Docker：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl restart docker\nsudo systemctl show --property=Environment docker\n```\n\n## 解决了什么问题\n\n解决了两个层面的网络问题：`apt` 能安装 Docker 软件包，Docker daemon 也能从 Docker Hub 拉取镜像。\n\n## 易错点\n\n不要认为“浏览器能上网”就等于 WSL 里所有命令都能上网。`http_proxy`/`https_proxy` 只对当前命令或进程有效，不会自动影响 Docker daemon。Clash Verge 中 `<local-address>` 测试失败，但 `<local-address>` 成功，所以当前环境优先使用 `<local-address>`。\n\n## 验证方式\n\n普通代理验证：\n\n```bash\ncurl -x http://<local-proxy> -I https://www.google.com\n```\n\nDocker daemon 验证：\n\n```bash\nsudo docker run hello-world\n```\n\n期望看到：\n\n```text\nHello from Docker!\n```\n\n## 下一步\n\n学习 Docker 端口映射，用 nginx 容器理解 `-p 8080:80`。"
-    },
-    {
-      "slug": "python后端-fastapi-请求响应模型-patch-tasks-task-id-局部更新任务",
-      "title": "PATCH /tasks/{task id} 局部更新任务",
-      "type": "FastAPI",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/请求响应模型",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "tags": [
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "summary": "PUT 更新任务时通常要求前端提交完整任务数据，例如 title 、 description 、 done 都要传。实际开发中，经常只想修改一个字段，例如只把 done 改成 true ，这时继续使用 PUT 会显得",
-      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\PATCH-tasks-task_id-局部更新任务.md",
-      "body": "## 问题是什么\n\n`PUT` 更新任务时通常要求前端提交完整任务数据，例如 `title`、`description`、`done` 都要传。实际开发中，经常只想修改一个字段，例如只把 `done` 改成 `true`，这时继续使用 `PUT` 会显得繁琐。\n\n## 用了什么知识点\n\n- `PATCH`：表示局部更新资源。\n- `TaskUpdate`：专门给局部更新使用的请求模型。\n- 可选字段：`str | None = None`、`bool | None = None`。\n- `model_dump(exclude_unset=True)`：只取用户实际传入的字段。\n- `setattr()`：根据字段名动态修改 ORM 对象属性。\n\n## 怎么解决\n\n在 `schemas.py` 中新增局部更新模型：\n\n```python\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    description: str | None = None\n    done: bool | None = None\n```\n\n在 `main.py` 中新增 `PATCH` 接口：\n\n```python\n@app.patch(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\ndef patch_task(\n    task_id: int,\n    updated_task: schemas.TaskUpdate,\n    db: Session = Depends(get_db)\n):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(status_code=404, detail=\"任务不存在\")\n\n    update_data = updated_task.model_dump(exclude_unset=True)\n\n    for key, value in update_data.items():\n        setattr(task, key, value)\n\n    db.commit()\n    db.refresh(task)\n\n    return task\n```\n\n## 解决了什么问题\n\n现在前端可以只提交要修改的字段，不需要每次更新任务都传完整数据。比如只修改完成状态时，只需要传：\n\n```json\n{\n  \"done\": true\n}\n```\n\n## 易错点\n\n- 不要直接把所有字段都写回数据库，否则没传的字段可能会变成 `None`。\n- 关键是使用 `model_dump(exclude_unset=True)`，只保留用户真正传入的字段。\n- `PUT` 和 `PATCH` 不要混淆：`PUT` 更偏完整更新，`PATCH` 更偏局部更新。\n- `TaskUpdate` 的字段要设置为可选，否则前端仍然必须传完整数据。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n测试 `PATCH /tasks/{task_id}`，只提交一个字段：\n\n```json\n{\n  \"done\": true\n}\n```\n\n预期结果：接口返回完整任务对象，并且只有 `done` 被更新，其他字段保持原值。\n\n## 下一步\n\n下一步学习 `APIRouter`，把所有接口从 `main.py` 中拆出去，让项目结构接近真实开发项目。"
-    },
-    {
-      "slug": "python后端-fastapi-请求响应模型-response-model-完整规范所有接口",
-      "title": "response_model 完整规范所有接口",
-      "type": "FastAPI",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/请求响应模型",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "tags": [
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "summary": "接口虽然已经能返回数据，但 PUT 和 DELETE 如果不声明 response model ，返回结构就不够明确。这样会让自动文档不清楚，前端也不容易判断接口到底会返回哪些字段。",
-      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\response_model-完整规范所有接口.md",
-      "body": "## 问题是什么\n\n接口虽然已经能返回数据，但 `PUT` 和 `DELETE` 如果不声明 `response_model`，返回结构就不够明确。这样会让自动文档不清楚，前端也不容易判断接口到底会返回哪些字段。\n\n## 用了什么知识点\n\n- `response_model`：声明接口响应数据结构。\n- `TaskRead`：任务对象的响应模型，包含数据库生成的 `id`。\n- `MessageResponse`：只返回消息时使用的响应模型。\n- Pydantic schema：用模型约束接口输入和输出。\n\n## 怎么解决\n\n在 `schemas.py` 中保留任务响应模型：\n\n```python\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    description: str\n    done: bool\n\n    model_config = ConfigDict(from_attributes=True)\n```\n\n新增删除接口使用的消息响应模型：\n\n```python\nclass MessageResponse(BaseModel):\n    message: str\n```\n\n给所有接口补齐响应模型：\n\n```python\n@app.get(\"/tasks\", response_model=list[schemas.TaskRead])\n@app.get(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\n@app.post(\"/tasks\", response_model=schemas.TaskRead)\n@app.put(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\n@app.delete(\"/tasks/{task_id}\", response_model=schemas.MessageResponse)\n```\n\n## 解决了什么问题\n\n现在每个接口返回什么结构都很清楚：查询、新增、更新返回任务对象；删除返回消息对象。FastAPI 文档也会自动展示准确的响应结构。\n\n## 易错点\n\n- 不要把 `TaskCreate` 当响应模型，它是请求模型，不包含数据库生成的 `id`。\n- `DELETE` 不适合返回 `TaskRead`，因为任务已经被删除了。\n- 如果返回 ORM 对象，需要在响应模型中开启 `from_attributes=True`。\n- 写类型注解时要注意 `schemas` 拼写，拼错会引发 Pydantic / ForwardRef 相关错误。\n\n## 验证方式\n\n启动 FastAPI 后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n检查接口文档中：\n\n- `GET /tasks` 返回 `array of TaskRead`\n- `GET /tasks/{task_id}` 返回 `TaskRead`\n- `POST /tasks` 返回 `TaskRead`\n- `PUT /tasks/{task_id}` 返回 `TaskRead`\n- `DELETE /tasks/{task_id}` 返回 `MessageResponse`\n\n也可以实际请求 `DELETE /tasks/{task_id}`，确认返回：\n\n```json\n{\n  \"message\": \"任务删除成功\"\n}\n```\n\n## 下一步\n\n下一步学习 `PATCH` 局部更新，理解它和 `PUT` 的区别：`PUT` 通常要求提交完整任务数据，`PATCH` 只提交要修改的字段。"
-    },
-    {
-      "slug": "python后端-fastapi-请求响应模型-schemas-拼写错误导致forwardref报错",
-      "title": "schemas 拼写错误导致 ForwardRef 报错",
-      "type": "问题记录",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/请求响应模型",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "tags": [
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "summary": "访问 /docs 时 FastAPI 生成 OpenAPI 文档失败，报出 PydanticUserError，并提示 ForwardRef('shcemas.TaskCreate') 没有完整定义。问题出现在接口参",
-      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas-拼写错误导致ForwardRef报错.md",
-      "body": "## 问题是什么\n\n访问 `/docs` 时 FastAPI 生成 OpenAPI 文档失败，报出 PydanticUserError，并提示 `ForwardRef('shcemas.TaskCreate')` 没有完整定义。问题出现在接口参数类型注解里引用了不存在的模块名。\n\n## 用了什么知识点\n\n- Python 类型注解。\n- FastAPI 根据类型注解生成 OpenAPI 文档。\n- Pydantic v2 的模型解析和 JSON Schema 生成。\n- ForwardRef：字符串形式或延迟解析的类型引用。\n- 请求模型模块命名：`schemas`。\n\n## 怎么解决\n\n检查报错中的关键线索：\n\n```text\nForwardRef('shcemas.TaskCreate')\nowner=<function update_task ...>\nalias='updated_task'\n```\n\n说明 `update_task` 函数里的 `updated_task` 参数类型写错了。\n\n错误写法：\n\n```python\ndef update_task(\n    task_id: int,\n    updated_task: shcemas.TaskCreate,\n    db: Session = Depends(get_db)\n):\n    ...\n```\n\n正确写法：\n\n```python\nimport schemas\n\ndef update_task(\n    task_id: int,\n    updated_task: schemas.TaskCreate,\n    db: Session = Depends(get_db)\n):\n    ...\n```\n\n## 解决了什么问题\n\n修正拼写后，FastAPI 能正确找到 `schemas.TaskCreate`，Pydantic 可以正常生成请求体 schema，`/docs` 也能恢复显示。\n\n## 易错点\n\n- `schemas` 很容易拼成 `shcemas`。\n- 这类错误不一定在启动服务时立刻暴露，可能在访问 `/docs` 生成 OpenAPI 时才爆出来。\n- 报错很长时要抓关键词：`ForwardRef`、函数名、参数名、拼错的类型名。\n- 这不是数据库错误，也不是 `response_model` 本身的问题。\n\n## 验证方式\n\n- 修正 `shcemas.TaskCreate` 为 `schemas.TaskCreate`。\n- 确认文件顶部有 `import schemas`。\n- 重启服务或等待 reload。\n- 打开 `/docs`，如果文档正常展示，说明类型引用恢复正常。\n\n## 下一步\n\n继续把 `response_model` 完整应用到所有接口，并为 `DELETE` 接口设计一个清晰的返回结构。"
-    },
-    {
-      "slug": "python后端-fastapi-请求响应模型-schemaspy-拆分请求模型",
-      "title": "schemas.py 拆分请求模型",
-      "type": "FastAPI",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/请求响应模型",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "tags": [
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "summary": "数据库版 CRUD 完成后， main.py 里开始混合 FastAPI app、数据库依赖、接口函数和 Pydantic 模型。代码继续变大时，所有内容堆在 main.py 会难以维护。",
-      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas.py-拆分请求模型.md",
-      "body": "## 问题是什么\n\n数据库版 CRUD 完成后，`main.py` 里开始混合 FastAPI app、数据库依赖、接口函数和 Pydantic 模型。代码继续变大时，所有内容堆在 `main.py` 会难以维护。\n\n## 用了什么知识点\n\n- Pydantic `BaseModel`。\n- 请求体模型。\n- FastAPI 项目分层。\n- `schemas.py` 用于存放请求/响应数据结构。\n- `models.py` 和 `schemas.py` 的职责区分。\n\n## 怎么解决\n\n新建 `schemas.py`，把请求体模型从 `main.py` 中拆出去。\n\n```python\nfrom pydantic import BaseModel\n\nclass TaskCreate(BaseModel):\n    title: str\n    description: str\n    done: bool = False\n```\n\n然后在 `main.py` 中导入：\n\n```python\nimport schemas\n```\n\n把接口参数从原来的：\n\n```python\ntask: Task\nupdated_task: Task\n```\n\n改成：\n\n```python\ntask: schemas.TaskCreate\nupdated_task: schemas.TaskCreate\n```\n\n## 解决了什么问题\n\n`main.py` 不再负责定义请求体结构，接口逻辑和数据结构开始分离。项目从“能跑”继续向“结构清晰的小型后端项目”靠近。\n\n## 易错点\n\n- `models.TaskModel` 是数据库表模型，负责和数据库表对应。\n- `schemas.TaskCreate` 是请求体模型，负责校验客户端传来的 JSON。\n- `TaskCreate` 不应该包含数据库自动生成的 `id`。\n- 拆出 `schemas.py` 后，要记得删除或停止使用 `main.py` 里原来的 `Task` 类。\n\n## 验证方式\n\n- 启动服务。\n- 打开 `/docs`。\n- 执行 `POST /tasks` 和 `PUT /tasks/{task_id}`。\n- 如果请求体结构仍然正常展示，并且接口能正常新增/更新任务，说明请求模型拆分成功。\n\n## 下一步\n\n继续完善 `schemas.py`，加入 `TaskRead` 响应模型，并用 `response_model` 控制接口返回结构。"
-    },
-    {
-      "slug": "python后端-fastapi-请求响应模型-schemaspy-添加响应模型",
-      "title": "schemas.py 添加响应模型",
-      "type": "FastAPI",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/请求响应模型",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "tags": [
-        "FASTAPI",
-        "请求响应模型"
-      ],
-      "summary": "TaskCreate 只描述客户端提交的数据，但接口返回给客户端的数据也需要明确结构。数据库返回的是 SQLAlchemy ORM 对象，如果不声明响应模型，接口返回会不够规范，也不方便控制哪些字段应该暴露。",
-      "source": "PYTHON后端\\FASTAPI\\请求响应模型\\schemas.py-添加响应模型.md",
-      "body": "## 问题是什么\n\n`TaskCreate` 只描述客户端提交的数据，但接口返回给客户端的数据也需要明确结构。数据库返回的是 SQLAlchemy ORM 对象，如果不声明响应模型，接口返回会不够规范，也不方便控制哪些字段应该暴露。\n\n## 用了什么知识点\n\n- Pydantic 响应模型。\n- FastAPI `response_model`。\n- 请求模型和响应模型分离。\n- SQLAlchemy ORM 对象转 Pydantic 模型。\n- `orm_mode = True`：Pydantic v1 中允许从 ORM 对象读取字段。\n\n## 怎么解决\n\n在 `schemas.py` 中保留 `TaskCreate`，再新增 `TaskRead`。\n\n```python\nfrom pydantic import BaseModel\n\nclass TaskCreate(BaseModel):\n    title: str\n    description: str\n    done: bool = False\n\nclass TaskRead(BaseModel):\n    id: int\n    title: str\n    description: str\n    done: bool\n\n    class Config:\n        orm_mode = True\n```\n\n然后在接口上声明 `response_model`。\n\n```python\n@app.get(\"/tasks\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n\n@app.get(\"/tasks/{task_id}\", response_model=schemas.TaskRead)\ndef get_task(task_id: int, db: Session = Depends(get_db)):\n    ...\n\n@app.post(\"/tasks\", response_model=schemas.TaskRead)\ndef create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):\n    ...\n```\n\n## 解决了什么问题\n\n接口请求结构和响应结构分开管理。客户端创建任务时不用传 `id`，但服务器返回任务时会包含数据库生成的 `id`，接口文档也更清晰。\n\n## 易错点\n\n- `TaskCreate` 不包含 `id`，因为 `id` 由数据库生成。\n- `TaskRead` 包含 `id`，因为响应给客户端时需要展示任务唯一标识。\n- 接口返回 SQLAlchemy ORM 对象时，Pydantic v1 需要 `orm_mode = True`。\n- `response_model=list[schemas.TaskRead]` 用于返回列表，`response_model=schemas.TaskRead` 用于返回单个对象。\n\n## 验证方式\n\n- 启动服务并打开 `/docs`。\n- 查看 `GET /tasks` 的响应结构是否显示为任务列表。\n- 查看 `POST /tasks` 的请求体不要求 `id`，响应体包含 `id`。\n- 执行新增和查询接口，确认返回字段符合 `TaskRead`。\n\n## 下一步\n\n确认当前项目使用的是 Pydantic v1 还是 v2，因为 `orm_mode = True` 在 Pydantic v2 中需要换成新的 `from_attributes` 写法。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-delete-tasks-task-id-删除数据库任务",
-      "title": "DELETE /tasks/{task id} 删除数据库任务",
-      "type": "FastAPI",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "数据库版 GET 、 POST 、 PUT 已经完成，但删除任务仍需要从内存列表写法切换为数据库写法。否则任务删除不会真正作用于 SQLite 数据库。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\DELETE-tasks-task_id-删除数据库任务.md",
-      "body": "## 问题是什么\n\n数据库版 `GET`、`POST`、`PUT` 已经完成，但删除任务仍需要从内存列表写法切换为数据库写法。否则任务删除不会真正作用于 SQLite 数据库。\n\n## 用了什么知识点\n\n- FastAPI `DELETE` 接口用于删除资源。\n- 路径参数：`task_id: int`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter().first()` 查询待删除记录。\n- `db.delete()` 标记删除 ORM 对象。\n- `db.commit()` 提交删除事务。\n- `HTTPException(status_code=404)` 处理任务不存在。\n\n## 怎么解决\n\n先根据 `task_id` 查询任务是否存在。存在则删除并提交；不存在则返回 404。\n\n```python\n@app.delete(\"/tasks/{task_id}\")\ndef delete_task(task_id: int, db: Session = Depends(get_db)):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    db.delete(task)\n    db.commit()\n\n    return {\"message\": \"任务删除成功\"}\n```\n\n## 解决了什么问题\n\n`DELETE /tasks/{task_id}` 可以真正删除数据库中的任务记录。至此，数据库版 `GET`、`POST`、`PUT`、`DELETE` 全部完成，任务管理 API 具备完整数据库 CRUD 能力。\n\n## 易错点\n\n- `db.delete(task)` 只是标记删除，必须 `db.commit()` 才会真正写入数据库。\n- 删除前必须先查任务是否存在。\n- 找不到任务要返回 404，而不是假装删除成功。\n- 删除成功后再查询同一个 id，应该返回 404。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回的 `id`。\n- 执行 `DELETE /tasks/{id}`。\n- 再执行 `GET /tasks/{id}`。\n- 如果返回 404，说明任务已从数据库删除。\n\n## 下一步\n\n把 Pydantic 请求/响应模型拆到 `schemas.py`，让 `main.py` 只负责接口逻辑，项目结构更清晰。"
-    },
-    {
       "slug": "python后端-fastapi-logic",
       "title": "LOGIC",
       "type": "FastAPI",
@@ -480,206 +749,6 @@
       "summary": "请求进来 schemas检查数据格式 创建数据库会话拿权限资源 ORM CRUD库 响应返回信息",
       "source": "PYTHON后端\\FASTAPI\\LOGIC.md",
       "body": "请求进来 -- schemas检查数据格式 -- 创建数据库会话拿权限资源 -- ORM CRUD库 -- 响应返回信息"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-databasepy-数据库连接配置",
-      "title": "database.py 数据库连接配置",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "项目准备从内存列表切换到数据库存储，但在写数据库表模型和 CRUD 之前，需要先有一个统一的数据库连接入口。否则后续每个接口都会重复写连接逻辑，项目结构会越来越乱。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\database.py-数据库连接配置.md",
-      "body": "## 问题是什么\n\n项目准备从内存列表切换到数据库存储，但在写数据库表模型和 CRUD 之前，需要先有一个统一的数据库连接入口。否则后续每个接口都会重复写连接逻辑，项目结构会越来越乱。\n\n## 用了什么知识点\n\n- `create_engine()`：创建 SQLAlchemy 数据库引擎。\n- `sessionmaker()`：创建数据库会话工厂。\n- `declarative_base()`：创建 ORM 模型基类。\n- SQLite 连接地址：`sqlite:///./tasks.db`。\n- `connect_args={\"check_same_thread\": False}`：FastAPI 使用 SQLite 时常见的线程检查配置。\n- 模块分层：把数据库基础配置放到 `database.py`，不要继续堆在 `main.py`。\n\n## 怎么解决\n\n创建 `database.py`，集中保存数据库地址、引擎、会话工厂和 ORM 基类。\n\n```python\nfrom sqlalchemy import create_engine\nfrom sqlalchemy.orm import sessionmaker, declarative_base\n\n# SQLite 数据库地址\nDATABASE_URL = \"sqlite:///./tasks.db\"\n\n# 创建数据库引擎\nengine = create_engine(\n    DATABASE_URL,\n    connect_args={\"check_same_thread\": False}\n)\n\n# 创建数据库会话 -- 每次请求数据库操作上下文\nSessionLocal = sessionmaker(\n    autocommit=False,\n    autoflush=False,\n    bind=engine\n)\n\n# ORM 基类\nBase = declarative_base()\n```\n\n## 解决了什么问题\n\n项目有了稳定的数据库基础层。后续 `models.py` 可以继承 `Base` 定义数据表，接口层可以通过 `SessionLocal` 创建数据库会话，不需要在每个接口里重新配置数据库连接。\n\n## 易错点\n\n- `SessionLocal` 是会话工厂，不是数据库连接结果本身。\n- `Base` 是 ORM 模型的基类，不代表具体的数据表。\n- `autocommit=False` 表示数据库修改后通常需要显式提交。\n- `autoflush=False` 可以先避免 SQLAlchemy 自动刷新带来的理解负担。\n- SQLite 的连接字符串是 `sqlite:///./tasks.db`，斜杠数量不要写错。\n\n## 验证方式\n\n- 确认项目根目录存在 `database.py`。\n- 确认文件中能正常导入 `engine`、`SessionLocal`、`Base`。\n- 下一步创建模型并执行建表后，项目目录中应生成 `tasks.db`。\n\n## 下一步\n\n创建 `models.py`，定义任务表对应的 ORM 模型类，让 Python 类真正映射到数据库表。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-get-db-数据库会话依赖",
-      "title": "get db 数据库会话依赖",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "数据库和表已经能创建，但接口函数还不能直接操作数据库。每次请求都需要一个数据库会话，并且请求结束后要关闭会话，否则连接管理会混乱。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\get_db-数据库会话依赖.md",
-      "body": "## 问题是什么\n\n数据库和表已经能创建，但接口函数还不能直接操作数据库。每次请求都需要一个数据库会话，并且请求结束后要关闭会话，否则连接管理会混乱。\n\n## 用了什么知识点\n\n- `SessionLocal`：数据库会话工厂。\n- SQLAlchemy `Session`：数据库操作上下文。\n- FastAPI 依赖注入。\n- `yield` 依赖：请求前创建资源，请求后清理资源。\n- `try/finally`：保证接口执行结束后关闭数据库会话。\n\n## 怎么解决\n\n在 `main.py` 中创建 `get_db()` 函数。\n\n```python\nfrom sqlalchemy.orm import Session\nfrom database import SessionLocal\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n```\n\n## 解决了什么问题\n\n每个接口都可以通过依赖注入拿到一次请求范围内的数据库会话。接口执行完后，数据库会话会被自动关闭，避免连接泄漏。\n\n## 易错点\n\n- 这里用 `yield db`，不是 `return db`。\n- `finally: db.close()` 不要漏掉，否则会话不会被及时释放。\n- `SessionLocal()` 是创建会话，不是执行查询。\n- `get_db()` 本身不会操作数据库，只负责把数据库会话交给接口。\n\n## 验证方式\n\n- 确认 `main.py` 能导入 `SessionLocal`。\n- 确认 `get_db()` 写在接口函数之前。\n- 下一步在接口里使用 `Depends(get_db)`，如果服务能启动，说明依赖函数基本可用。\n\n## 下一步\n\n在接口函数中使用 `Depends(get_db)` 接收数据库会话，然后把 `GET /tasks` 改成从数据库查询任务。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-get-tasks-查询数据库任务",
-      "title": "GET /tasks 查询数据库任务",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "接口已经能拿到数据库会话，但 GET /tasks 仍然可能在读取内存列表 tasks [] 。这样即使数据库表已经创建，查询接口也没有真正使用数据库。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\GET-tasks-查询数据库任务.md",
-      "body": "## 问题是什么\n\n接口已经能拿到数据库会话，但 `GET /tasks` 仍然可能在读取内存列表 `tasks = []`。这样即使数据库表已经创建，查询接口也没有真正使用数据库。\n\n## 用了什么知识点\n\n- FastAPI `Depends(get_db)` 依赖注入。\n- SQLAlchemy `Session` 数据库会话。\n- `db.query(models.TaskModel)` 查询 ORM 模型对应的数据表。\n- `.all()` 获取全部查询结果。\n- 从内存数据切换到数据库数据。\n\n## 怎么解决\n\n给接口函数添加数据库会话参数，并用 SQLAlchemy 查询 `TaskModel`。\n\n```python\nfrom fastapi import Depends\nfrom sqlalchemy.orm import Session\n\n@app.get(\"/tasks\")\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n核心语句：\n\n```python\ndb.query(models.TaskModel).all()\n```\n\n## 解决了什么问题\n\n`GET /tasks` 不再依赖内存列表，而是开始读取 SQLite 数据库中的 `tasks` 表。项目的数据来源从临时内存转向持久化数据库。\n\n## 易错点\n\n- `Depends(get_db)` 不要写成直接调用 `get_db()`。\n- `models.TaskModel` 指的是 ORM 模型类，不是 Pydantic 请求模型。\n- `.all()` 返回列表，即使数据库为空也会返回 `[]`。\n- 数据库里还没有任务时，看到空列表是正常现象。\n\n## 验证方式\n\n- 启动服务。\n- 打开 `/docs`。\n- 执行 `GET /tasks`。\n- 如果返回 `[]`，说明接口已经能正常查询数据库，只是当前还没有数据。\n\n## 下一步\n\n把 `POST /tasks` 改成真正向数据库插入任务记录。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-get-tasks-task-id-查询单个数据库任务",
-      "title": "GET /tasks/{task id} 查询单个数据库任务",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "GET /tasks 已经能查询数据库中的全部任务，但真实 API 还需要根据 id 查询单个任务。如果继续遍历内存列表，就没有真正使用数据库，也不能和数据库新增的数据保持一致。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\GET-tasks-task_id-查询单个数据库任务.md",
-      "body": "## 问题是什么\n\n`GET /tasks` 已经能查询数据库中的全部任务，但真实 API 还需要根据 id 查询单个任务。如果继续遍历内存列表，就没有真正使用数据库，也不能和数据库新增的数据保持一致。\n\n## 用了什么知识点\n\n- 路径参数：`task_id: int`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter()` 添加查询条件。\n- `models.TaskModel.id == task_id` 表示筛选指定 id。\n- `.first()` 获取第一条匹配结果。\n- `HTTPException(status_code=404)` 处理资源不存在。\n\n## 怎么解决\n\n把原来的内存遍历查询改成数据库条件查询。\n\n```python\n@app.get(\"/tasks/{task_id}\")\ndef get_task(task_id: int, db: Session = Depends(get_db)):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    return task\n```\n\n核心查询：\n\n```python\ndb.query(models.TaskModel).filter(\n    models.TaskModel.id == task_id\n).first()\n```\n\n## 解决了什么问题\n\n接口可以根据任务 id 从数据库中查询单条任务。数据库新增后的任务，现在既能通过 `GET /tasks` 查询全部，也能通过 `GET /tasks/{task_id}` 精确查询单个。\n\n## 易错点\n\n- `.first()` 找不到数据时返回 `None`，不是空列表。\n- `models.TaskModel.id == task_id` 是 SQLAlchemy 查询条件，不是普通赋值。\n- 找不到任务时要返回 404，不能直接返回 `None`。\n- `task_id` 来自 URL 路径，不来自请求体。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回结果里的 `id`。\n- 执行 `GET /tasks/{id}`。\n- 如果 id 存在，应返回单个任务；如果 id 不存在，应返回 404。\n\n## 下一步\n\n把 `PUT /tasks/{task_id}` 改成数据库更新，让修改任务也能持久化保存。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-mainpy-自动创建数据库表",
-      "title": "main.py 自动创建数据库表",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "已经定义了 database.py 和 models.py ，但数据库表还没有真正创建出来。仅仅写好 ORM 模型类，不等于 SQLite 数据库里已经有 tasks 表。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\main.py-自动创建数据库表.md",
-      "body": "## 问题是什么\n\n已经定义了 `database.py` 和 `models.py`，但数据库表还没有真正创建出来。仅仅写好 ORM 模型类，不等于 SQLite 数据库里已经有 `tasks` 表。\n\n## 用了什么知识点\n\n- `import models`：让 SQLAlchemy 读取已经定义的 ORM 模型。\n- `engine`：数据库连接引擎。\n- `Base.metadata`：SQLAlchemy 收集到的所有表结构元数据。\n- `create_all(bind=engine)`：根据 ORM 模型自动创建数据库表。\n- FastAPI 启动阶段执行初始化逻辑。\n\n## 怎么解决\n\n在 `main.py` 中导入 `models` 和 `engine`，然后调用建表方法。\n\n```python\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\nimport models\nfrom database import engine\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n```\n\n核心语句：\n\n```python\nmodels.Base.metadata.create_all(bind=engine)\n```\n\n它会读取所有继承 `Base` 的 ORM 模型，并通过 `engine` 在 SQLite 中创建对应的数据表。\n\n## 解决了什么问题\n\n项目从“只定义了表结构”进入到“数据库中真的可以生成表”。运行服务后，项目目录中会出现 `tasks.db`，后续接口就可以围绕真实数据库表进行增删改查。\n\n## 易错点\n\n- 必须 `import models`，否则 SQLAlchemy 可能不知道 `TaskModel` 已存在。\n- `create_all()` 只会创建不存在的表，不适合后期复杂数据库迁移。\n- `bind=engine` 不能漏掉，否则不知道连接哪个数据库。\n- 这一步只是建表，还没有把接口从 `tasks = []` 改成数据库操作。\n\n## 验证方式\n\n- 运行 `uvicorn main:app --reload`。\n- 查看项目目录是否出现 `tasks.db`。\n- 后续可以通过数据库工具或 SQLAlchemy 查询确认存在 `tasks` 表。\n\n## 下一步\n\n创建数据库会话依赖 `get_db()`，让每个接口函数都能拿到一次请求范围内的数据库会话。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-modelspy-定义任务表模型",
-      "title": "models.py 定义任务表模型",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "已经有了 database.py 的数据库连接配置，但数据库里还没有真正的任务表。后端需要告诉 SQLAlchemy：任务表叫什么、有哪些字段、每个字段是什么类型。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\models.py-定义任务表模型.md",
-      "body": "## 问题是什么\n\n已经有了 `database.py` 的数据库连接配置，但数据库里还没有真正的任务表。后端需要告诉 SQLAlchemy：任务表叫什么、有哪些字段、每个字段是什么类型。\n\n## 用了什么知识点\n\n- ORM Model：用 Python 类映射数据库表。\n- `Base`：所有 ORM 模型类的基类。\n- `Column`：定义数据库表中的列。\n- `Integer`、`String`、`Boolean`：SQLAlchemy 字段类型。\n- `primary_key=True`：主键，唯一标识一条记录。\n- `index=True`：索引，方便后续查询。\n- `default=False`：字段默认值。\n\n## 怎么解决\n\n创建 `models.py`，定义 `TaskModel` 类，并继承 `database.py` 中的 `Base`。\n\n```python\nfrom sqlalchemy import Column, Integer, String, Boolean\n\nfrom database import Base\n\nclass TaskModel(Base):\n    __tablename__ = \"tasks\"\n\n    id = Column(Integer, primary_key=True, index=True)\n    title = Column(String, index=True)\n    description = Column(String)\n    done = Column(Boolean, default=False)\n```\n\n## 解决了什么问题\n\n项目第一次拥有了“数据库表结构”的定义。`TaskModel` 不只是普通 Python 类，它描述了数据库中的 `tasks` 表，为后续自动建表和数据库 CRUD 做准备。\n\n## 易错点\n\n- `TaskModel` 必须继承 `Base`，否则 SQLAlchemy 不会把它当成 ORM 表模型。\n- `__tablename__` 前后都是双下划线，不要写成 `_tablename_`。\n- `Column(String)` 里的 `String` 是 SQLAlchemy 类型，不是 Python 原生 `str`。\n- `id` 要设置 `primary_key=True`，否则数据库不知道哪一列唯一标识任务。\n- 定义模型并不会立刻创建数据库表，还需要下一步调用 `Base.metadata.create_all()`。\n\n## 验证方式\n\n- 确认项目根目录存在 `models.py`。\n- 确认 `models.py` 可以导入 `Base`。\n- 下一步在 `main.py` 中导入 `models` 并执行建表逻辑后，数据库中应出现 `tasks` 表。\n\n## 下一步\n\n在 `main.py` 中导入 `models` 和 `engine`，调用 `Base.metadata.create_all(bind=engine)`，让 SQLAlchemy 根据 `TaskModel` 自动创建数据库表。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-post-tasks-新增数据库任务",
-      "title": "POST /tasks 新增数据库任务",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "GET /tasks 已经能从数据库查询任务，但数据库里还没有新增任务的入口。如果 POST /tasks 仍然把任务追加到内存列表 tasks [] ，新增的数据不会持久保存，服务重启后仍然会丢失。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\POST-tasks-新增数据库任务.md",
-      "body": "## 问题是什么\n\n`GET /tasks` 已经能从数据库查询任务，但数据库里还没有新增任务的入口。如果 `POST /tasks` 仍然把任务追加到内存列表 `tasks = []`，新增的数据不会持久保存，服务重启后仍然会丢失。\n\n## 用了什么知识点\n\n- FastAPI `POST` 接口用于创建资源。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy ORM 对象创建：`models.TaskModel(...)`。\n- `db.add()`：把新对象加入数据库会话。\n- `db.commit()`：提交事务，真正写入数据库。\n- `db.refresh()`：刷新 ORM 对象，拿到数据库生成后的最新字段，例如 `id`。\n\n## 怎么解决\n\n把原来往内存列表 `tasks` 里追加字典的写法，改成创建 `TaskModel` 对象并提交到数据库。\n\n```python\n@app.post(\"/tasks\")\ndef create_task(task: Task, db: Session = Depends(get_db)):\n    db_task = models.TaskModel(\n        title=task.title,\n        description=task.description,\n        done=task.done\n    )\n\n    db.add(db_task)\n    db.commit()\n    db.refresh(db_task)\n\n    return db_task\n```\n\n核心三步：\n\n```python\ndb.add(db_task)\ndb.commit()\ndb.refresh(db_task)\n```\n\n## 解决了什么问题\n\n`POST /tasks` 开始真正把任务写入 SQLite 数据库。新增任务不再只存在内存里，后续再调用 `GET /tasks` 可以从数据库查到刚创建的任务。\n\n## 易错点\n\n- `db.add()` 只是加入会话，还没有真正写入数据库。\n- 必须执行 `db.commit()`，否则数据库不会保存这条任务。\n- `id` 通常由数据库生成，所以提交后要用 `db.refresh(db_task)` 拿到最新对象。\n- `task` 是请求体 Pydantic 模型，`db_task` 是 SQLAlchemy ORM 模型，不要混用。\n- 如果忘记 `db: Session = Depends(get_db)`，接口里就没有数据库会话可用。\n\n## 验证方式\n\n- 打开 `/docs`。\n- 执行 `POST /tasks`，body 示例：\n\n```json\n{\n  \"title\": \"学习数据库新增\",\n  \"description\": \"把任务保存到 SQLite\",\n  \"done\": false\n}\n```\n\n- 再执行 `GET /tasks`。\n- 如果能看到刚刚新增的任务，并且带有数据库生成的 `id`，说明新增成功。\n\n## 下一步\n\n把 `GET /tasks/{task_id}` 改成从数据库查询单个任务，并在查不到时返回 404。"
-    },
-    {
-      "slug": "python后端-fastapi-数据库接入-put-tasks-task-id-更新数据库任务",
-      "title": "PUT tasks task_id 更新数据库任务",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/数据库接入",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "tags": [
-        "FASTAPI",
-        "数据库接入"
-      ],
-      "summary": "任务已经可以写入数据库、查询全部和查询单个，但修改任务仍然需要从内存列表写法切换到数据库写法。否则更新后的任务不会持久保存。",
-      "source": "PYTHON后端\\FASTAPI\\数据库接入\\PUT-tasks-task_id-更新数据库任务.md",
-      "body": "# PUT /tasks/{task_id} 更新数据库任务\n\n## 问题是什么\n\n任务已经可以写入数据库、查询全部和查询单个，但修改任务仍然需要从内存列表写法切换到数据库写法。否则更新后的任务不会持久保存。\n\n## 用了什么知识点\n\n- FastAPI `PUT` 接口用于更新资源。\n- 路径参数：`task_id: int`。\n- 请求体模型：`updated_task: Task`。\n- `Depends(get_db)` 获取数据库会话。\n- SQLAlchemy `filter().first()` 查询待更新记录。\n- 修改 ORM 对象字段。\n- `db.commit()` 提交更新。\n- `db.refresh()` 刷新更新后的对象。\n- `HTTPException(status_code=404)` 处理任务不存在。\n\n## 怎么解决\n\n先根据 `task_id` 查询数据库中的任务。如果任务不存在，返回 404；如果存在，就修改 ORM 对象字段并提交。\n\n```python\n@app.put(\"/tasks/{task_id}\")\ndef update_task(\n    task_id: int,\n    updated_task: Task,\n    db: Session = Depends(get_db)\n):\n    task = db.query(models.TaskModel).filter(\n        models.TaskModel.id == task_id\n    ).first()\n\n    if task is None:\n        raise HTTPException(\n            status_code=404,\n            detail=\"任务不存在\"\n        )\n\n    task.title = updated_task.title\n    task.description = updated_task.description\n    task.done = updated_task.done\n\n    db.commit()\n    db.refresh(task)\n\n    return task\n```\n\n## 解决了什么问题\n\n`PUT /tasks/{task_id}` 可以真正更新 SQLite 数据库中的任务记录。任务修改后，再通过 `GET /tasks/{task_id}` 查询，会看到持久化后的新内容。\n\n## 易错点\n\n- 不能再使用 `tasks[index] = {...}`，因为现在数据来源已经是数据库。\n- 必须先查询任务是否存在，不能直接创建一个新对象替换。\n- 修改 ORM 对象字段后要执行 `db.commit()`，否则数据库不会保存更新。\n- `db.refresh(task)` 用于拿到数据库提交后的最新对象。\n- 找不到任务时要返回 404，而不是返回空对象。\n\n## 验证方式\n\n- 先用 `POST /tasks` 新增一条任务。\n- 记住返回的 `id`。\n- 执行 `PUT /tasks/{id}`，body 示例：\n\n```json\n{\n  \"title\": \"更新后的任务标题\",\n  \"description\": \"任务已经通过数据库更新\",\n  \"done\": true\n}\n```\n\n- 再执行 `GET /tasks/{id}`。\n- 如果返回内容已变成更新后的字段，说明数据库更新成功。\n\n## 下一步\n\n把 `DELETE /tasks/{task_id}` 改成数据库删除，完成数据库版 CRUD 的最后一步。"
-    },
-    {
-      "slug": "python后端-fastapi-crud接口-delete-tasks-task-id-删除任务",
-      "title": "DELETE 删除任务",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/CRUD接口",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "CRUD接口"
-      ],
-      "tags": [
-        "FASTAPI",
-        "CRUD接口"
-      ],
-      "summary": "任务可以新增、查询、修改后，还需要能删除不再需要的任务。否则任务列表只能越堆越多，CRUD 也不完整。",
-      "source": "PYTHON后端\\FASTAPI\\CRUD接口\\DELETE-tasks-task_id-删除任务.md",
-      "body": "## 问题是什么\n\n任务可以新增、查询、修改后，还需要能删除不再需要的任务。否则任务列表只能越堆越多，CRUD 也不完整。\n\n## 用了什么知识点\n\n- FastAPI 的 `@app.delete()` 路由。\n- REST API 中 `DELETE` 表示删除资源。\n- 路径参数定位要删除的任务。\n- Python 的 `del` 关键字删除列表指定下标元素。\n- `enumerate()` 找到元素对应下标。\n- 404 异常表示目标资源不存在。\n\n## 怎么解决\n\n在 `main.py` 中新增删除接口，遍历任务列表，找到匹配 id 后删除该下标对应的元素。\n\n```python\n@app.delete(\"/tasks/{task_id}\")\ndef delete_task(task_id: int):\n    for index, task in enumerate(tasks):\n        if task[\"id\"] == task_id:\n            del tasks[index]\n            return {\"message\": \"任务删除成功\"}\n\n    raise HTTPException(status_code=404, detail=\"任务不存在\")\n```\n\n## 解决了什么问题\n\n项目拥有完整的基础 CRUD API：查询全部、查询单个、新增、修改、删除。这个阶段完成后，已经具备初级任务管理后端接口能力。\n\n## 易错点\n\n- 删除前要先确认任务存在。\n- `del tasks[index]` 会直接改变原列表，删除后不要继续依赖旧下标。\n- 删除成功后返回信息即可，不一定需要返回已删除对象。\n- 找不到任务时仍然要抛出 404。\n\n## 验证方式\n\n- 打开 `/docs`。\n- 执行 `DELETE /tasks/{task_id}`。\n- 再执行 `GET /tasks`。\n- 如果对应任务消失，说明删除成功。\n\n## 下一步\n\n完整 CRUD 已完成，但当前 `tasks = []` 仍是内存数据。服务重启后数据会消失，所以下一阶段要进入 SQLite + SQLAlchemy，把数据真正保存到数据库。"
-    },
-    {
-      "slug": "python后端-fastapi-crud接口-put-tasks-task-id-更新任务",
-      "title": "PUT 更新任务",
-      "type": "FastAPI",
-      "date": "2026-06-03",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/CRUD接口",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "CRUD接口"
-      ],
-      "tags": [
-        "FASTAPI",
-        "CRUD接口"
-      ],
-      "summary": "前面已经能查询和新增任务，但还不能修改已有任务。真实任务管理 API 需要支持用户把任务标题、描述或完成状态改掉。",
-      "source": "PYTHON后端\\FASTAPI\\CRUD接口\\PUT-tasks-task_id-更新任务.md",
-      "body": "## 问题是什么\n\n前面已经能查询和新增任务，但还不能修改已有任务。真实任务管理 API 需要支持用户把任务标题、描述或完成状态改掉。\n\n## 用了什么知识点\n\n- FastAPI 的 `@app.put()` 路由。\n- REST API 中 `PUT` 表示更新资源。\n- 路径参数：`task_id: int`。\n- 请求体模型：`updated_task: Task`。\n- Python 的 `enumerate()` 同时拿到列表下标和元素。\n- `HTTPException(status_code=404)` 处理资源不存在。\n\n## 怎么解决\n\n在 `main.py` 中新增更新接口，通过 URL 找到任务 id，再用请求体里的新数据替换原列表中的元素。\n\n```python\n@app.put(\"/tasks/{task_id}\")\ndef update_task(task_id: int, updated_task: Task):\n    for index, task in enumerate(tasks):\n        if task[\"id\"] == task_id:\n            tasks[index] = {\n                \"id\": task_id,\n                \"title\": updated_task.title,\n                \"description\": updated_task.description,\n                \"done\": updated_task.done,\n            }\n            return {\"message\": \"任务更新成功\", \"task\": tasks[index]}\n\n    raise HTTPException(status_code=404, detail=\"任务不存在\")\n```\n\n## 解决了什么问题\n\n项目从“只能创建和查看任务”升级为“可以修改已有任务”。这补上了 CRUD 中的 Update 能力，也练习了路径参数和请求体同时使用的接口写法。\n\n## 易错点\n\n- `task = xxx` 只会修改循环变量，不会修改原列表。\n- 必须用 `enumerate(tasks)` 拿到 `index`，再执行 `tasks[index] = xxx`。\n- 找不到任务时不要返回假成功，要抛出 404。\n- 请求体字段要和 `Task` 模型一致，否则 FastAPI 会校验失败。\n\n## 验证方式\n\n- 打开 `/docs`。\n- 执行 `PUT /tasks/{task_id}`。\n- 示例 body：\n\n```json\n{\n  \"title\": \"学习 FastAPI PUT\",\n  \"description\": \"正在学习更新接口\",\n  \"done\": true\n}\n```\n\n- 再执行 `GET /tasks`，确认对应任务内容已变化。\n\n## 下一步\n\n更新完成后，CRUD 还差最后一步：删除任务，也就是 `DELETE /tasks/{task_id}`。"
     },
     {
       "slug": "linux入门-常用命令",
@@ -700,8 +769,8 @@
       "body": "| 分类    | *==**命令**==*                 | 作用          | 常用示例                               | 示例说明                |\n| ----- | ---------------------------- | ----------- | ---------------------------------- | ------------------- |\n| 文件/目录 | *==**`pwd`**==*              | 查看当前路径      | `pwd`                              | 显示当前所在目录            |\n| 文件/目录 | *==**`ls`**==*               | 查看目录内容      | `ls -l`                            | 以详细列表方式显示           |\n| 文件/目录 | *==**`ls -a`**==*            | 查看隐藏文件      | `ls -a`                            | 显示 `.git` 等隐藏文件     |\n| 文件/目录 | *==**`cd`**==*               | 切换目录        | `cd /home/user`                    | 进入指定目录              |\n| 文件/目录 | *==**`cd ..`**==*            | 返回上一级       | `cd ..`                            | 返回父目录               |\n| 文件/目录 | *==**`mkdir`**==*            | 创建目录        | `mkdir project`                    | 创建 `project` 文件夹    |\n| 文件/目录 | *==**`touch`**==*            | 创建文件        | `touch app.py`                     | 创建空文件               |\n| 文件/目录 | *==**`cp`**==*               | 复制文件/目录     | `cp a.txt b.txt`                   | 复制文件                |\n| 文件/目录 | *==**`cp -r`**==*            | 复制目录        | `cp -r src backup`                 | 递归复制目录              |\n| 文件/目录 | *==**`mv`**==*               | 移动/重命名      | `mv old.txt new.txt`               | 重命名文件               |\n| 文件/目录 | *==**`rm`**==*               | 删除文件        | `rm test.txt`                      | 删除文件                |\n| 文件/目录 | *==**`rm -r`**==*            | 删除目录        | `rm -r temp`                       | 删除目录及内容             |\n| 文件/目录 | *==**`find`**==*             | 查找文件        | `find . -name \"*.py\"`              | 查找当前目录下所有 Python 文件 |\n| 文件/目录 | *==**`tree`**==*             | 树状显示目录      | `tree`                             | 需要先安装               |\n| 文件查看  | *==**`cat`**==*              | 查看文件内容      | `cat app.py`                       | 输出整个文件              |\n| 文件查看  | *==**`less`**==*             | 分页查看文件      | `less log.txt`                     | 适合查看长日志             |\n| 文件查看  | *==**`head`**==*             | 查看前几行       | `head -n 10 log.txt`               | 查看前 10 行            |\n| 文件查看  | *==**`tail`**==*             | 查看后几行       | `tail -n 20 log.txt`               | 查看后 20 行            |\n| 文件查看  | *==**`tail -f`**==*          | 实时查看日志      | `tail -f app.log`                  | 动态跟踪日志              |\n| 文件查看  | *==**`grep`**==*             | 搜索文本        | `grep \"error\" app.log`             | 查找包含 error 的行       |\n| 文件查看  | *==**`wc`**==*               | 统计行数/单词数    | `wc -l app.py`                     | 统计行数                |\n| 权限管理  | *==**`chmod`**==*            | 修改权限        | `chmod +x run.sh`                  | 增加执行权限              |\n| 权限管理  | *==**`chown`**==*            | 修改所有者       | `sudo chown user:user file.txt`    | 修改文件拥有者             |\n| 系统信息  | *==**`uname -a`**==*         | 查看系统信息      | `uname -a`                         | 查看内核和系统版本           |\n| 系统信息  | *==**`top`**==*              | 查看进程占用      | `top`                              | 类似任务管理器             |\n| 系统信息  | *==**`htop`**==*             | 增强版进程查看     | `htop`                             | 更友好，需要安装            |\n| 系统信息  | *==**`df -h`**==*            | 查看磁盘空间      | `df -h`                            | 人类可读格式              |\n| 系统信息  | *==**`du -sh`**==*           | 查看目录大小      | `du -sh project/`                  | 查看项目占用空间            |\n| 系统信息  | *==**`free -h`**==*          | 查看内存        | `free -h`                          | 查看 RAM 使用情况         |\n| 进程管理  | *==**`ps aux`**==*           | 查看所有进程      | `ps aux                            | grep python`        |\n| 进程管理  | *==**`kill`**==*             | 结束进程        | `kill 1234`                        | 杀死 PID 为 1234 的进程   |\n| 进程管理  | *==**`kill -9`**==*          | 强制结束进程      | `kill -9 1234`                     | 强制杀死进程              |\n| 网络相关  | *==**`ping`**==*             | 测试网络        | `ping baidu.com`                   | 检查网络连接              |\n| 网络相关  | *==**`curl`**==*             | 请求 URL      | `curl https://example.com`         | 获取网页内容              |\n| 网络相关  | *==**`wget`**==*             | 下载文件        | `wget https://example.com/a.zip`   | 下载文件                |\n| 网络相关  | *==**`ssh`**==*              | 远程登录        | `ssh user@192.168.1.10`            | SSH 登录服务器           |\n| 网络相关  | *==**`scp`**==*              | 远程传文件       | `scp a.txt user@ip:/home/user`     | 上传文件                |\n| 压缩解压  | *==**`tar`**==*              | 打包压缩        | `tar -czvf app.tar.gz app/`        | 压缩目录                |\n| 压缩解压  | *==**`tar -xzvf`**==*        | 解压 tar.gz   | `tar -xzvf app.tar.gz`             | 解压文件                |\n| 压缩解压  | *==**`zip`**==*              | zip 压缩      | `zip -r test.zip test/`            | 压缩目录                |\n| 压缩解压  | *==**`unzip`**==*            | 解压 zip      | `unzip test.zip`                   | 解压 zip 文件           |\n| 软件管理  | *==**`sudo apt update`**==*  | 更新软件源       | `sudo apt update`                  | 更新包列表               |\n| 软件管理  | *==**`sudo apt upgrade`**==* | 升级软件        | `sudo apt upgrade`                 | 升级已安装软件             |\n| 软件管理  | *==**`sudo apt install`**==* | 安装软件        | `sudo apt install git`             | 安装 Git              |\n| 软件管理  | *==**`sudo apt remove`**==*  | 卸载软件        | `sudo apt remove git`              | 删除软件                |\n| 开发常用  | *==**`git clone`**==*        | 克隆仓库        | `git clone https://github.com/...` | 下载项目                |\n| 开发常用  | *==**`python3`**==*          | 运行 Python   | `python3 app.py`                   | 执行 Python 程序        |\n| 开发常用  | *==**`pip install`**==*      | 安装 Python 包 | `pip install fastapi`              | 安装依赖                |\n| 开发常用  | *==**`code .`**==*           | VSCode 打开目录 | `code .`                           | 当前目录打开 VSCode       |\n| 开发常用  | *==**`history`**==*          | 查看历史命令      | `history`                          | 查看执行过的命令            |\n| 开发常用  | *==**`clear`**==*            | 清空终端        | `clear`                            | 清屏                  |\n| 开发常用  | *==**`man`**==*              | 查看命令手册      | `man ls`                           | 查看 `ls` 帮助文档        |"
     },
     {
-      "slug": "linux入门-问题记录-问题记录",
-      "title": "问题记录",
+      "slug": "linux入门-问题记录-venv-激活",
+      "title": "venv 激活",
       "type": "问题记录",
       "date": "2026-06-02",
       "minutes": 3,
@@ -714,7 +783,7 @@
         "问题记录"
       ],
       "summary": "python3 m venv .venv",
-      "source": "Linux入门\\问题记录\\问题记录.md",
+      "source": "Linux入门\\问题记录\\venv 激活.md",
       "body": "1.创建虚拟环境\n- `python3 -m venv .venv`  \n    才是创建\n- `source .venv/bin/activate`  \n    只是激活已经存在的环境"
     },
     {
@@ -723,13 +792,15 @@
       "type": "数据库",
       "date": "2026-03-23",
       "minutes": 14,
-      "category": "PYTHON后端/DB",
+      "category": "PYTHON后端/DB/数据库相关学习",
       "categoryPath": [
         "PYTHON后端",
-        "DB"
+        "DB",
+        "数据库相关学习"
       ],
       "tags": [
-        "DB"
+        "DB",
+        "数据库相关学习"
       ],
       "summary": "·cd C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin",
       "source": "PYTHON后端\\DB\\数据库相关学习\\MYSQL.md",

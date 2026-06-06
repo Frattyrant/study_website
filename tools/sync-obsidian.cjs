@@ -1,23 +1,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { KnowledgeModuleRegistry } = require("./knowledge-module-registry.cjs");
 
 const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
 const vaultPath = process.argv[2] || defaultVault;
 const outputPath = path.resolve(__dirname, "..", "data", "content.json");
-const allowedTopLevel = new Set(["Linux入门", "PYTHON后端"]);
-const categoryOrder = new Map([
-  ["Linux入门", 10],
-  ["Linux入门/问题记录", 11],
-  ["Linux入门/常用命令", 12],
-  ["PYTHON后端", 20],
-  ["PYTHON后端/DB", 21],
-  ["PYTHON后端/Docker", 22],
-  ["PYTHON后端/FASTAPI", 23],
-  ["PYTHON后端/FASTAPI/请求响应模型", 24],
-  ["PYTHON后端/FASTAPI/数据库接入", 25],
-  ["PYTHON后端/FASTAPI/CRUD接口", 26],
-  ["PYTHON后端/FASTAPI/routers", 27],
-]);
+const moduleRegistry = new KnowledgeModuleRegistry();
 
 function walk(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -93,60 +81,8 @@ function inferType(relativePath, title) {
   return "笔记";
 }
 
-function categoryPathFrom(relativePath) {
-  const parts = relativePath.split("\\");
-  const fileName = parts.at(-1) || "";
-  if (parts[0] === "Linux入门") {
-    if (parts.length === 2) return ["Linux入门", fileName.replace(/\.md$/i, "")];
-    if (parts[1]) return ["Linux入门", parts[1]];
-    return ["Linux入门"];
-  }
-  if (parts[0] === "PYTHON后端") {
-    if (parts[1] === "FASTAPI") {
-      if (parts[2] && !fileName.endsWith("LOGIC.md")) return ["PYTHON后端", "FASTAPI", parts[2]];
-      return ["PYTHON后端", "FASTAPI"];
-    }
-    if (parts[1]) return ["PYTHON后端", parts[1]];
-    return ["PYTHON后端"];
-  }
-  return [parts[0]].filter(Boolean);
-}
-
 function categoryKeyFrom(categoryPath) {
   return categoryPath.join("/");
-}
-
-function buildCategoryTree(posts) {
-  const root = { key: "全部", label: "全部", count: posts.length, children: [] };
-  const nodeMap = new Map([["全部", root]]);
-
-  for (const post of posts) {
-    let parent = root;
-    for (let index = 0; index < post.categoryPath.length; index += 1) {
-      const pathParts = post.categoryPath.slice(0, index + 1);
-      const key = categoryKeyFrom(pathParts);
-      if (!nodeMap.has(key)) {
-        const node = { key, label: pathParts.at(-1), count: 0, children: [] };
-        nodeMap.set(key, node);
-        parent.children.push(node);
-      }
-      const node = nodeMap.get(key);
-      node.count += 1;
-      parent = node;
-    }
-  }
-
-  function sortChildren(node) {
-    node.children.sort((a, b) => {
-      const orderA = categoryOrder.get(a.key) ?? 999;
-      const orderB = categoryOrder.get(b.key) ?? 999;
-      return orderA - orderB || a.label.localeCompare(b.label, "zh-CN");
-    });
-    node.children.forEach(sortChildren);
-  }
-
-  sortChildren(root);
-  return root;
 }
 
 function titleFrom(content, filePath) {
@@ -176,10 +112,10 @@ function minutesFor(content) {
   return Math.max(3, Math.min(14, Math.ceil(cleanMarkdown(content).length / 360)));
 }
 
-function shouldPublish(filePath) {
+function shouldPublish(filePath, publicRoots) {
   const relativePath = path.relative(vaultPath, filePath);
   const topLevel = relativePath.split(path.sep)[0];
-  return allowedTopLevel.has(topLevel) && path.basename(filePath, ".md") !== "索引";
+  return publicRoots.has(topLevel) && path.basename(filePath, ".md") !== "索引";
 }
 
 if (!fs.existsSync(vaultPath)) {
@@ -188,17 +124,19 @@ if (!fs.existsSync(vaultPath)) {
 }
 
 const allFiles = walk(vaultPath);
+const publicRoots = new Set(moduleRegistry.discoverPublicRoots(vaultPath));
+const modulePaths = moduleRegistry.discoverModulePaths(vaultPath, publicRoots);
 const scopedFiles = allFiles.filter((filePath) => {
   const relativePath = path.relative(vaultPath, filePath);
-  return allowedTopLevel.has(relativePath.split(path.sep)[0]);
+  return publicRoots.has(relativePath.split(path.sep)[0]);
 });
-const files = scopedFiles.filter(shouldPublish);
+const files = scopedFiles.filter((filePath) => shouldPublish(filePath, publicRoots));
 const posts = files
   .map((filePath) => {
     const content = fs.readFileSync(filePath, "utf8");
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
     const title = titleFrom(content, filePath);
-    const categoryPath = categoryPathFrom(relativePath);
+    const categoryPath = moduleRegistry.categoryPathFor(relativePath, title);
     return {
       slug: slugFrom(relativePath),
       title,
@@ -220,7 +158,7 @@ const topCounts = scopedFiles.reduce((acc, filePath) => {
   const top = relativePath.split(path.sep)[0];
   acc[top] = (acc[top] || 0) + 1;
   return acc;
-}, {});
+}, Object.fromEntries([...publicRoots].map((root) => [root, 0])));
 
 const latestDate = allFiles
   .filter((filePath) => scopedFiles.includes(filePath))
@@ -233,10 +171,10 @@ const data = {
     vaultPath,
     totalNotes: scopedFiles.length,
     publishableNotes: posts.length,
-    focusCount: Object.keys(topCounts).length,
+    focusCount: publicRoots.size,
     latestDate,
     topCounts,
-    categoryTree: buildCategoryTree(posts),
+    categoryTree: moduleRegistry.buildCategoryTree(posts, modulePaths),
   },
   posts,
 };
