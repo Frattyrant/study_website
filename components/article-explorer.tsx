@@ -53,8 +53,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           <p className="mb-3 text-xs font-extrabold uppercase text-green">Articles</p>
           <h1 className="text-3xl font-bold sm:text-4xl">pawn的个人学习网站</h1>
           <p className="mt-4 max-w-3xl text-muted">
-            记录 Linux 入门、Docker/WSL 排障、FastAPI、SQLAlchemy 和 Python
-            后端项目结构学习笔记。
+            记录学习IT过程
           </p>
         </div>
         <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-line bg-surface px-3.5 max-sm:max-w-none">
@@ -62,7 +61,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           <input
             className="min-w-0 flex-1 bg-transparent text-text outline-none"
             type="search"
-            placeholder="搜索 FastAPI、Docker、WSL、Linux..."
+            placeholder="想搜啥?"
             autoComplete="off"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -70,9 +69,9 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         </label>
       </div>
 
-      <div className="mb-5.5 flex flex-wrap gap-2.5" aria-label="文章统计">
+      <div className="mb-5.5 flex flex-wrap gap-2.5" aria-label="笔记统计">
         <StatChip><strong>{posts.length}</strong> 篇文章</StatChip>
-        <StatChip><strong>{stats.totalNotes || posts.length}</strong> 篇原始笔记</StatChip>
+        <StatChip><strong>{stats.totalNotes || posts.length}</strong> 篇笔记</StatChip>
         <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
         <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
       </div>
@@ -98,7 +97,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             </div>
           ) : (
             <p className="rounded-lg border border-dashed border-line p-6 text-center text-muted">
-              没有匹配的内容，换个关键词试试。
+              404 NOT FOUND 
             </p>
           )}
         </div>

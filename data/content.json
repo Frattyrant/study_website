@@ -1,18 +1,18 @@
 {
   "vaultStats": {
     "vaultPath": "C:\\Users\\LENOVO\\Documents\\Obsidian Vault",
-    "totalNotes": 30,
-    "publishableNotes": 24,
+    "totalNotes": 35,
+    "publishableNotes": 28,
     "focusCount": 2,
-    "latestDate": "2026-06-05",
+    "latestDate": "2026-06-06",
     "topCounts": {
       "Linux入门": 4,
-      "PYTHON后端": 26
+      "PYTHON后端": 31
     },
     "categoryTree": {
       "key": "全部",
       "label": "全部",
-      "count": 24,
+      "count": 28,
       "children": [
         {
           "key": "Linux入门",
@@ -36,7 +36,7 @@
         {
           "key": "PYTHON后端",
           "label": "PYTHON后端",
-          "count": 21,
+          "count": 25,
           "children": [
             {
               "key": "PYTHON后端/DB",
@@ -47,7 +47,7 @@
             {
               "key": "PYTHON后端/Docker",
               "label": "Docker",
-              "count": 1,
+              "count": 5,
               "children": []
             },
             {
@@ -87,6 +87,96 @@
     }
   },
   "posts": [
+    {
+      "slug": "python后端-docker-01-docker基础-docker安装与hello-world验证-wsl",
+      "title": "Docker 安装与 hello world 验证：WSL",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "学习 Docker 的第一个目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 docker version",
+      "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker安装与hello-world验证-WSL.md",
+      "body": "## 问题是什么\n\n学习 Docker 的第一个目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 `docker --version` 提示 `Command 'docker' not found`。\n\n## 用了什么知识点\n\nDocker 的最小运行链路是：Docker client 调用 Docker daemon，daemon 拉取 image，然后基于 image 创建并运行 container。\n\n本质理解：镜像是模板，容器是模板跑起来后的实例，daemon 是真正负责拉镜像和创建容器的后台服务。\n\n主机是实际提供 CPU、内存和磁盘的电脑。当前层级是：\n\n```text\nWindows 主机\n└── WSL2 Linux\n    └── Docker\n        └── 容器\n```\n\n镜像是只读模板，本身不会运行。容器虽然拥有隔离的文件、进程和网络环境，但仍运行在本机，并使用本机的硬件资源，不是另一台远程主机。\n\n## 怎么解决\n\n安装路径选择：Docker 官方 apt 源不稳定时，先使用 Ubuntu 仓库包完成学习环境：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\n检查 Docker 服务：\n\n```bash\nsudo service docker status\n```\n\n如果需要启动：\n\n```bash\nsudo service docker start\n```\n\n验证容器运行：\n\n```bash\nsudo docker run hello-world\n```\n\n成功输出包括：\n\n```text\nHello from Docker!\n```\n\n## 解决了什么问题\n\n确认了 Docker 已经安装成功、Docker 服务正在运行、Docker daemon 可以拉取镜像并启动容器。\n\n## 易错点\n\n不要把镜像理解成另一台主机，也不要说程序“运行在镜像上”。准确说法是：Docker 根据镜像创建容器，程序运行在容器里，容器最终运行在本机上。\n\n`docker --version` 只能说明 Docker CLI 存在，不等于 daemon 正常。`sudo service docker status` 看到 `active (running)` 才说明服务在运行。`hello-world` 本地没有镜像时会先拉取，这是正常现象；如果出现 `TLS handshake timeout`，通常是 Docker daemon 没有配置代理。\n\n## 验证方式\n\n```bash\ndocker --version\ndocker compose version\nsudo service docker status\nsudo docker run hello-world\n```\n\n期望结果：Docker 服务状态是 `active (running)`，`hello-world` 输出 `Hello from Docker!`。\n\n## 下一步\n\n运行 nginx 容器，学习端口映射 `-p 8080:80`。"
+    },
+    {
+      "slug": "python后端-docker-01-docker基础-docker后台运行与exec进入容器",
+      "title": "Docker 后台运行与 exec 进入容器",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "前台运行容器会占用当前终端，按 Ctrl+C 还会停止容器。实际开发中，服务通常需要在后台持续运行，同时开发者还要进入容器检查文件和运行环境。",
+      "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker后台运行与exec进入容器.md",
+      "body": "## 问题是什么\n\n前台运行容器会占用当前终端，按 `Ctrl+C` 还会停止容器。实际开发中，服务通常需要在后台持续运行，同时开发者还要进入容器检查文件和运行环境。\n\n## 用了什么知识点\n\n后台运行表示容器持续工作，但不占用当前终端。`docker start` 启动已有容器时默认在后台运行；创建新容器时可使用 `docker run -d`。`docker exec` 用于在正在运行的容器内部执行命令。\n\n本质理解：`run` 创建新容器，`start` 启动已有容器，`exec` 进入或操作一个正在运行的容器。\n\n## 怎么解决\n\n启动已有容器：\n\n```bash\nsudo docker start my-nginx\nsudo docker ps\n```\n\n进入容器：\n\n```bash\nsudo docker exec -it my-nginx sh\n```\n\n其中：\n\n```text\n-i  保持输入通道\n-t  提供交互终端\nsh  启动容器内的 shell\n```\n\n进入后检查环境：\n\n```bash\npwd\nls\ncat /etc/os-release\nls /usr/share/nginx/html\n```\n\n退出容器终端：\n\n```bash\nexit\n```\n\n创建全新的后台容器时使用：\n\n```bash\nsudo docker run -d --name my-nginx -p 8080:80 nginx\n```\n\n## 解决了什么问题\n\n成功让 `my-nginx` 在后台运行，并进入容器查看文件。WSL 主机是 Ubuntu 26.04，而 Nginx 容器显示为 Debian 13，说明容器可以拥有与主机不同的用户空间和文件系统。\n\n## 易错点\n\n`docker exec` 只能操作正在运行的容器。容器处于 `Exited` 时，需要先执行 `docker start`。已有同名容器时，不能再次使用 `docker run --name my-nginx` 创建新容器，否则会发生名称冲突。\n\n退出容器中的 `sh` 只会结束这次交互，不会停止后台运行的 Nginx。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker exec -it my-nginx sh\ncat /etc/os-release\nexit\nsudo docker ps\n```\n\n期望结果：进入容器前后，`my-nginx` 都显示为 `Up`；容器内部显示 Debian 13；退出后 Nginx 仍在运行。\n\n## 下一步\n\n学习 Dockerfile，理解如何把 FastAPI 代码、Python 环境和依赖声明制作成自己的镜像。"
+    },
+    {
+      "slug": "python后端-docker-01-docker基础-docker容器管理-查看启动日志停止删除",
+      "title": "Docker 容器管理：查看、启动、日志、停止和删除",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。",
+      "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker容器管理-查看启动日志停止删除.md",
+      "body": "## 问题是什么\n\n容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。\n\n## 用了什么知识点\n\n容器是镜像创建出来的运行实例。一个镜像可以创建多个容器，每个容器都有自己的容器 ID 和容器名。`docker ps`、`start`、`logs`、`stop`、`rm` 操作的是容器；`docker images` 查看的是镜像。\n\n本质理解：镜像是可重复使用的模板，容器是可以启动、停止和删除的实例；删除容器不会自动删除镜像。\n\n## 怎么解决\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker start my-nginx\nsudo docker logs my-nginx\nsudo docker stop my-nginx\nsudo docker rm my-nginx\nsudo docker images\n```\n\n命令含义：\n\n```text\ndocker ps       查看正在运行的容器\ndocker ps -a    查看全部容器，包括已停止的\ndocker start    启动已有容器\ndocker logs     查看容器日志\ndocker stop     停止容器，但保留容器\ndocker rm       删除已经停止的容器\ndocker images   查看本地镜像\n```\n\n## 解决了什么问题\n\n成功启动、查看并删除了 `my-nginx` 容器。删除后，`docker ps -a` 中不再出现 `my-nginx`，但 `docker images` 中仍保留 `nginx:latest`，证明容器和镜像相互独立。\n\n## 易错点\n\n`docker rm` 后面必须是容器 ID 或容器名。执行 `docker rm hello-world` 失败，是因为 `hello-world` 是镜像名；现存容器名是 Docker 自动生成的 `nifty_rosalind` 和 `cool_williams`。\n\n容器命令结构通常是：\n\n```text\ndocker <操作> <容器名或容器ID>\n```\n\n例如：\n\n```bash\nsudo docker rm nifty_rosalind\n```\n\n不要写成 `docker my-nginx status`；查看状态应使用 `docker ps` 或 `docker ps -a`。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker images\n```\n\n验证结果：当前没有正在运行的容器；两个 `hello-world` 容器处于 `Exited (0)`；本地仍有 `hello-world:latest` 和 `nginx:latest` 镜像。\n\n## 下一步\n\n学习使用 `-d` 让容器在后台运行，并使用 `docker exec` 进入运行中的容器。"
+    },
+    {
+      "slug": "python后端-docker-01-docker基础-nginx端口映射-8080到80",
+      "title": "Nginx 端口映射：8080 到 80",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "Docker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。",
+      "source": "PYTHON后端\\Docker\\01-Docker基础\\Nginx端口映射-8080到80.md",
+      "body": "## 问题是什么\n\nDocker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。\n\n## 用了什么知识点\n\nNginx 是提供网页内容的 Web 服务器程序，本步骤中运行在 Docker 容器里。端口是程序提供网络服务的门牌号。端口映射是 Docker 在主机端口和容器端口之间建立的转发通道。\n\n本质理解：`-p 8080:80` 表示访问主机的 8080 端口时，Docker 把请求转发给容器内的 80 端口。\n\n## 怎么解决\n\n运行创建 Nginx 容器：\n\n```bash\nsudo docker run --name my-nginx -p 8080:80 nginx\n```\n\n命令含义：\n\n```text\ndocker run       创建并运行容器\n--name my-nginx  将容器命名为 my-nginx\n-p 8080:80       主机 8080 映射到容器 80\nnginx            使用 nginx 镜像\n```\n\n请求路径：\n\n```text\n浏览器 localhost:8080\n-> WSL 主机的 8080 端口\n-> Docker 转发\n-> Nginx 容器的 80 端口\n```\n\n## 解决了什么问题\n\n浏览器成功通过 `http://localhost:8080` 访问到容器中的 Nginx 欢迎页，证明容器持续运行且端口映射有效。\n\n## 易错点\n\n端口映射格式是 `主机端口:容器端口`，不要写反。终端在运行后持续显示日志不是卡死，而是 Nginx 正在前台运行；按 `Ctrl+C` 会停止这个前台容器。\n\n## 验证方式\n\n浏览器打开：\n\n```text\nhttp://localhost:8080\n```\n\n期望看到“欢迎来到 nginx!”页面。也可以另开一个 Linux 终端执行：\n\n```bash\ncurl http://localhost:8080\n```\n\n期望返回 Nginx 欢迎页的 HTML。\n\n## 下一步\n\n学习前台运行与后台运行的区别，并使用 `docker ps`、`docker logs`、`docker stop` 和 `docker rm` 管理容器。"
+    },
+    {
+      "slug": "python后端-docker-02-dockerfile-dockerfile-准备fastapi构建文件",
+      "title": "Dockerfile 准备FastAPI构建文件",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。",
+      "source": "PYTHON后端\\Docker\\02-Dockerfile\\Dockerfile-准备FastAPI构建文件.md",
+      "body": "# Dockerfile：准备 FastAPI 构建文件\n\n## 问题是什么\n\n会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。\n\n## 用了什么知识点\n\n`Dockerfile` 是制作镜像的说明书，通常位于项目根目录。`main.py` 保存 FastAPI 应用代码，`requirements.txt` 声明 Python 依赖，`Dockerfile` 描述如何组合运行环境、依赖和代码。\n\n本质理解：Dockerfile 不运行 FastAPI，而是告诉 Docker 如何生成一个能够运行 FastAPI 的镜像。\n\n## 怎么解决\n\n项目结构：\n\n```text\ndocker-fastapi-demo/\n├── Dockerfile\n├── main.py\n└── requirements.txt\n```\n\n`main.py`：\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello from Docker\"}\n```\n\n`requirements.txt`：\n\n```text\nfastapi\nuvicorn[standard]\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY main.py .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n```\n\n## 解决了什么问题\n\n准备好了制作 FastAPI 镜像所需的最小文件，并明确了代码、依赖清单和构建说明各自负责什么。\n\n## 易错点\n\n文件名必须是 `Dockerfile`，默认没有扩展名。`requirements.txt` 只声明依赖，不会自己安装依赖；真正的安装动作由 Dockerfile 中的 `RUN pip install ...` 完成。\n\n## 验证方式\n\n在项目目录执行：\n\n```bash\nls\ncat Dockerfile\n```\n\n应该看到 `Dockerfile`、`main.py` 和 `requirements.txt`，并确认 Dockerfile 内容完整。\n\n## 下一步\n\n逐行理解 Dockerfile 指令，然后使用 `docker build` 构建自己的 FastAPI 镜像。"
+    },
     {
       "slug": "python后端-fastapi-routers-apirouter-拆分项目结构",
       "title": "APIRouter 拆分项目结构",
@@ -144,24 +234,6 @@
       "summary": "在 WSL2 Ubuntu 26.04 里安装 Docker 时， sudo apt update 出现 Waiting for headers ，Docker 拉取 hello world 镜像时出现 TLS ha",
       "source": "Linux入门\\问题记录\\WSL代理-apt和Docker下载卡住.md",
       "body": "## 问题是什么\n\n在 WSL2 Ubuntu 26.04 里安装 Docker 时，`sudo apt update` 出现 `Waiting for headers`，Docker 拉取 `hello-world` 镜像时出现 `TLS handshake timeout`。同时 Windows 浏览器可以访问 Google/YouTube，容易误以为 Linux 终端也应该自动可用。\n\n## 用了什么知识点\n\nWSL 和 Windows 浏览器不是同一个网络上下文。浏览器能走 Windows 系统代理，不代表 WSL 里的 `apt`、`curl`、Docker daemon 自动走同一个代理。\n\n本质理解：`apt` 下载软件包、普通 shell 命令访问网络、Docker daemon 拉镜像，是三类不同的网络请求，代理配置可以互不相同。\n\n## 怎么解决\n\n先确认系统：\n\n```bash\nuname -a\ncat /etc/os-release\n```\n\n确认是 WSL2 Ubuntu 26.04 后，发现开 VPN 时 `apt update` 卡住，关闭 VPN 后 Ubuntu 源恢复正常。后来需要通过 Clash Verge 代理加速安装，关键是测试可用代理地址：\n\n```bash\ncurl -x http://<local-proxy> -I https://www.google.com\n```\n\n成功后，用代理安装 Ubuntu 仓库里的 Docker 包：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\nDocker 拉镜像失败时，需要给 Docker daemon 单独配置代理：\n\n```bash\nsudo mkdir -p /etc/systemd/system/docker.service.d\nsudo nano /etc/systemd/system/docker.service.d/http-proxy.conf\n```\n\n写入：\n\n```ini\n[Service]\nEnvironment=\"HTTP_PROXY=<redacted>\"\nEnvironment=\"HTTPS_PROXY=<redacted>\"\nEnvironment=\"NO_PROXY=<redacted>\"\n```\n\n重启 Docker：\n\n```bash\nsudo systemctl daemon-reload\nsudo systemctl restart docker\nsudo systemctl show --property=Environment docker\n```\n\n## 解决了什么问题\n\n解决了两个层面的网络问题：`apt` 能安装 Docker 软件包，Docker daemon 也能从 Docker Hub 拉取镜像。\n\n## 易错点\n\n不要认为“浏览器能上网”就等于 WSL 里所有命令都能上网。`http_proxy`/`https_proxy` 只对当前命令或进程有效，不会自动影响 Docker daemon。Clash Verge 中 `<local-address>` 测试失败，但 `<local-address>` 成功，所以当前环境优先使用 `<local-address>`。\n\n## 验证方式\n\n普通代理验证：\n\n```bash\ncurl -x http://<local-proxy> -I https://www.google.com\n```\n\nDocker daemon 验证：\n\n```bash\nsudo docker run hello-world\n```\n\n期望看到：\n\n```text\nHello from Docker!\n```\n\n## 下一步\n\n学习 Docker 端口映射，用 nginx 容器理解 `-p 8080:80`。"
-    },
-    {
-      "slug": "python后端-docker-01-docker第一天-docker安装与hello-world验证-wsl",
-      "title": "Docker安装与hello world验证 WSL",
-      "type": "Docker",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/Docker",
-      "categoryPath": [
-        "PYTHON后端",
-        "Docker"
-      ],
-      "tags": [
-        "Docker"
-      ],
-      "summary": "Docker 第一天的目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 docker version 提示",
-      "source": "PYTHON后端\\Docker\\01-Docker第一天\\Docker安装与hello-world验证-WSL.md",
-      "body": "## 问题是什么\n\nDocker 第一天的目标不是先写 Dockerfile，而是先确认 Linux/WSL 环境里 Docker 能真正运行容器。用户环境是 WSL2 Ubuntu 26.04，最初 `docker --version` 提示 `Command 'docker' not found`。\n\n## 用了什么知识点\n\nDocker 的最小运行链路是：Docker client 调用 Docker daemon，daemon 拉取 image，然后基于 image 创建并运行 container。\n\n本质理解：镜像是模板，容器是模板跑起来后的实例，daemon 是真正负责拉镜像和创建容器的后台服务。\n\n## 怎么解决\n\n安装路径选择：Docker 官方 apt 源不稳定时，先使用 Ubuntu 仓库包完成学习环境：\n\n```bash\nsudo env http_proxy=<redacted> https_proxy=<redacted> apt install -y docker.io docker-compose-v2\n```\n\n检查 Docker 服务：\n\n```bash\nsudo service docker status\n```\n\n如果需要启动：\n\n```bash\nsudo service docker start\n```\n\n验证容器运行：\n\n```bash\nsudo docker run hello-world\n```\n\n成功输出包括：\n\n```text\nHello from Docker!\n```\n\n## 解决了什么问题\n\n确认了 Docker 已经安装成功、Docker 服务正在运行、Docker daemon 可以拉取镜像并启动容器。\n\n## 易错点\n\n`docker --version` 只能说明 Docker CLI 存在，不等于 daemon 正常。`sudo service docker status` 看到 `active (running)` 才说明服务在运行。`hello-world` 本地没有镜像时会先拉取，这是正常现象；如果出现 `TLS handshake timeout`，通常是 Docker daemon 没有配置代理。\n\n## 验证方式\n\n```bash\ndocker --version\ndocker compose version\nsudo service docker status\nsudo docker run hello-world\n```\n\n期望结果：Docker 服务状态是 `active (running)`，`hello-world` 输出 `Hello from Docker!`。\n\n## 下一步\n\n运行 nginx 容器，学习端口映射 `-p 8080:80`。"
     },
     {
       "slug": "python后端-fastapi-请求响应模型-patch-tasks-task-id-局部更新任务",

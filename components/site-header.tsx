@@ -11,7 +11,7 @@ export function SiteHeader() {
         </span>
         <span>
           <strong className="block">pawn的个人学习网站</strong>
-          <small className="block text-xs text-muted max-sm:hidden">Linux / Python 后端</small>
+          <small className="block text-xs text-muted max-sm:hidden">HAH</small>
         </span>
       </Link>
       <ThemeToggle />
