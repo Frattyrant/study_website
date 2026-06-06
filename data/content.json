@@ -1,18 +1,18 @@
 {
   "vaultStats": {
     "vaultPath": "C:\\Users\\LENOVO\\Documents\\Obsidian Vault",
-    "totalNotes": 35,
-    "publishableNotes": 28,
+    "totalNotes": 43,
+    "publishableNotes": 34,
     "focusCount": 2,
     "latestDate": "2026-06-06",
     "topCounts": {
       "Linux入门": 4,
-      "PYTHON后端": 31
+      "PYTHON后端": 39
     },
     "categoryTree": {
       "key": "全部",
       "label": "全部",
-      "count": 28,
+      "count": 34,
       "children": [
         {
           "key": "Linux入门",
@@ -36,7 +36,7 @@
         {
           "key": "PYTHON后端",
           "label": "PYTHON后端",
-          "count": 25,
+          "count": 31,
           "children": [
             {
               "key": "PYTHON后端/DB",
@@ -47,7 +47,7 @@
             {
               "key": "PYTHON后端/Docker",
               "label": "Docker",
-              "count": 5,
+              "count": 11,
               "children": []
             },
             {
@@ -160,8 +160,62 @@
       "body": "## 问题是什么\n\nDocker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。\n\n## 用了什么知识点\n\nNginx 是提供网页内容的 Web 服务器程序，本步骤中运行在 Docker 容器里。端口是程序提供网络服务的门牌号。端口映射是 Docker 在主机端口和容器端口之间建立的转发通道。\n\n本质理解：`-p 8080:80` 表示访问主机的 8080 端口时，Docker 把请求转发给容器内的 80 端口。\n\n## 怎么解决\n\n运行创建 Nginx 容器：\n\n```bash\nsudo docker run --name my-nginx -p 8080:80 nginx\n```\n\n命令含义：\n\n```text\ndocker run       创建并运行容器\n--name my-nginx  将容器命名为 my-nginx\n-p 8080:80       主机 8080 映射到容器 80\nnginx            使用 nginx 镜像\n```\n\n请求路径：\n\n```text\n浏览器 localhost:8080\n-> WSL 主机的 8080 端口\n-> Docker 转发\n-> Nginx 容器的 80 端口\n```\n\n## 解决了什么问题\n\n浏览器成功通过 `http://localhost:8080` 访问到容器中的 Nginx 欢迎页，证明容器持续运行且端口映射有效。\n\n## 易错点\n\n端口映射格式是 `主机端口:容器端口`，不要写反。终端在运行后持续显示日志不是卡死，而是 Nginx 正在前台运行；按 `Ctrl+C` 会停止这个前台容器。\n\n## 验证方式\n\n浏览器打开：\n\n```text\nhttp://localhost:8080\n```\n\n期望看到“欢迎来到 nginx!”页面。也可以另开一个 Linux 终端执行：\n\n```bash\ncurl http://localhost:8080\n```\n\n期望返回 Nginx 欢迎页的 HTML。\n\n## 下一步\n\n学习前台运行与后台运行的区别，并使用 `docker ps`、`docker logs`、`docker stop` 和 `docker rm` 管理容器。"
     },
     {
+      "slug": "python后端-docker-02-dockerfile-镜像重建与dockerignore",
+      "title": "镜像重建与 .dockerignore",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "代码通过 Dockerfile 的 COPY 进入镜像后，镜像中保存的是构建时的代码副本。修改 WSL 项目里的源代码，不会自动修改已经生成的镜像和容器。",
+      "source": "PYTHON后端\\Docker\\02-Dockerfile\\镜像重建与dockerignore.md",
+      "body": "## 问题是什么\n\n代码通过 Dockerfile 的 `COPY` 进入镜像后，镜像中保存的是构建时的代码副本。修改 WSL 项目里的源代码，不会自动修改已经生成的镜像和容器。\n\n## 用了什么知识点\n\n镜像是固定的构建结果。`docker compose up -d --build` 会在启动服务前重新构建镜像。`.dockerignore` 用于排除不应进入构建上下文的文件。\n\n本质理解：源代码、镜像和容器是三个不同阶段；代码变化要进入新容器，通常需要重新构建镜像并重新创建容器。\n\n## 怎么解决\n\n代码修改后执行：\n\n```bash\nsudo docker compose up -d --build\nsudo docker compose logs\n```\n\n创建 `.dockerignore`：\n\n```text\n__pycache__/\n*.pyc\n.venv/\n.git/\n.env\n```\n\n## 解决了什么问题\n\n掌握了把最新代码重新放进镜像和容器的方法，并避免把虚拟环境、缓存、Git 文件和敏感环境变量文件发送到 Docker 构建上下文。\n\n## 易错点\n\n只执行 `docker compose up -d` 可能继续使用旧镜像。代码由 Dockerfile 的 `COPY` 固化进镜像时，修改后需要使用 `--build`。\n\n`.dockerignore` 只影响构建上下文，不等于删除主机上的文件。\n\n## 验证方式\n\n修改接口返回值后运行：\n\n```bash\nsudo docker compose up -d --build\n```\n\n重新访问接口，确认返回新内容。构建日志中发送的 context 大小也应保持精简。\n\n## 下一步\n\n学习 bind mount，让开发环境中的源代码目录直接挂载到容器中，减少每次修改代码都重新构建镜像的等待。"
+    },
+    {
+      "slug": "python后端-docker-02-dockerfile-docker-build-构建fastapi镜像",
+      "title": "docker build：构建 FastAPI 镜像",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "准备好 FastAPI 代码、依赖清单和 Dockerfile 后，需要让 Docker 按照说明实际生成镜像，并判断构建日志中的成功标志与警告信息。",
+      "source": "PYTHON后端\\Docker\\02-Dockerfile\\docker-build-构建FastAPI镜像.md",
+      "body": "## 问题是什么\n\n准备好 FastAPI 代码、依赖清单和 Dockerfile 后，需要让 Docker 按照说明实际生成镜像，并判断构建日志中的成功标志与警告信息。\n\n## 用了什么知识点\n\n`docker build` 根据 Dockerfile 逐层构建镜像。镜像层是每条构建指令产生的可复用结果，后续构建可能显示 `Using cache`。构建上下文是 Docker 在构建过程中可以读取的本地文件集合，本步骤使用当前目录 `.`。\n\n本质理解：Dockerfile 是说明书，`docker build` 是执行说明书并产出镜像的过程。\n\n```\n## 怎么解决\n\n在项目目录执行：\n\n```bash\nsudo docker build -t fastapi-demo .\n```\n\n命令含义：\n\n```text\ndocker build   构建镜像\n-t             设置镜像名称和标签\nfastapi-demo   镜像名称\n.              当前目录作为构建上下文\n```\n\n构建依次完成基础镜像、工作目录、复制依赖、安装依赖、复制代码和设置启动命令六个步骤。\n\n查看镜像：\n\n```bash\nsudo docker images\n```\n\n## 解决了什么问题\n\n成功生成镜像 ID `ba6700123437`，并添加标签 `fastapi-demo:latest`。`docker images` 能看到该镜像，说明 FastAPI 代码、Python 3.12 环境和依赖已经被组合为可创建容器的模板。\n\n## 易错点\n\n真正的成功标志是：\n\n```text\nSuccessfully built ba6700123437\nSuccessfully tagged fastapi-demo:latest\n```\n\n`legacy builder is deprecated` 是旧构建器未来会被移除的提醒，不代表本次失败。后续可以再学习 BuildKit/buildx。\n\n构建过程中 pip 提示以 root 用户安装，是发生在隔离的镜像构建环境中，不是在 WSL 主机 Python 环境里直接安装，因此本步骤可以接受。\n```\n\n```\n## 验证方式\n\n```bash\nsudo docker images\n```\n\n期望看到：\n\n```text\nfastapi-demo:latest\npython:3.12-slim\n```\n\n其中 `python:3.12-slim` 是基础镜像，`fastapi-demo:latest` 是基于它构建出的应用镜像。\n\n## 下一步\n\n使用 `fastapi-demo` 镜像创建后台容器，把主机 8000 端口映射到容器 8000 端口，并访问 FastAPI 的 `/docs`。"
+    },
+    {
+      "slug": "python后端-docker-02-dockerfile-docker-run-运行fastapi容器",
+      "title": "docker run：运行 FastAPI 容器",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "成功构建 fastapi demo 镜像后，镜像仍只是静态模板。需要基于它创建并运行容器，才能真正启动 Uvicorn，并让浏览器访问 FastAPI 接口和自动文档。",
+      "source": "PYTHON后端\\Docker\\02-Dockerfile\\docker-run-运行FastAPI容器.md",
+      "body": "## 问题是什么\n\n成功构建 `fastapi-demo` 镜像后，镜像仍只是静态模板。需要基于它创建并运行容器，才能真正启动 Uvicorn，并让浏览器访问 FastAPI 接口和自动文档。\n\n## 用了什么知识点\n\n`docker run` 根据镜像创建新容器。端口映射把主机 8000 端口连接到容器内 Uvicorn 监听的 8000 端口。容器日志用于判断应用是否正常启动。\n\n本质理解：`docker build` 负责生成镜像，`docker run` 负责让镜像成为正在运行的应用容器。\n\n## 怎么解决\n\n```bash\nsudo docker run -d --name fastapi-container -p 8000:8000 fastapi-demo\nsudo docker ps\nsudo docker logs fastapi-container\n```\n\n访问：\n\n```text\nhttp://localhost:8000/\nhttp://localhost:8000/docs\n```\n\n如果容器没有运行：\n\n```bash\nsudo docker ps -a\nsudo docker logs fastapi-container\n```\n\n## 解决了什么问题\n\n建立了从自定义镜像到可访问 FastAPI 服务的完整运行方法。。\n\n## 易错点\n\nDockerfile 中 Uvicorn 必须监听 `0.0.0.0`，否则即使设置端口映射，容器外也可能无法访问。容器名已存在时，再次执行相同的 `docker run --name fastapi-container` 会名称冲突，应启动、删除或改名。\n\n## 验证方式\n\n成功标准：\n\n```text\ndocker ps 显示 fastapi-container 状态为 Up\n日志包含 Uvicorn running on http://0.0.0.0:8000\n根路径返回 {\"message\":\"Hello from Docker\"}\n/docs 显示 FastAPI Swagger 页面\n```\n\n## 下一步\n\n学习 Docker Compose，用配置文件保存构建、容器名和端口映射，减少重复输入长命令。"
+    },
+    {
       "slug": "python后端-docker-02-dockerfile-dockerfile-准备fastapi构建文件",
-      "title": "Dockerfile 准备FastAPI构建文件",
+      "title": "Dockerfile：准备 FastAPI 构建文件",
       "type": "Docker",
       "date": "2026-06-06",
       "minutes": 3,
@@ -175,7 +229,81 @@
       ],
       "summary": "会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。",
       "source": "PYTHON后端\\Docker\\02-Dockerfile\\Dockerfile-准备FastAPI构建文件.md",
-      "body": "# Dockerfile：准备 FastAPI 构建文件\n\n## 问题是什么\n\n会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。\n\n## 用了什么知识点\n\n`Dockerfile` 是制作镜像的说明书，通常位于项目根目录。`main.py` 保存 FastAPI 应用代码，`requirements.txt` 声明 Python 依赖，`Dockerfile` 描述如何组合运行环境、依赖和代码。\n\n本质理解：Dockerfile 不运行 FastAPI，而是告诉 Docker 如何生成一个能够运行 FastAPI 的镜像。\n\n## 怎么解决\n\n项目结构：\n\n```text\ndocker-fastapi-demo/\n├── Dockerfile\n├── main.py\n└── requirements.txt\n```\n\n`main.py`：\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello from Docker\"}\n```\n\n`requirements.txt`：\n\n```text\nfastapi\nuvicorn[standard]\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY main.py .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n```\n\n## 解决了什么问题\n\n准备好了制作 FastAPI 镜像所需的最小文件，并明确了代码、依赖清单和构建说明各自负责什么。\n\n## 易错点\n\n文件名必须是 `Dockerfile`，默认没有扩展名。`requirements.txt` 只声明依赖，不会自己安装依赖；真正的安装动作由 Dockerfile 中的 `RUN pip install ...` 完成。\n\n## 验证方式\n\n在项目目录执行：\n\n```bash\nls\ncat Dockerfile\n```\n\n应该看到 `Dockerfile`、`main.py` 和 `requirements.txt`，并确认 Dockerfile 内容完整。\n\n## 下一步\n\n逐行理解 Dockerfile 指令，然后使用 `docker build` 构建自己的 FastAPI 镜像。"
+      "body": "## 问题是什么\n\n会运行现成的 Nginx 镜像后，还需要学习如何把自己的 FastAPI 代码制作成镜像。Docker 不知道项目需要什么 Python 版本、依赖和启动命令，因此需要一份明确的构建说明。\n\n## 用了什么知识点\n\n`Dockerfile` 是制作镜像的说明书，通常位于项目根目录。`main.py` 保存 FastAPI 应用代码，`requirements.txt` 声明 Python 依赖，`Dockerfile` 描述如何组合运行环境、依赖和代码。\n\n本质理解：Dockerfile 不运行 FastAPI，而是告诉 Docker 如何生成一个能够运行 FastAPI 的镜像。\n\n## 怎么解决\n\n项目结构：\n\n```text\ndocker-fastapi-demo/\n├── Dockerfile\n├── main.py\n└── requirements.txt\n```\n\n`main.py`：\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello from Docker\"}\n```\n\n`requirements.txt`：\n\n```text\nfastapi\nuvicorn[standard]\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY main.py .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000]\"\n```\n\n## 解决了什么问题\n\n准备好了制作 FastAPI 镜像所需的最小文件，并明确了代码、依赖清单和构建说明各自负责什么。\n\n## 易错点\n\n文件名必须是 `Dockerfile`，默认没有扩展名。`requirements.txt` 只声明依赖，不会自己安装依赖；真正的安装动作由 Dockerfile 中的 `RUN pip install ...` 完成。\n\n## 验证方式\n\n在项目目录执行：\n\n```bash\nls\ncat Dockerfile\n```\n\n应该看到 `Dockerfile`、`main.py` 和 `requirements.txt`，并确认 Dockerfile 内容完整。\n\n## 下一步\n\n逐行理解 Dockerfile 指令，然后使用 `docker build` 构建自己的 FastAPI 镜像。"
+    },
+    {
+      "slug": "python后端-docker-03-docker-compose-bind-mount-开发时同步代码",
+      "title": "Bind Mount：开发时同步代码",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "代码通过 Dockerfile 的 COPY 进入镜像后，每次修改都需要重新构建。开发阶段频繁修改 FastAPI 代码时，这种流程等待时间较长。",
+      "source": "PYTHON后端\\Docker\\03-Docker-Compose\\bind-mount-开发时同步代码.md",
+      "body": "## 问题是什么\n\n代码通过 Dockerfile 的 `COPY` 进入镜像后，每次修改都需要重新构建。开发阶段频繁修改 FastAPI 代码时，这种流程等待时间较长。\n\n## 用了什么知识点\n\nBind mount（绑定挂载）把主机目录直接连接到容器目录。主机文件发生变化时，容器能立即看到。Uvicorn 的 `--reload` 会监视 Python 文件并在变化后重启应用。\n\n本质理解：`COPY` 是构建时复制，适合生成固定镜像；bind mount 是运行时连接，适合开发阶段快速修改代码。\n\n## 怎么解决\n\n在 `compose.yaml` 的 API 服务中加入：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-container\n    ports:\n      - \"8000:8000\"\n    volumes:\n      - .:/app\n    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload\n```\n\n启动：\n\n```bash\nsudo docker compose up -d\nsudo docker compose logs\n```\n\n修改主机的 `main.py` 后，不重新构建，直接访问接口观察新结果。\n\n## 解决了什么问题\n\n理解了开发环境中如何让主机代码变化直接进入容器，减少反复 `docker build` 的等待。\n\n## 易错点\n\n挂载 `.:/app` 会用主机目录覆盖容器中的 `/app` 内容，因此主机目录必须包含应用所需文件。`--reload` 适合开发，不应作为生产环境的默认运行方式。\n\n## 验证方式\n\n保持容器运行，修改 `main.py` 返回内容，然后执行：\n\n```bash\nsudo docker compose logs\ncurl http://localhost:8000/\n```\n\n无需 `--build` 就看到新返回值，说明挂载和自动重载生效。"
+    },
+    {
+      "slug": "python后端-docker-03-docker-compose-composeyaml-管理fastapi服务",
+      "title": "compose.yaml：管理 FastAPI 服务",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "直接使用 docker run 时，需要反复输入镜像、容器名和端口映射。项目配置变多后，长命令不容易保存、复用和协作，因此需要把容器运行方式写成配置文件。",
+      "source": "PYTHON后端\\Docker\\03-Docker-Compose\\compose.yaml-管理FastAPI服务.md",
+      "body": "## 问题是什么\n\n直接使用 `docker run` 时，需要反复输入镜像、容器名和端口映射。项目配置变多后，长命令不容易保存、复用和协作，因此需要把容器运行方式写成配置文件。\n\n## 用了什么知识点\n\nDocker Compose 使用 YAML 文件描述一个或多个服务。服务是 Compose 管理的应用单元，本步骤中的 `api` 服务会根据当前目录的 Dockerfile 构建镜像，并创建 FastAPI 容器。Compose 还会自动创建项目网络。\n\n本质理解：Dockerfile 描述“如何构建一个镜像”，`compose.yaml` 描述“项目里的服务应该如何构建和运行”。\n\n## 怎么解决\n\n`compose.yaml`：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-container\n    ports:\n      - \"8000:8000\"\n```\n\n清除可能冲突的旧容器：\n\n```bash\nsudo docker rm -f fastapi-container 2>/dev/null\n```\n\n启动、查看和停止：\n\n```bash\nsudo docker compose up -d\nsudo docker compose ps\nsudo docker compose logs\nsudo docker compose down\n```\n\n## 解决了什么问题\n\nCompose 成功完成了以下工作：\n\n```text\n构建 docker-fastapi-demo-api 镜像\n创建 docker-fastapi-demo_default 网络\n启动 fastapi-container 容器\n映射主机 8000 到容器 8000\n停止并删除容器及项目网络\n```\n\n日志显示 `Uvicorn running on http://0.0.0.0:8000`，证明 FastAPI 进程已经正常启动。\n\n## 易错点\n\n`Docker Compose is configured to build using Bake, but buildx isn't installed` 是构建能力提示，不是本次失败。输出中出现 `Built`、`Started` 和容器状态 `Up`，说明 Compose 正常完成任务。\n\n`docker compose down` 会删除 Compose 创建的容器和默认网络，但默认不会删除镜像、Dockerfile 或项目代码。\n\n## 验证方式\n\n已验证：\n\n```text\ncompose ps 显示 fastapi-container 为 Up\n端口显示 0.0.0.0:8000->8000/tcp\n日志显示 Application startup complete\n日志显示 Uvicorn running on http://0.0.0.0:8000\ncompose down 成功删除容器和网络\n```\n\n本轮未提供浏览器输出，仍可在下次运行后访问：\n\n```text\nhttp://localhost:8000/\nhttp://localhost:8000/docs\n```\n\n## 下一步\n\n学习镜像为何不会自动包含代码修改，以及如何使用重新构建和 `.dockerignore` 管理构建内容。"
+    },
+    {
+      "slug": "python后端-docker-04-dockerfastapi-拆分fastapi-通过docker运行crud",
+      "title": "拆分 FastAPI：通过 Docker 运行 CRUD",
+      "type": "Docker",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker"
+      ],
+      "tags": [
+        "Docker"
+      ],
+      "summary": "目标是把已有的多文件 FastAPI CRUD 项目放进 Docker，而不是只运行演示项目。需要识别入口、依赖、SQLite 文件、Dockerfile 和 Compose 配置，并排查容器能启动但网页无法访问的问",
+      "source": "PYTHON后端\\Docker\\04-docker+fastapi\\拆分FastAPI-通过Docker运行CRUD.md",
+      "body": "## 问题是什么\n\n目标是把已有的多文件 FastAPI CRUD 项目放进 Docker，而不是只运行演示项目。需要识别入口、依赖、SQLite 文件、Dockerfile 和 Compose 配置，并排查容器能启动但网页无法访问的问题。\n\n## 用了什么知识点\n\n项目入口位于 `main.py` 的 `app = FastAPI()`，所以 Uvicorn 目标是 `main:app`。直接依赖是 FastAPI、Uvicorn 和 SQLAlchemy。SQLite 使用 `sqlite:///./tasks.db`，在 `/app` 工作目录中对应 `/app/tasks.db`。\n\nCompose 的 `ports` 决定主机是否能进入容器。日志显示 Uvicorn 启动成功，只能证明应用在容器内部正常；`docker compose ps` 的 `PORTS` 一栏有映射，才证明主机端口已开放。\n\n本质理解：Docker 化真实项目需要同时打通“应用入口、依赖、数据文件、容器启动、端口映射”五个环节。\n\n## 怎么解决\n\n`requirements.txt`：\n\n```text\nfastapi==0.136.3\nuvicorn==0.48.0\nSQLAlchemy==2.0.50\n```\n\n`Dockerfile`：\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]\n```\n\n`.dockerignore`：\n\n```text\n.venv/\n__pycache__/\n*.pyc\n.git/\n.env\n```\n\n`compose.yaml` 核心配置：\n\n```yaml\nservices:\n  api:\n    build: .\n    container_name: fastapi-tasks\n    ports:\n      - \"8000:8000\"\n    volumes:\n      - .:/app\n    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload\n```\n\n启动与排错：\n\n```bash\nsudo docker compose up -d --build\nsudo docker compose ps\nsudo docker compose logs\n```\n\n## 解决了什么问题\n\n最终成功通过 Docker 访问原有 FastAPI CRUD 项目。项目的多文件结构、SQLAlchemy 和 SQLite 数据库均能在容器环境中工作。\n\n## 易错点\n\n主机 8000 端口被其他容器占用时，会出现 `port is already allocated`，需要关闭旧容器或更换主机端口。\n\n如果日志显示应用启动成功，但 `docker compose ps` 的 `PORTS` 为空，说明 Compose 没有应用端口映射。修正 `ports` 后必须重新创建容器：\n\n```bash\nsudo docker compose down\nsudo docker compose up -d\n```\n\n简单的偶发输入或粘贴错误不作为长期笔记内容。\n\n## 验证方式\n\n```bash\nsudo docker compose ps\nsudo docker compose logs\n```\n\n成功标准：\n\n```text\n容器状态为 Up\nPORTS 显示 0.0.0.0:8000->8000/tcp\n日志显示 Application startup complete\n浏览器可以打开 /docs\n原有 CRUD 接口可以访问和操作\n```\n\n## 下一步\n\nDocker 当前目标已完成。"
+    },
+    {
+      "slug": "python后端-fastapi-routers-routers-taskspy-迁移任务接口",
+      "title": "routers tasks.py 迁移任务接口",
+      "type": "FastAPI",
+      "date": "2026-06-06",
+      "minutes": 3,
+      "category": "PYTHON后端/FASTAPI/routers",
+      "categoryPath": [
+        "PYTHON后端",
+        "FASTAPI",
+        "routers"
+      ],
+      "tags": [
+        "FASTAPI",
+        "routers"
+      ],
+      "summary": "任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 response model 和 PATCH 。如果继续把所有接口都放在 main.py ，文件会越来越长，学习时也不容易区分“应用入口”和“业务接",
+      "source": "PYTHON后端\\FASTAPI\\routers\\routers-tasks.py-迁移任务接口.md",
+      "body": "## 问题是什么\n\n任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 `response_model` 和 `PATCH`。如果继续把所有接口都放在 `main.py`，文件会越来越长，学习时也不容易区分“应用入口”和“业务接口”。\n\n## 用了什么知识点\n\n- `APIRouter`：把同一类接口组织到单独模块。\n- `prefix=\"/tasks\"`：给任务接口统一加路径前缀。\n- `tags=[\"tasks\"]`：在 Swagger 文档中给任务接口分组。\n- `app.include_router()`：把拆出去的路由重新挂回 FastAPI 应用。\n- 项目分层：`main.py` 做入口，`routers/tasks.py` 写任务接口。\n\n## 怎么解决\n\n创建目录结构：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    ├── __init__.py\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中定义路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n把原来的任务接口从 `@app.get()`、`@app.post()` 等形式改为 `@router.get()`、`@router.post()`：\n\n```python\n@router.get(\"\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n在 `main.py` 中只保留应用入口和路由挂载：\n\n```python\nfrom fastapi import FastAPI\n\nimport models\nfrom database import engine\nfrom routers import tasks\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再堆满所有接口，任务相关代码有了自己的位置。以后继续扩展用户、登录、文章、文件上传等功能时，可以继续新增不同的 router 文件，而不是把所有内容混在一个文件里。\n\n## 易错点\n\n- `prefix=\"/tasks\"` 已经包含 `/tasks`，所以查询全部任务应写 `@router.get(\"\")`，不是 `@router.get(\"/tasks\")`。\n- 查询单个任务应写 `@router.get(\"/{task_id}\")`，最终路径才是 `/tasks/{task_id}`。\n- 拆分后别忘了在 `main.py` 里 `app.include_router(tasks.router)`。\n- `routers` 文件夹建议创建 `__init__.py`，让它成为稳定的 Python 包。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认原来的接口路径没有变化：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径仍然正常，说明迁移成功。"
     },
     {
       "slug": "python后端-fastapi-routers-apirouter-拆分项目结构",
@@ -196,26 +324,6 @@
       "summary": "学习阶段把所有接口都写在 main.py 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 main.py ，后面会很难维护和查找。",
       "source": "PYTHON后端\\FASTAPI\\routers\\APIRouter-拆分项目结构.md",
       "body": "## 问题是什么\n\n学习阶段把所有接口都写在 `main.py` 里可以快速理解 FastAPI，但真实项目里接口会越来越多。如果继续把数据库创建、依赖函数、任务接口、用户接口都堆在 `main.py`，后面会很难维护和查找。\n\n## 用了什么知识点\n\n- `APIRouter`：把一组相关接口拆成一个独立路由模块。\n- `prefix`：给一组接口统一添加路径前缀，例如 `/tasks`。\n- `tags`：给接口文档分组。\n- `app.include_router()`：把拆出去的路由挂回 FastAPI 应用。\n- 模块化项目结构：`main.py` 只负责应用入口，具体接口放到 `routers/`。\n\n## 怎么解决\n\n推荐把项目整理成：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中创建路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n原来的：\n\n```python\n@app.get(\"/tasks\")\n```\n\n拆出去后变成：\n\n```python\n@router.get(\"\")\n```\n\n因为 `/tasks` 已经放进了 `prefix`。\n\n最后在 `main.py` 中挂载：\n\n```python\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再承担所有业务接口，只保留应用入口、建表和路由挂载。任务相关接口集中到 `routers/tasks.py`，以后新增用户、认证、文章等模块时，也可以继续按同样方式拆分。\n\n## 易错点\n\n- 使用了 `prefix=\"/tasks\"` 后，`@router.get(\"\")` 才对应 `GET /tasks`。\n- 如果写成 `@router.get(\"/tasks\")`，最终路径会变成 `/tasks/tasks`。\n- 拆出去后要在 `main.py` 中执行 `app.include_router(tasks.router)`。\n- `routers` 文件夹需要有 `__init__.py`，这样 Python 才能稳定按包导入。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认任务接口仍然存在：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径没有变，说明拆分成功。"
-    },
-    {
-      "slug": "python后端-fastapi-routers-routers-taskspy-迁移任务接口",
-      "title": "routers tasks.py 迁移任务接口",
-      "type": "FastAPI",
-      "date": "2026-06-05",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI/routers",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI",
-        "routers"
-      ],
-      "tags": [
-        "FASTAPI",
-        "routers"
-      ],
-      "summary": "任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 response model 和 PATCH 。如果继续把所有接口都放在 main.py ，文件会越来越长，学习时也不容易区分“应用入口”和“业务接",
-      "source": "PYTHON后端\\FASTAPI\\routers\\routers-tasks.py-迁移任务接口.md",
-      "body": "## 问题是什么\n\n任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 `response_model` 和 `PATCH`。如果继续把所有接口都放在 `main.py`，文件会越来越长，学习时也不容易区分“应用入口”和“业务接口”。\n\n## 用了什么知识点\n\n- `APIRouter`：把同一类接口组织到单独模块。\n- `prefix=\"/tasks\"`：给任务接口统一加路径前缀。\n- `tags=[\"tasks\"]`：在 Swagger 文档中给任务接口分组。\n- `app.include_router()`：把拆出去的路由重新挂回 FastAPI 应用。\n- 项目分层：`main.py` 做入口，`routers/tasks.py` 写任务接口。\n\n## 怎么解决\n\n创建目录结构：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    ├── __init__.py\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中定义路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n把原来的任务接口从 `@app.get()`、`@app.post()` 等形式改为 `@router.get()`、`@router.post()`：\n\n```python\n@router.get(\"\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n在 `main.py` 中只保留应用入口和路由挂载：\n\n```python\nfrom fastapi import FastAPI\n\nimport models\nfrom database import engine\nfrom routers import tasks\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再堆满所有接口，任务相关代码有了自己的位置。以后继续扩展用户、登录、文章、文件上传等功能时，可以继续新增不同的 router 文件，而不是把所有内容混在一个文件里。\n\n## 易错点\n\n- `prefix=\"/tasks\"` 已经包含 `/tasks`，所以查询全部任务应写 `@router.get(\"\")`，不是 `@router.get(\"/tasks\")`。\n- 查询单个任务应写 `@router.get(\"/{task_id}\")`，最终路径才是 `/tasks/{task_id}`。\n- 拆分后别忘了在 `main.py` 里 `app.include_router(tasks.router)`。\n- `routers` 文件夹建议创建 `__init__.py`，让它成为稳定的 Python 包。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认原来的接口路径没有变化：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径仍然正常，说明迁移成功。\n\n## 下一步\n\n下一步做 FastAPI 入门收尾：整理最终项目结构，明确以后用 AI 开发时只需要掌握哪些核心判断点。"
     },
     {
       "slug": "linux入门-问题记录-wsl代理-apt和docker下载卡住",
