@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from "react";
 
 import rikkaPeek from "@/public/images/rikka-peek-v2.webp";
@@ -43,6 +44,7 @@ function poseToStyle(pose: RikkaPose) {
 export function RikkaPeek({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const figureRef = useRef<HTMLDivElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const targetPoseRef = useRef<RikkaPose>({ direction: "center", shy: false });
   const currentRef = useRef({
     hiddenPercent: REST_HIDDEN_PERCENT,
@@ -240,7 +242,7 @@ export function RikkaPeek({ variant = "desktop" }: { variant?: "desktop" | "mobi
   return (
     <div
       ref={rootRef}
-      className={`rikka-peek rikka-peek-${variant}`}
+      className={`rikka-peek rikka-peek-${variant}${imageLoaded ? " rikka-peek-loaded" : ""}`}
       aria-hidden="true"
     >
       <div
@@ -255,7 +257,8 @@ export function RikkaPeek({ variant = "desktop" }: { variant?: "desktop" | "mobi
               src={rikkaPeek}
               alt=""
               priority={false}
-              sizes={variant === "mobile" ? "110px" : "136px"}
+              onLoad={() => setImageLoaded(true)}
+              sizes={variant === "mobile" ? "78px" : "136px"}
             />
             <span className="rikka-peek-eye-glint rikka-peek-eye-glint-left" />
             <span className="rikka-peek-eye-glint rikka-peek-eye-glint-right" />

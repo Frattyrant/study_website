@@ -84,9 +84,6 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             </h1>
             <p className="mt-4 max-w-2xl text-white/85">记录学习 IT 的过程</p>
           </div>
-          <div className="hidden max-md:block">
-            <RikkaPeek variant="mobile" />
-          </div>
           <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm max-md:max-w-none">
             <Search className="shrink-0 text-slate-600" size={20} />
             <input
@@ -107,10 +104,13 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
           <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
         </div>
-        <div className="ml-auto flex max-sm:mx-auto max-sm:w-full max-sm:justify-center">
+        <div className="ml-auto flex items-center gap-2 max-sm:mx-auto max-sm:w-full max-sm:justify-center">
           <EmojiLoopGame
             onEmojiSpawn={(emoji, origin) => emojiPileRef.current?.spawn(emoji, origin)}
           />
+          <div className="pointer-events-none hidden max-md:block" aria-hidden="true">
+            <RikkaPeek variant="mobile" />
+          </div>
         </div>
         <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-[62%] md:block">
           <RikkaPeek />

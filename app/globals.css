@@ -113,9 +113,9 @@ button, input { font: inherit; }
 }
 
 .rikka-peek-mobile {
-  width: 110px;
-  height: 82px;
-  margin: -0.25rem auto -0.25rem;
+  width: 78px;
+  height: 56px;
+  margin: -0.45rem 0 -0.35rem;
 }
 
 .rikka-peek-figure {
@@ -130,7 +130,7 @@ button, input { font: inherit; }
 }
 
 .rikka-peek-mobile .rikka-peek-figure {
-  width: 110px;
+  width: 78px;
   animation: rikka-mobile-peek 4.8s ease-in-out infinite;
 }
 
@@ -162,8 +162,8 @@ button, input { font: inherit; }
 
 .rikka-peek-eye-glint {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: clamp(2px, 2.9%, 4px);
+  height: clamp(2px, 2.9%, 4px);
   border-radius: 50%;
   background: rgb(235 255 255 / 0.88);
   box-shadow: 0 0 5px rgb(89 231 255 / 0.72);
@@ -174,6 +174,11 @@ button, input { font: inherit; }
     0
   );
   animation: rikka-eye-shimmer 3.2s ease-in-out infinite;
+}
+
+.rikka-peek:not(.rikka-peek-loaded) .rikka-peek-eye-glint {
+  opacity: 0;
+  animation: none;
 }
 
 .rikka-peek-eye-glint-left {
