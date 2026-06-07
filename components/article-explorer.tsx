@@ -2,12 +2,14 @@
 
 import { Search } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 
 import siteBackground from "@/public/images/pawn-site-background.jpg";
 import { ArticleCard } from "@/components/article-card";
 import { CategoryTree } from "@/components/category-tree";
 import { EmojiLoopGame } from "@/components/emoji-loop-game";
+import { EmojiPile, type EmojiPileHandle } from "@/components/emoji-pile";
+import { RikkaPeek } from "@/components/rikka-peek";
 import type { Post, VaultStats } from "@/lib/types";
 
 interface ArticleExplorerProps {
@@ -16,6 +18,7 @@ interface ArticleExplorerProps {
 }
 
 export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
+  const emojiPileRef = useRef<EmojiPileHandle>(null);
   const [activeCategory, setActiveCategory] = useState(stats.categoryTree);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () =>
@@ -81,6 +84,9 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             </h1>
             <p className="mt-4 max-w-2xl text-white/85">记录学习 IT 的过程</p>
           </div>
+          <div className="hidden max-md:block">
+            <RikkaPeek variant="mobile" />
+          </div>
           <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm max-md:max-w-none">
             <Search className="shrink-0 text-slate-600" size={20} />
             <input
@@ -95,14 +101,19 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         </div>
       </div>
 
-      <div className="mb-5.5 flex flex-wrap items-center gap-3" aria-label="笔记统计与 Emoji 小游戏">
+      <div className="relative mb-5.5 flex flex-wrap items-center gap-3" aria-label="笔记统计与 Emoji 小游戏">
         <div className="flex flex-wrap gap-2.5">
           <StatChip><strong>{stats.publishableNotes || posts.length}</strong> 篇笔记</StatChip>
           <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
           <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
         </div>
         <div className="ml-auto flex max-sm:mx-auto max-sm:w-full max-sm:justify-center">
-          <EmojiLoopGame />
+          <EmojiLoopGame
+            onEmojiSpawn={(emoji, origin) => emojiPileRef.current?.spawn(emoji, origin)}
+          />
+        </div>
+        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-[62%] md:block">
+          <RikkaPeek />
         </div>
       </div>
 
@@ -123,7 +134,13 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         <div className="min-w-0">
           {filteredPosts.length ? (
             <div className="grid min-w-0 grid-cols-3 gap-4 max-xl:grid-cols-2 max-sm:grid-cols-1">
-              {filteredPosts.map((post) => <ArticleCard key={post.slug} post={post} />)}
+              {filteredPosts.map((post) => (
+                <ArticleCard
+                  key={post.slug}
+                  post={post}
+                  onOpen={() => emojiPileRef.current?.clear()}
+                />
+              ))}
             </div>
           ) : (
             <p className="rounded-lg border border-dashed border-line p-6 text-center text-muted">
@@ -132,6 +149,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           )}
         </div>
       </div>
+      <EmojiPile ref={emojiPileRef} />
     </section>
   );
 }

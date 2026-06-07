@@ -9,12 +9,18 @@ import {
   getNextEmojiScale,
   getRandomEmojiIndex,
 } from "@/lib/emoji-game";
+import type { EmojiSpawnOrigin } from "@/components/emoji-pile";
 
-export function EmojiLoopGame() {
+interface EmojiLoopGameProps {
+  onEmojiSpawn?: (emoji: string, origin: EmojiSpawnOrigin) => void;
+}
+
+export function EmojiLoopGame({ onEmojiSpawn }: EmojiLoopGameProps) {
   const [emojiIndex, setEmojiIndex] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [emojiPopPeak, setEmojiPopPeak] = useState(1.22);
   const scaleElementRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const currentScaleRef = useRef(1);
   const animationFrameRef = useRef<number | null>(null);
   const resetTimeoutRef = useRef<number | null>(null);
@@ -66,12 +72,22 @@ export function EmojiLoopGame() {
   const showRandomEmoji = () => {
     stopScaleReset();
 
+    const nextEmojiIndex = getRandomEmojiIndex(emojiIndex);
+    const nextEmoji = EMOJIS[nextEmojiIndex];
     const nextScale = getNextEmojiScale(currentScaleRef.current);
     applyScale(nextScale);
     setEmojiPopPeak(Math.min(1.22, 3 / nextScale));
-    setEmojiIndex((current) => getRandomEmojiIndex(current));
+    setEmojiIndex(nextEmojiIndex);
     setClickCount((current) => current + 1);
     startScaleReset(nextScale);
+
+    const buttonBounds = buttonRef.current?.getBoundingClientRect();
+    if (buttonBounds) {
+      onEmojiSpawn?.(nextEmoji, {
+        x: buttonBounds.left + buttonBounds.width / 2,
+        y: buttonBounds.top + buttonBounds.height / 2,
+      });
+    }
   };
 
   useEffect(() => () => stopScaleReset(), []);
@@ -82,6 +98,7 @@ export function EmojiLoopGame() {
       aria-label="Emoji 循环小游戏"
     >
       <button
+        ref={buttonRef}
         className="relative z-10 grid size-10 cursor-pointer place-items-center overflow-visible rounded-md bg-surface-strong text-2xl transition hover:scale-105 hover:bg-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green active:scale-95"
         type="button"
         aria-label={`当前表情 ${emoji}，点击随机切换`}

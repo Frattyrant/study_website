@@ -72,9 +72,182 @@ button, input { font: inherit; }
   transform: scale(1);
 }
 
+.emoji-pile-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  pointer-events: none;
+  contain: strict;
+}
+
+.emoji-pile-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  font-size: 36px;
+  line-height: 1;
+  transform-origin: center;
+  user-select: none;
+  will-change: transform;
+}
+
+.emoji-pile-item-exit {
+  opacity: 0;
+  scale: 0.55;
+  transition: opacity 180ms ease-out, scale 180ms ease-out;
+}
+
+.rikka-peek {
+  pointer-events: none;
+  position: relative;
+  width: 136px;
+  height: 92px;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.rikka-peek-mobile {
+  width: 110px;
+  height: 82px;
+  margin: -0.25rem auto -0.25rem;
+}
+
+.rikka-peek-figure {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--rikka-hidden, 24%) * -1);
+  width: 136px;
+  transform: translate3d(calc(-50% + var(--rikka-x, 0px)), var(--rikka-y, 0px), 0)
+    rotate(var(--rikka-rotate, 0deg));
+  transform-origin: 50% 66%;
+  will-change: transform, bottom;
+}
+
+.rikka-peek-mobile .rikka-peek-figure {
+  width: 110px;
+  animation: rikka-mobile-peek 4.8s ease-in-out infinite;
+}
+
+.rikka-peek-breathe {
+  transform-origin: 50% 92%;
+  animation: rikka-breathe 3.6s ease-in-out infinite;
+}
+
+.rikka-peek-parallax {
+  position: relative;
+  transform: translate3d(
+    var(--rikka-inner-x, 0px),
+    var(--rikka-inner-y, 0px),
+    0
+  );
+  transition: filter 220ms ease;
+  will-change: transform;
+}
+
+.rikka-peek-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 3px 3px rgb(18 35 68 / 0.2));
+  transform-origin: 50% 70%;
+  animation: rikka-idle-tilt 5.2s ease-in-out infinite;
+  user-select: none;
+}
+
+.rikka-peek-eye-glint {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(235 255 255 / 0.88);
+  box-shadow: 0 0 5px rgb(89 231 255 / 0.72);
+  opacity: 0.7;
+  transform: translate3d(
+    var(--rikka-eye-x, 0px),
+    var(--rikka-eye-y, 0px),
+    0
+  );
+  animation: rikka-eye-shimmer 3.2s ease-in-out infinite;
+}
+
+.rikka-peek-eye-glint-left {
+  top: 51%;
+  left: 41.4%;
+}
+
+.rikka-peek-eye-glint-right {
+  top: 52.2%;
+  left: 60.6%;
+  animation-delay: 120ms;
+}
+
+@keyframes rikka-breathe {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-1.5px) scaleY(1.012);
+  }
+}
+
+@keyframes rikka-idle-tilt {
+  0%, 100% {
+    transform: rotate(-0.35deg) skewX(-0.15deg);
+  }
+  50% {
+    transform: rotate(0.45deg) skewX(0.2deg);
+  }
+}
+
+@keyframes rikka-eye-shimmer {
+  0%, 38%, 100% {
+    opacity: 0.62;
+    scale: 0.82;
+  }
+  45%, 55% {
+    opacity: 0.94;
+    scale: 1.12;
+  }
+}
+
+@keyframes rikka-mobile-peek {
+  0%, 100% {
+    transform: translate3d(calc(-50% - 7px), 1px, 0) rotate(-2.5deg);
+  }
+  50% {
+    transform: translate3d(calc(-50% + 7px), -2px, 0) rotate(2.5deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .emoji-pop {
     animation: none;
+  }
+
+  .emoji-pile-layer {
+    display: none;
+  }
+
+  .rikka-peek-figure,
+  .rikka-peek-mobile .rikka-peek-figure {
+    animation: none;
+    transform: translate3d(-50%, 0, 0) rotate(0deg);
+  }
+
+  .rikka-peek-breathe,
+  .rikka-peek-image,
+  .rikka-peek-eye-glint {
+    animation: none;
+  }
+
+  .rikka-peek-parallax {
+    transform: none;
   }
 }
 

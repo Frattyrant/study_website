@@ -3,12 +3,18 @@ import Link from "next/link";
 
 import type { Post } from "@/lib/types";
 
-export function ArticleCard({ post }: { post: Post }) {
+interface ArticleCardProps {
+  post: Post;
+  onOpen?: () => void;
+}
+
+export function ArticleCard({ post, onOpen }: ArticleCardProps) {
   return (
     <Link
       className="flex min-h-66 min-w-0 flex-col overflow-hidden rounded-lg border border-line bg-surface p-5.5 text-left text-text transition duration-200 hover:-translate-y-1 hover:border-green hover:shadow-[0_14px_36px_rgba(47,125,92,0.13)] focus-visible:outline-3 focus-visible:outline-green"
       href={`/posts/${post.slug}`}
       aria-label={`阅读 ${post.title}`}
+      onClick={onOpen}
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-green-dark px-2 py-0.5 text-xs font-extrabold text-white">
