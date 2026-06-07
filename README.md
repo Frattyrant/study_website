@@ -18,13 +18,3 @@ http://localhost:3000
 npm run sync-content
 node .\tools\sync-obsidian.cjs "D:\path\to\vault"
 ```
-
-同步结果写入 `data/content.json`。
-
-### 知识模块自动注册
-
-- Vault 顶层知识目录会自动注册为公开知识域。
-- `全部` 和知识域中的所有目录都会注册为可展开节点。
-- Markdown 笔记显示在所属目录下，作为没有下拉按钮的叶子节点。
-- `学习方向`、`问题记录` 和隐藏目录默认不公开；可在
-  `tools/knowledge-module-registry.cjs` 的 `ignoredRoots` 中调整。

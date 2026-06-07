@@ -3,10 +3,10 @@ const path = require("node:path");
 
 class KnowledgeModuleRegistry {
   constructor({
-    ignoredRoots = [".obsidian", "学习方向", "问题记录"],
+    publicMarker = ".public",
     preferredRoots = ["Linux入门", "PYTHON后端"],
   } = {}) {
-    this.ignoredRoots = new Set(ignoredRoots);
+    this.publicMarker = publicMarker;
     this.preferredRoots = new Map(preferredRoots.map((name, index) => [name, index]));
   }
 
@@ -17,7 +17,7 @@ class KnowledgeModuleRegistry {
         (entry) =>
           entry.isDirectory() &&
           !entry.name.startsWith(".") &&
-          !this.ignoredRoots.has(entry.name),
+          fs.existsSync(path.join(vaultPath, entry.name, this.publicMarker)),
       )
       .map((entry) => entry.name)
       .sort((a, b) => this.compareLabels(a, b));

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:security": "node --test --test-isolation=none tools/*.test.cjs",
     "sync-content": "node tools/sync-obsidian.cjs",
     "validate-content": "node tools/validate-content.cjs"
   },

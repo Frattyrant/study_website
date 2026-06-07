@@ -1,10 +1,15 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const {
+  hashPublicSafeLine,
+  preparePublicContent,
+} = require("./content-security.cjs");
 const { KnowledgeModuleRegistry } = require("./knowledge-module-registry.cjs");
 
 const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
 const vaultPath = process.argv[2] || defaultVault;
 const outputPath = path.resolve(__dirname, "..", "data", "content.json");
+const securityOutputPath = path.resolve(__dirname, "..", "data", "content-security.json");
 const moduleRegistry = new KnowledgeModuleRegistry();
 
 function walk(dir) {
@@ -47,15 +52,6 @@ function detailMarkdown(content) {
     .trim()
     .replace(/\r\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n");
-}
-
-function redactForPublicSite(value) {
-  return value
-    .replace(/https?:\/\/(?:127\.0\.0\.1|localhost|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}):(?:7897|9097)\b/gi, "http://<local-proxy>")
-    .replace(/\b(?:127\.0\.0\.1|localhost|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}):(?:7897|9097)\b/gi, "<local-address>")
-    .replace(/\b((?:HTTP|HTTPS|NO)_PROXY=)([^\s"`]+)/gi, "$1<redacted>")
-    .replace(/\b((?:http|https)_proxy=)([^\s"`]+)/gi, "$1<redacted>")
-    .replace(/\bpassword\s+123456\b/gi, "password <redacted>");
 }
 
 function firstParagraphAfter(content, heading) {
@@ -131,14 +127,25 @@ const scopedFiles = allFiles.filter((filePath) => {
   return publicRoots.has(relativePath.split(path.sep)[0]);
 });
 const files = scopedFiles.filter((filePath) => shouldPublish(filePath, publicRoots));
+const allowedLineHashes = {};
 const posts = files
   .map((filePath) => {
-    const content = fs.readFileSync(filePath, "utf8");
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
+    const prepared = preparePublicContent(fs.readFileSync(filePath, "utf8"), relativePath);
+    const allowedHashes = new Set(prepared.allowedLineHashes);
+    const summaryContent = prepared.content
+      .split("\n")
+      .filter((line) => !allowedHashes.has(hashPublicSafeLine(line)))
+      .join("\n");
+    const content = prepared.content;
     const title = titleFrom(content, filePath);
     const categoryPath = moduleRegistry.categoryPathFor(relativePath);
+    const slug = slugFrom(relativePath);
+    if (prepared.allowedLineHashes.length > 0) {
+      allowedLineHashes[slug] = prepared.allowedLineHashes;
+    }
     return {
-      slug: slugFrom(relativePath),
+      slug,
       title,
       type: inferType(relativePath, title),
       date: toDate(filePath),
@@ -146,9 +153,9 @@ const posts = files
       category: categoryKeyFrom(categoryPath),
       categoryPath,
       tags: categoryPath.slice(1),
-      summary: redactForPublicSite(summaryFrom(content, title)),
+      summary: summaryFrom(summaryContent, title),
       source: relativePath,
-      body: redactForPublicSite(detailMarkdown(content)),
+      body: detailMarkdown(content),
     };
   })
   .sort((a, b) => b.date.localeCompare(a.date) || a.source.localeCompare(b.source, "zh-CN"));
@@ -168,7 +175,6 @@ const latestDate = allFiles
 
 const data = {
   vaultStats: {
-    vaultPath,
     totalNotes: scopedFiles.length,
     publishableNotes: posts.length,
     focusCount: publicRoots.size,
@@ -181,4 +187,9 @@ const data = {
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+fs.writeFileSync(
+  securityOutputPath,
+  `${JSON.stringify({ publicRoots: [...publicRoots], allowedLineHashes }, null, 2)}\n`,
+  "utf8",
+);
 console.log(`Synced ${posts.length} publishable notes from ${allFiles.length} markdown files.`);

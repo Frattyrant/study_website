@@ -22,7 +22,6 @@ export interface Post {
 }
 
 export interface VaultStats {
-  vaultPath?: string;
   totalNotes: number;
   publishableNotes: number;
   focusCount: number;

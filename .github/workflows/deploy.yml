@@ -31,6 +31,8 @@ jobs:
         run: npm ci
       - name: Validate generated content
         run: npm run validate-content
+      - name: Run security tests
+        run: npm run test:security
       - name: Build static site
         run: npm run build
       - name: Upload artifact

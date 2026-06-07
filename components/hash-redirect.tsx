@@ -9,8 +9,12 @@ export function HashRedirect() {
   useEffect(() => {
     const redirectLegacyHash = () => {
       if (!window.location.hash.startsWith("#note-")) return;
-      const slug = decodeURIComponent(window.location.hash.slice("#note-".length));
-      if (slug) router.replace(`/posts/${slug}`);
+      try {
+        const slug = decodeURIComponent(window.location.hash.slice("#note-".length));
+        if (slug) router.replace(`/posts/${slug}`);
+      } catch {
+        // Ignore malformed legacy hashes instead of breaking the page.
+      }
     };
 
     redirectLegacyHash();
