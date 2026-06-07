@@ -54,6 +54,24 @@ body {
 }
 button, input { font: inherit; }
 .break-anywhere { overflow-wrap: anywhere; }
+
+@keyframes emoji-pop {
+  0% { transform: scale(0.72); }
+  55% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.emoji-pop {
+  display: inline-block;
+  animation: emoji-pop 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emoji-pop {
+    animation: none;
+  }
+}
+
 .note-body { color: var(--text); }
 .note-body h2, .note-body h3, .note-body h4 {
   margin: 1.875rem 0 0.625rem;

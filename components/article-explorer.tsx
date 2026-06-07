@@ -7,6 +7,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import siteBackground from "@/public/images/pawn-site-background.jpg";
 import { ArticleCard } from "@/components/article-card";
 import { CategoryTree } from "@/components/category-tree";
+import { EmojiLoopGame } from "@/components/emoji-loop-game";
 import type { Post, VaultStats } from "@/lib/types";
 
 interface ArticleExplorerProps {
@@ -94,10 +95,15 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         </div>
       </div>
 
-      <div className="mb-5.5 flex flex-wrap gap-2.5" aria-label="笔记统计">
-        <StatChip><strong>{stats.publishableNotes || posts.length}</strong> 篇笔记</StatChip>
-        <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
-        <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
+      <div className="mb-5.5 flex flex-wrap items-center gap-3" aria-label="笔记统计与 Emoji 小游戏">
+        <div className="flex flex-wrap gap-2.5">
+          <StatChip><strong>{stats.publishableNotes || posts.length}</strong> 篇笔记</StatChip>
+          <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
+          <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
+        </div>
+        <div className="ml-auto flex max-sm:mx-auto max-sm:w-full max-sm:justify-center">
+          <EmojiLoopGame />
+        </div>
       </div>
 
       <div className="grid grid-cols-[minmax(210px,260px)_1fr] items-start gap-6 max-lg:grid-cols-1">
