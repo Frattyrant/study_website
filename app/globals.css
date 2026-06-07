@@ -57,13 +57,19 @@ button, input { font: inherit; }
 
 @keyframes emoji-pop {
   0% { transform: scale(0.72); }
-  55% { transform: scale(1.22); }
+  55% { transform: scale(var(--emoji-pop-peak, 1.22)); }
   100% { transform: scale(1); }
 }
 
 .emoji-pop {
   display: inline-block;
   animation: emoji-pop 260ms ease-out;
+}
+
+.emoji-scale {
+  display: inline-block;
+  transform-origin: center;
+  transform: scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
