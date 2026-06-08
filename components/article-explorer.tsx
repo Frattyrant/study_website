@@ -10,6 +10,7 @@ import { CategoryTree } from "@/components/category-tree";
 import { EmojiLoopGame } from "@/components/emoji-loop-game";
 import { EmojiPile, type EmojiPileHandle } from "@/components/emoji-pile";
 import { RikkaPeek } from "@/components/rikka-peek";
+import { postMatchesSearch } from "@/lib/search";
 import type { Post, VaultStats } from "@/lib/types";
 
 interface ArticleExplorerProps {
@@ -32,7 +33,6 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
   const [query, setQuery] = useState("");
 
   const filteredPosts = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("zh-CN");
     return posts.filter((post) => {
       const matchesCategory =
         activeCategory.kind === "root" ||
@@ -40,16 +40,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           ? post.slug === activeCategory.postSlug
           : post.category === activeCategory.key ||
             post.category.startsWith(`${activeCategory.key}/`));
-      const searchable = [
-        post.title,
-        post.type,
-        post.summary,
-        post.source ?? "",
-        ...post.categoryPath,
-      ]
-        .join(" ")
-        .toLocaleLowerCase("zh-CN");
-      return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
+      return matchesCategory && postMatchesSearch(post, query);
     });
   }, [activeCategory, posts, query]);
 
@@ -63,7 +54,11 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
   };
 
   return (
-    <section className="mx-auto mt-14 w-[min(1180px,calc(100%-36px))] pb-20" id="articles">
+    <section
+      className="mx-auto mt-14 w-[min(1180px,calc(100%-36px))] pb-20"
+      data-site-id="study-website"
+      id="articles"
+    >
       <div className="relative mb-6 min-h-80 overflow-hidden rounded-xl border border-line shadow-[0_18px_50px_rgba(23,32,28,0.14)]">
         <Image
           className="object-cover object-center"
