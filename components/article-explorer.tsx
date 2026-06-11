@@ -6,11 +6,11 @@ import { useMemo, useRef, useState, type ReactNode } from "react";
 
 import siteBackground from "@/public/images/pawn-site-background.jpg";
 import { AnimatedTagline } from "@/components/animated-tagline";
+import { AnimatedTitle } from "@/components/animated-title";
 import { ArticleCard } from "@/components/article-card";
 import { CategoryTree } from "@/components/category-tree";
 import { EmojiLoopGame } from "@/components/emoji-loop-game";
 import { EmojiPile, type EmojiPileHandle } from "@/components/emoji-pile";
-import { RikkaPeek } from "@/components/rikka-peek";
 import { postMatchesSearch } from "@/lib/search";
 import type { Post, VaultStats } from "@/lib/types";
 
@@ -75,9 +75,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-yellow-300">
               Notes
             </p>
-            <h1 className="text-3xl font-bold drop-shadow-sm sm:text-5xl">
-              pawn的个人学习网站
-            </h1>
+            <AnimatedTitle />
             <AnimatedTagline />
           </div>
           <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm max-md:max-w-none">
@@ -94,7 +92,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         </div>
       </div>
 
-      <div className="relative mb-5.5 flex flex-wrap items-center gap-3" aria-label="笔记统计与 Emoji 小游戏">
+      <div className="mb-5.5 flex flex-wrap items-center gap-3" aria-label="笔记统计与 Emoji 小游戏">
         <div className="flex flex-wrap gap-2.5">
           <StatChip><strong>{stats.publishableNotes || posts.length}</strong> 篇笔记</StatChip>
           <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
@@ -104,12 +102,6 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           <EmojiLoopGame
             onEmojiSpawn={(emoji, origin) => emojiPileRef.current?.spawn(emoji, origin)}
           />
-          <div className="pointer-events-none hidden max-md:block" aria-hidden="true">
-            <RikkaPeek variant="mobile" />
-          </div>
-        </div>
-        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-[62%] md:block">
-          <RikkaPeek />
         </div>
       </div>
 

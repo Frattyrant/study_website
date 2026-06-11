@@ -11,10 +11,10 @@ const productionBasePath = process.env.NODE_ENV === "production" ? `/${repositor
 
 export const metadata: Metadata = {
   title: {
-    default: "pawn的个人学习网站",
-    template: "%s | pawn的个人学习网站",
+    default: "pawn的知识库",
+    template: "%s | pawn的知识库",
   },
-  description: "pawn的个人学习网站，记录 Linux 入门和 Python 后端学习笔记。",
+  description: "记录 Linux、Python 后端及个人技术学习笔记的知识库。",
   icons: { icon: `${productionBasePath}/favicon.svg` },
 };
 
