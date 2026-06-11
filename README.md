@@ -3,18 +3,17 @@
 基于 Next.js App Router、TypeScript 和 Tailwind CSS 的静态学习博客，部署在 GitHub Pages：
 [https://frattyrant.github.io/study_website/](https://frattyrant.github.io/study_website/)
 
-## 本地浏览
-
-```powershell
-npm run dev
-http://localhost:3000
-```
-
-## Obsidian 同步
-
-默认从本机 `C:\Users\LENOVO\Documents\Obsidian Vault` 同步，也可以传入其他 Vault 路径：
+笔记同步
 
 ```powershell
 npm run sync-content
-node .\tools\sync-obsidian.cjs "D:\path\to\vault"
+npm run validate-content
+npm run build
+
+```
+
+本地检查
+
+```powershell
+npm run dev
 ```

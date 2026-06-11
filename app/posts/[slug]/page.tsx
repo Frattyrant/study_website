@@ -6,10 +6,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { getPostBySlug, normalizeObsidianMarkdown, posts } from "@/lib/content";
+import { resolvePublishedImageSource } from "@/lib/content-image";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
 }
+
+const repositoryName = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "study_website";
+const basePath = process.env.NODE_ENV === "production" ? `/${repositoryName}` : "";
 
 export function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
@@ -61,6 +65,21 @@ export default async function PostPage({ params }: PostPageProps) {
               a: ({ href, children }) => {
                 const external = Boolean(href?.startsWith("http"));
                 return <a href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>{children}</a>;
+              },
+              img: ({ src, alt }) => {
+                if (typeof src !== "string") return null;
+                const image = resolvePublishedImageSource(src, basePath);
+                return (
+                  // Markdown images have dynamic dimensions, so a responsive native image is appropriate here.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={image.src}
+                    alt={alt ?? ""}
+                    loading="lazy"
+                    decoding="async"
+                    style={image.width ? { width: `${image.width}px` } : undefined}
+                  />
+                );
               },
             }}
           >

@@ -3,10 +3,10 @@
     "totalNotes": 43,
     "publishableNotes": 34,
     "focusCount": 2,
-    "latestDate": "2026-06-06",
+    "latestDate": "2026-06-11",
     "topCounts": {
-      "Linux入门": 4,
-      "PYTHON后端": 39
+      "Linux入门": 5,
+      "PYTHON后端": 38
     },
     "categoryTree": {
       "key": "全部",
@@ -17,7 +17,7 @@
         {
           "key": "Linux入门",
           "label": "Linux入门",
-          "count": 3,
+          "count": 4,
           "kind": "module",
           "children": [
             {
@@ -51,13 +51,21 @@
               "kind": "note",
               "postSlug": "linux入门-常用命令",
               "children": []
+            },
+            {
+              "key": "note:linux入门-vim编辑器",
+              "label": "VIM编辑器",
+              "count": 1,
+              "kind": "note",
+              "postSlug": "linux入门-vim编辑器",
+              "children": []
             }
           ]
         },
         {
           "key": "PYTHON后端",
           "label": "PYTHON后端",
-          "count": 31,
+          "count": 30,
           "kind": "module",
           "children": [
             {
@@ -138,7 +146,7 @@
                     },
                     {
                       "key": "note:python后端-docker-01-docker基础-nginx端口映射-8080到80",
-                      "label": "Nginx端口映射 8080到80",
+                      "label": "Nginx 端口映射：8080 到 80",
                       "count": 1,
                       "kind": "note",
                       "postSlug": "python后端-docker-01-docker基础-nginx端口映射-8080到80",
@@ -231,7 +239,7 @@
             {
               "key": "PYTHON后端/FASTAPI",
               "label": "FASTAPI",
-              "count": 18,
+              "count": 17,
               "kind": "module",
               "children": [
                 {
@@ -401,14 +409,6 @@
                       "children": []
                     }
                   ]
-                },
-                {
-                  "key": "note:python后端-fastapi-logic",
-                  "label": "LOGIC",
-                  "count": 1,
-                  "kind": "note",
-                  "postSlug": "python后端-fastapi-logic",
-                  "children": []
                 }
               ]
             },
@@ -425,6 +425,56 @@
     }
   },
   "posts": [
+    {
+      "slug": "linux入门-常用命令",
+      "title": "常用命令",
+      "type": "Linux",
+      "date": "2026-06-11",
+      "minutes": 7,
+      "category": "Linux入门",
+      "categoryPath": [
+        "Linux入门"
+      ],
+      "tags": [],
+      "summary": "命令 + 选项 + (多个)参数",
+      "source": "Linux入门\\常用命令.md",
+      "body": "命令 + 选项 + (多个)参数\nr -- 可读 -- 4\nw -- 可写 -- 2\nx -- 可执行 -- 1\n系统文件:\n![Pasted image 20260610180950](/content-assets/5cd675bb1650-pasted-image-20260610180950.png?width=615)\n\n| 分类    | *==**命令**==*                 | 作用          | 常用示例                               | 示例说明                |\n| ----- | ---------------------------- | ----------- | ---------------------------------- | ------------------- |\n| 文件/目录 | *==**`pwd`**==*              | 查看当前路径      | `pwd`                              | 显示当前所在目录            |\n|       | *==**`ls`**==*               | 查看目录内容      | `ls`                               | 展示文件目录              |\n|       | *==**`ls -l`**==*            | 查看目录内容      | `ls -l`                            | 以详细列表方式显示           |\n|       | *==**`ls -a`**==*            | 查看隐藏文件      | `ls -a`                            | 显示 `.git` 等隐藏文件     |\n|       | *==**`cd`**==*               | 切换目录        | `cd <user-home>`                    | 进入指定目录              |\n|       | *==**`cd ..`**==*            | 返回上一级       | `cd ..`                            | 返回父目录               |\n|       | *==**`mkdir`**==*            | 创建目录        | `mkdir project`                    | 创建 `project` 文件夹    |\n|       |                              | 创建多级目录      | `mkdir -p folder/folder1/folder2`  | 创建 多级树状目录           |\n|       | *==**`touch`**==*            | 创建文件        | `touch app.py`                     | 创建空文件               |\n|       | *==**`echo`**==*             | 输出文本        | `echo \"hello\"`                     | 输出文本内容              |\n|       |                              |             | `echo \"hello\" > hello.txt`         | 输出内容到指定文件           |\n|       | *==**`cp`**==*               | 复制文件/目录     | `cp a.txt b.txt`                   | 复制文件                |\n|       | *==**`cp -r`**==*            | 复制目录        | `cp -r src backup`                 | 递归复制目录              |\n|       | *==**`mv`**==*               | 移动/重命名      | `mv old.txt new.txt`               | 重命名文件               |\n|       | *==**`rm`**==*               | 删除文件        | `rm test.txt`                      | 删除文件                |\n|       | *==**`rm -r`**==*            | 删除目录        | `rm -r temp`                       | 递归删除目录及内容           |\n|       | *==**`find`**==*             | 查找文件        | `find . -name \"*.py\"`              | 查找当前目录下所有 Python 文件 |\n|       | *==**`tree`**==*             | 树状显示目录      | `tree`                             | 需要先安装               |\n| 文件查看  | *==**`cat`**==*              | 查看文件内容      | `cat app.py`                       | 输出整个文件              |\n|       | *==**`less`**==*             | 分页查看文件      | `less log.txt`                     | 适合查看长日志             |\n|       | *==**`head`**==*             | 查看前几行       | `head -n 10 log.txt`               | 查看前 10 行            |\n|       | *==**`tail`**==*             | 查看后几行       | `tail -n 20 log.txt`               | 查看后 20 行            |\n|       | *==**`tail -f`**==*          | 实时查看日志      | `tail -f app.log`                  | 动态跟踪日志              |\n|       | *==**`grep`**==*             | 搜索文本        | `grep \"error\" app.log`             | 查找包含 error 的行       |\n|       | *==**`du`**==*               | 查看文件大小/目录   | `du -h`                            | 以人类可读展开目录           |\n|       | *==**`wc`**==*               | 统计行数/单词数    | `wc -l app.py`                     | 统计行数                |\n| 权限管理  | *==**`chmod`**==*            | 修改权限        | `chmod +x/r/w run.sh`              | 增加执行/读/写权限          |\n|       | *==**`chmod`**==*            | 修改权限        | `chmod 777`                        | 为所用用户增加执行/读/写权限     |\n|       | *==**`chown`**==*            | 修改所有者       | `sudo chown user:user file.txt`    | 修改文件拥有者             |\n|       | *==**`uname -a`**==*         | 查看系统信息      | `uname -a`                         | 查看内核和系统版本           |\n|       | *==**`top`**==*              | 查看进程占用      | `top`                              | 类似任务管理器             |\n|       | *==**`htop`**==*             | 增强版进程查看     | `htop`                             | 更友好，需要安装            |\n|       | *==**`df -h`**==*            | 查看磁盘空间      | `df -h`                            | 人类可读格式              |\n|       | *==**`du -sh`**==*           | 查看目录大小      | `du -sh project/`                  | 查看项目占用空间            |\n|       | *==**`free -h`**==*          | 查看内存        | `free -h`                          | 查看 RAM 使用情况         |\n| 进程管理  | *==**`ps aux`**==*           | 查看所有进程      | `ps aux                            | grep python`        |\n|       | *==**`kill`**==*             | 结束进程        | `kill 1234`                        | 杀死 PID 为 1234 的进程   |\n|       | *==**`kill -9`**==*          | 强制结束进程      | `kill -9 1234`                     | 强制杀死进程              |\n| 网络相关  | *==**`ping`**==*             | 测试网络        | `ping baidu.com`                   | 检查网络连接              |\n|       | *==**`curl`**==*             | 请求 URL      | `curl https://example.com`         | 获取网页内容              |\n|       | *==**`wget`**==*             | 下载文件        | `wget https://example.com/a.zip`   | 下载文件                |\n|       | *==**`ssh`**==*              | 远程登录        | `ssh user@192.168.1.10`            | SSH 登录服务器           |\n|       | *==**`scp`**==*              | 远程传文件       | `scp a.txt user@ip:<user-home>`     | 上传文件                |\n| 压缩解压  | *==**`tar`**==*              | 打包压缩        | `tar -czvf app.tar.gz app/`        | 压缩目录                |\n|       | *==**`tar -xzvf`**==*        | 解压 tar.gz   | `tar -xzvf app.tar.gz`             | 解压文件                |\n|       | *==**`zip`**==*              | zip 压缩      | `zip -r test.zip test/`            | 压缩目录                |\n|       | *==**`unzip`**==*            | 解压 zip      | `unzip test.zip`                   | 解压 zip 文件           |\n| 软件管理  | *==**`sudo apt update`**==*  | 更新软件源       | `sudo apt update`                  | 更新包列表               |\n|       | *==**`sudo apt upgrade`**==* | 升级软件        | `sudo apt upgrade`                 | 升级已安装软件             |\n|       | *==**`sudo apt install`**==* | 安装软件        | `sudo apt install git`             | 安装 Git              |\n|       | *==**`sudo apt remove`**==*  | 卸载软件        | `sudo apt remove git`              | 删除软件                |\n| 开发常用  | *==**`git clone`**==*        | 克隆仓库        | `git clone https://github.com/...` | 下载项目                |\n|       | *==**`python3`**==*          | 运行 Python   | `python3 app.py`                   | 执行 Python 程序        |\n|       | *==**`pip install`**==*      | 安装 Python 包 | `pip install fastapi`              | 安装依赖                |\n|       | *==**`code .`**==*           | VSCode 打开目录 | `code .`                           | 当前目录打开 VSCode       |\n|       | *==**`history`**==*          | 查看历史命令      | `history`                          | 查看执行过的命令            |\n|       | *==**`clear`**==*            | 清空终端        | `clear`                            | 清屏                  |\n|       | *==**`man`**==*              | 查看命令手册      | `man ls`                           | 查看 `ls` 帮助文档        |"
+    },
+    {
+      "slug": "linux入门-vim编辑器",
+      "title": "VIM编辑器",
+      "type": "Linux",
+      "date": "2026-06-10",
+      "minutes": 3,
+      "category": "Linux入门",
+      "categoryPath": [
+        "Linux入门"
+      ],
+      "tags": [],
+      "summary": ":q! 强制退出不保存",
+      "source": "Linux入门\\VIM编辑器.md",
+      "body": ":q 退出\n:q! 强制退出不保存\n:wq 保存并退出\ni/a/o 插入文本\n(数字)yy - 复制\np 粘贴\nu 撤销\n(数字)dd 剪切/删除 \nset nu 显示行数\nset ic 全局忽略大小写\n数字G 表示跳转到多少行\nG直接跳转到最后一行\n/向下查找 ?向上查找 +查找内容 \\c忽略大小写\n替换:  前行  后行  s替换  /g 全局\n![Pasted image 20260610162410](/content-assets/745b50a2d131-pasted-image-20260610162410.png?width=380)\n\nctrl f b u d  -- 前翻 后翻 上翻 下翻\n h  j   k  l\n左下上右  -- 食指左 中指下 无名指下 小指右\n^ 行首\n$ 行尾\n\n.vimrc -- 设置vi的配置\neg:\nset nu\nsyntax on --高亮 // 24.02 invalid"
+    },
+    {
+      "slug": "python后端-docker-01-docker基础-nginx端口映射-8080到80",
+      "title": "Nginx 端口映射：8080 到 80",
+      "type": "Docker",
+      "date": "2026-06-09",
+      "minutes": 3,
+      "category": "PYTHON后端/Docker/01-Docker基础",
+      "categoryPath": [
+        "PYTHON后端",
+        "Docker",
+        "01-Docker基础"
+      ],
+      "tags": [
+        "Docker",
+        "01-Docker基础"
+      ],
+      "summary": "Docker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。",
+      "source": "PYTHON后端\\Docker\\01-Docker基础\\Nginx端口映射-8080到80.md",
+      "body": "## 问题是什么\n\nDocker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。\n\n## 用了什么知识点\n\nNginx 是提供网页内容的 Web 服务器程序，本步骤中运行在 Docker 容器里。端口是程序提供网络服务的门牌号。端口映射是 Docker 在主机端口和容器端口之间建立的转发通道。\n\n本质理解：`-p 8080:80` 表示访问主机的 8080 端口时，Docker 把请求转发给容器内的 80 端口。\n\n## 怎么解决\n\n运行创建 Nginx 容器：\n\n```bash\nsudo docker run --name my-nginx -p 8080:80 nginx\n```\n\n命令含义：\n\n```text\ndocker run       创建并运行容器\n--name my-nginx  将容器命名为 my-nginx\n-p 8080:80       主机 8080 映射到容器 80\nnginx            使用 nginx 镜像\n```\n\n请求路径：\n\n```text\n浏览器 localhost:8080\n-> WSL 主机的 8080 端口\n-> Docker 转发\n-> Nginx 容器的 80 端口\n```\n\n## 解决了什么问题\n\n浏览器成功通过 `http://localhost:8080` 访问到容器中的 Nginx 欢迎页，证明容器持续运行且端口映射有效。\n\n## 易错点\n\n端口映射格式是 `主机端口:容器端口`，不要写反。终端在运行后持续显示日志不是卡死，而是 Nginx 正在前台运行；按 `Ctrl+C` 会停止这个前台容器。\n\n## 验证方式\n\n浏览器打开：\n\n```text\nhttp://localhost:8080\n```\n\n期望看到“欢迎来到 nginx!”页面。也可以另开一个 Linux 终端执行：\n\n```bash\ncurl http://localhost:8080\n```\n\n期望返回 Nginx 欢迎页的 HTML。"
+    },
     {
       "slug": "linux入门-问题记录-wsl代理-apt和docker下载卡住",
       "title": "WSL代理 apt和Docker下载卡住",
@@ -524,26 +574,6 @@
       "summary": "容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。",
       "source": "PYTHON后端\\Docker\\01-Docker基础\\Docker容器管理-查看启动日志停止删除.md",
       "body": "# Docker 容器管理：查看、启动、日志、停止和删除\n\n## 问题是什么\n\n容器启动后，需要判断它是否正在运行、查看运行日志、停止服务，以及删除不再需要的容器。同时需要区分容器名和镜像名，避免把镜像名称交给容器命令。\n\n## 用了什么知识点\n\n容器是镜像创建出来的运行实例。一个镜像可以创建多个容器，每个容器都有自己的容器 ID 和容器名。`docker ps`、`start`、`logs`、`stop`、`rm` 操作的是容器；`docker images` 查看的是镜像。\n\n本质理解：镜像是可重复使用的模板，容器是可以启动、停止和删除的实例；删除容器不会自动删除镜像。\n\n## 怎么解决\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker start my-nginx\nsudo docker logs my-nginx\nsudo docker stop my-nginx\nsudo docker rm my-nginx\nsudo docker images\n```\n\n命令含义：\n\n```text\ndocker ps       查看正在运行的容器\ndocker ps -a    查看全部容器，包括已停止的\ndocker start    启动已有容器\ndocker logs     查看容器日志\ndocker stop     停止容器，但保留容器\ndocker rm       删除已经停止的容器\ndocker images   查看本地镜像\n```\n\n## 解决了什么问题\n\n成功启动、查看并删除了 `my-nginx` 容器。删除后，`docker ps -a` 中不再出现 `my-nginx`，但 `docker images` 中仍保留 `nginx:latest`，证明容器和镜像相互独立。\n\n## 易错点\n\n`docker rm` 后面必须是容器 ID 或容器名。执行 `docker rm hello-world` 失败，是因为 `hello-world` 是镜像名；现存容器名是 Docker 自动生成的 `nifty_rosalind` 和 `cool_williams`。\n\n容器命令结构通常是：\n\n```text\ndocker <操作> <容器名或容器ID>\n```\n\n例如：\n\n```bash\nsudo docker rm nifty_rosalind\n```\n\n不要写成 `docker my-nginx status`；查看状态应使用 `docker ps` 或 `docker ps -a`。\n\n## 验证方式\n\n```bash\nsudo docker ps\nsudo docker ps -a\nsudo docker images\n```\n\n验证结果：当前没有正在运行的容器；两个 `hello-world` 容器处于 `Exited (0)`；本地仍有 `hello-world:latest` 和 `nginx:latest` 镜像。"
-    },
-    {
-      "slug": "python后端-docker-01-docker基础-nginx端口映射-8080到80",
-      "title": "Nginx端口映射 8080到80",
-      "type": "Docker",
-      "date": "2026-06-06",
-      "minutes": 3,
-      "category": "PYTHON后端/Docker/01-Docker基础",
-      "categoryPath": [
-        "PYTHON后端",
-        "Docker",
-        "01-Docker基础"
-      ],
-      "tags": [
-        "Docker",
-        "01-Docker基础"
-      ],
-      "summary": "Docker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。",
-      "source": "PYTHON后端\\Docker\\01-Docker基础\\Nginx端口映射-8080到80.md",
-      "body": "# Nginx 端口映射：8080 到 80\n\n## 问题是什么\n\nDocker 容器具有隔离的网络。Nginx 在容器内部监听 80 端口，但浏览器需要通过主机可以访问的地址进入容器，因此需要建立端口映射。\n\n## 用了什么知识点\n\nNginx 是提供网页内容的 Web 服务器程序，本步骤中运行在 Docker 容器里。端口是程序提供网络服务的门牌号。端口映射是 Docker 在主机端口和容器端口之间建立的转发通道。\n\n本质理解：`-p 8080:80` 表示访问主机的 8080 端口时，Docker 把请求转发给容器内的 80 端口。\n\n## 怎么解决\n\n运行创建 Nginx 容器：\n\n```bash\nsudo docker run --name my-nginx -p 8080:80 nginx\n```\n\n命令含义：\n\n```text\ndocker run       创建并运行容器\n--name my-nginx  将容器命名为 my-nginx\n-p 8080:80       主机 8080 映射到容器 80\nnginx            使用 nginx 镜像\n```\n\n请求路径：\n\n```text\n浏览器 localhost:8080\n-> WSL 主机的 8080 端口\n-> Docker 转发\n-> Nginx 容器的 80 端口\n```\n\n## 解决了什么问题\n\n浏览器成功通过 `http://localhost:8080` 访问到容器中的 Nginx 欢迎页，证明容器持续运行且端口映射有效。\n\n## 易错点\n\n端口映射格式是 `主机端口:容器端口`，不要写反。终端在运行后持续显示日志不是卡死，而是 Nginx 正在前台运行；按 `Ctrl+C` 会停止这个前台容器。\n\n## 验证方式\n\n浏览器打开：\n\n```text\nhttp://localhost:8080\n```\n\n期望看到“欢迎来到 nginx!”页面。也可以另开一个 Linux 终端执行：\n\n```bash\ncurl http://localhost:8080\n```\n\n期望返回 Nginx 欢迎页的 HTML。"
     },
     {
       "slug": "python后端-docker-02-dockerfile-镜像重建与dockerignore",
@@ -1024,39 +1054,6 @@
       "summary": "任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 response model 和 PATCH 。如果继续把所有接口都放在 main.py ，文件会越来越长，学习时也不容易区分“应用入口”和“业务接",
       "source": "PYTHON后端\\FASTAPI\\routers\\routers-tasks.py-迁移任务接口.md",
       "body": "## 问题是什么\n\n任务接口已经从内存版 CRUD 发展到数据库版 CRUD，又加入了 `response_model` 和 `PATCH`。如果继续把所有接口都放在 `main.py`，文件会越来越长，学习时也不容易区分“应用入口”和“业务接口”。\n\n## 用了什么知识点\n\n- `APIRouter`：把同一类接口组织到单独模块。\n- `prefix=\"/tasks\"`：给任务接口统一加路径前缀。\n- `tags=[\"tasks\"]`：在 Swagger 文档中给任务接口分组。\n- `app.include_router()`：把拆出去的路由重新挂回 FastAPI 应用。\n- 项目分层：`main.py` 做入口，`routers/tasks.py` 写任务接口。\n\n## 怎么解决\n\n创建目录结构：\n\n```text\nfastapi/\n├── main.py\n├── database.py\n├── models.py\n├── schemas.py\n└── routers/\n    ├── __init__.py\n    └── tasks.py\n```\n\n在 `routers/tasks.py` 中定义路由对象：\n\n```python\nrouter = APIRouter(\n    prefix=\"/tasks\",\n    tags=[\"tasks\"]\n)\n```\n\n把原来的任务接口从 `@app.get()`、`@app.post()` 等形式改为 `@router.get()`、`@router.post()`：\n\n```python\n@router.get(\"\", response_model=list[schemas.TaskRead])\ndef get_tasks(db: Session = Depends(get_db)):\n    return db.query(models.TaskModel).all()\n```\n\n在 `main.py` 中只保留应用入口和路由挂载：\n\n```python\nfrom fastapi import FastAPI\n\nimport models\nfrom database import engine\nfrom routers import tasks\n\napp = FastAPI()\n\nmodels.Base.metadata.create_all(bind=engine)\n\napp.include_router(tasks.router)\n```\n\n## 解决了什么问题\n\n`main.py` 不再堆满所有接口，任务相关代码有了自己的位置。以后继续扩展用户、登录、文章、文件上传等功能时，可以继续新增不同的 router 文件，而不是把所有内容混在一个文件里。\n\n## 易错点\n\n- `prefix=\"/tasks\"` 已经包含 `/tasks`，所以查询全部任务应写 `@router.get(\"\")`，不是 `@router.get(\"/tasks\")`。\n- 查询单个任务应写 `@router.get(\"/{task_id}\")`，最终路径才是 `/tasks/{task_id}`。\n- 拆分后别忘了在 `main.py` 里 `app.include_router(tasks.router)`。\n- `routers` 文件夹建议创建 `__init__.py`，让它成为稳定的 Python 包。\n\n## 验证方式\n\n启动服务后打开：\n\n```text\nhttp://127.0.0.1:8000/docs\n```\n\n确认原来的接口路径没有变化：\n\n- `GET /tasks`\n- `GET /tasks/{task_id}`\n- `POST /tasks`\n- `PUT /tasks/{task_id}`\n- `PATCH /tasks/{task_id}`\n- `DELETE /tasks/{task_id}`\n\n如果路径仍然正常，说明迁移成功。"
-    },
-    {
-      "slug": "python后端-fastapi-logic",
-      "title": "LOGIC",
-      "type": "FastAPI",
-      "date": "2026-06-04",
-      "minutes": 3,
-      "category": "PYTHON后端/FASTAPI",
-      "categoryPath": [
-        "PYTHON后端",
-        "FASTAPI"
-      ],
-      "tags": [
-        "FASTAPI"
-      ],
-      "summary": "请求进来 schemas检查数据格式 创建数据库会话拿权限资源 ORM CRUD库 响应返回信息",
-      "source": "PYTHON后端\\FASTAPI\\LOGIC.md",
-      "body": "请求进来 -- schemas检查数据格式 -- 创建数据库会话拿权限资源 -- ORM CRUD库 -- 响应返回信息"
-    },
-    {
-      "slug": "linux入门-常用命令",
-      "title": "常用命令",
-      "type": "Linux",
-      "date": "2026-06-02",
-      "minutes": 6,
-      "category": "Linux入门",
-      "categoryPath": [
-        "Linux入门"
-      ],
-      "tags": [],
-      "summary": "分类 命令 作用 常用示例 示例说明",
-      "source": "Linux入门\\常用命令.md",
-      "body": "| 分类    | *==**命令**==*                 | 作用          | 常用示例                               | 示例说明                |\n| ----- | ---------------------------- | ----------- | ---------------------------------- | ------------------- |\n| 文件/目录 | *==**`pwd`**==*              | 查看当前路径      | `pwd`                              | 显示当前所在目录            |\n| 文件/目录 | *==**`ls`**==*               | 查看目录内容      | `ls -l`                            | 以详细列表方式显示           |\n| 文件/目录 | *==**`ls -a`**==*            | 查看隐藏文件      | `ls -a`                            | 显示 `.git` 等隐藏文件     |\n| 文件/目录 | *==**`cd`**==*               | 切换目录        | `cd <user-home>`                    | 进入指定目录              |\n| 文件/目录 | *==**`cd ..`**==*            | 返回上一级       | `cd ..`                            | 返回父目录               |\n| 文件/目录 | *==**`mkdir`**==*            | 创建目录        | `mkdir project`                    | 创建 `project` 文件夹    |\n| 文件/目录 | *==**`touch`**==*            | 创建文件        | `touch app.py`                     | 创建空文件               |\n| 文件/目录 | *==**`cp`**==*               | 复制文件/目录     | `cp a.txt b.txt`                   | 复制文件                |\n| 文件/目录 | *==**`cp -r`**==*            | 复制目录        | `cp -r src backup`                 | 递归复制目录              |\n| 文件/目录 | *==**`mv`**==*               | 移动/重命名      | `mv old.txt new.txt`               | 重命名文件               |\n| 文件/目录 | *==**`rm`**==*               | 删除文件        | `rm test.txt`                      | 删除文件                |\n| 文件/目录 | *==**`rm -r`**==*            | 删除目录        | `rm -r temp`                       | 删除目录及内容             |\n| 文件/目录 | *==**`find`**==*             | 查找文件        | `find . -name \"*.py\"`              | 查找当前目录下所有 Python 文件 |\n| 文件/目录 | *==**`tree`**==*             | 树状显示目录      | `tree`                             | 需要先安装               |\n| 文件查看  | *==**`cat`**==*              | 查看文件内容      | `cat app.py`                       | 输出整个文件              |\n| 文件查看  | *==**`less`**==*             | 分页查看文件      | `less log.txt`                     | 适合查看长日志             |\n| 文件查看  | *==**`head`**==*             | 查看前几行       | `head -n 10 log.txt`               | 查看前 10 行            |\n| 文件查看  | *==**`tail`**==*             | 查看后几行       | `tail -n 20 log.txt`               | 查看后 20 行            |\n| 文件查看  | *==**`tail -f`**==*          | 实时查看日志      | `tail -f app.log`                  | 动态跟踪日志              |\n| 文件查看  | *==**`grep`**==*             | 搜索文本        | `grep \"error\" app.log`             | 查找包含 error 的行       |\n| 文件查看  | *==**`wc`**==*               | 统计行数/单词数    | `wc -l app.py`                     | 统计行数                |\n| 权限管理  | *==**`chmod`**==*            | 修改权限        | `chmod +x run.sh`                  | 增加执行权限              |\n| 权限管理  | *==**`chown`**==*            | 修改所有者       | `sudo chown user:user file.txt`    | 修改文件拥有者             |\n| 系统信息  | *==**`uname -a`**==*         | 查看系统信息      | `uname -a`                         | 查看内核和系统版本           |\n| 系统信息  | *==**`top`**==*              | 查看进程占用      | `top`                              | 类似任务管理器             |\n| 系统信息  | *==**`htop`**==*             | 增强版进程查看     | `htop`                             | 更友好，需要安装            |\n| 系统信息  | *==**`df -h`**==*            | 查看磁盘空间      | `df -h`                            | 人类可读格式              |\n| 系统信息  | *==**`du -sh`**==*           | 查看目录大小      | `du -sh project/`                  | 查看项目占用空间            |\n| 系统信息  | *==**`free -h`**==*          | 查看内存        | `free -h`                          | 查看 RAM 使用情况         |\n| 进程管理  | *==**`ps aux`**==*           | 查看所有进程      | `ps aux                            | grep python`        |\n| 进程管理  | *==**`kill`**==*             | 结束进程        | `kill 1234`                        | 杀死 PID 为 1234 的进程   |\n| 进程管理  | *==**`kill -9`**==*          | 强制结束进程      | `kill -9 1234`                     | 强制杀死进程              |\n| 网络相关  | *==**`ping`**==*             | 测试网络        | `ping baidu.com`                   | 检查网络连接              |\n| 网络相关  | *==**`curl`**==*             | 请求 URL      | `curl https://example.com`         | 获取网页内容              |\n| 网络相关  | *==**`wget`**==*             | 下载文件        | `wget https://example.com/a.zip`   | 下载文件                |\n| 网络相关  | *==**`ssh`**==*              | 远程登录        | `ssh user@192.168.1.10`            | SSH 登录服务器           |\n| 网络相关  | *==**`scp`**==*              | 远程传文件       | `scp a.txt user@ip:<user-home>`     | 上传文件                |\n| 压缩解压  | *==**`tar`**==*              | 打包压缩        | `tar -czvf app.tar.gz app/`        | 压缩目录                |\n| 压缩解压  | *==**`tar -xzvf`**==*        | 解压 tar.gz   | `tar -xzvf app.tar.gz`             | 解压文件                |\n| 压缩解压  | *==**`zip`**==*              | zip 压缩      | `zip -r test.zip test/`            | 压缩目录                |\n| 压缩解压  | *==**`unzip`**==*            | 解压 zip      | `unzip test.zip`                   | 解压 zip 文件           |\n| 软件管理  | *==**`sudo apt update`**==*  | 更新软件源       | `sudo apt update`                  | 更新包列表               |\n| 软件管理  | *==**`sudo apt upgrade`**==* | 升级软件        | `sudo apt upgrade`                 | 升级已安装软件             |\n| 软件管理  | *==**`sudo apt install`**==* | 安装软件        | `sudo apt install git`             | 安装 Git              |\n| 软件管理  | *==**`sudo apt remove`**==*  | 卸载软件        | `sudo apt remove git`              | 删除软件                |\n| 开发常用  | *==**`git clone`**==*        | 克隆仓库        | `git clone https://github.com/...` | 下载项目                |\n| 开发常用  | *==**`python3`**==*          | 运行 Python   | `python3 app.py`                   | 执行 Python 程序        |\n| 开发常用  | *==**`pip install`**==*      | 安装 Python 包 | `pip install fastapi`              | 安装依赖                |\n| 开发常用  | *==**`code .`**==*           | VSCode 打开目录 | `code .`                           | 当前目录打开 VSCode       |\n| 开发常用  | *==**`history`**==*          | 查看历史命令      | `history`                          | 查看执行过的命令            |\n| 开发常用  | *==**`clear`**==*            | 清空终端        | `clear`                            | 清屏                  |\n| 开发常用  | *==**`man`**==*              | 查看命令手册      | `man ls`                           | 查看 `ls` 帮助文档        |"
     },
     {
       "slug": "linux入门-问题记录-venv-激活",

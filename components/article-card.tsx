@@ -1,14 +1,18 @@
 import { ArrowRight, Clock3, FolderOpen } from "lucide-react";
 import Link from "next/link";
 
+import { getHighlightSegments, getSearchPreview } from "@/lib/search";
 import type { Post } from "@/lib/types";
 
 interface ArticleCardProps {
   post: Post;
+  searchQuery?: string;
   onOpen?: () => void;
 }
 
-export function ArticleCard({ post, onOpen }: ArticleCardProps) {
+export function ArticleCard({ post, searchQuery = "", onOpen }: ArticleCardProps) {
+  const preview = getSearchPreview(post, searchQuery);
+
   return (
     <Link
       className="flex min-h-66 min-w-0 flex-col overflow-hidden rounded-lg border border-line bg-surface p-5.5 text-left text-text transition duration-200 hover:-translate-y-1 hover:border-green hover:shadow-[0_14px_36px_rgba(47,125,92,0.13)] focus-visible:outline-3 focus-visible:outline-green"
@@ -24,8 +28,12 @@ export function ArticleCard({ post, onOpen }: ArticleCardProps) {
           {post.date}
         </time>
       </div>
-      <h2 className="text-lg font-bold break-anywhere">{post.title}</h2>
-      <p className="my-3 text-muted break-anywhere">{post.summary}</p>
+      <h2 className="text-lg font-bold break-anywhere">
+        <HighlightedText query={searchQuery} value={post.title} />
+      </h2>
+      <p className="my-3 text-muted break-anywhere">
+        <HighlightedText query={searchQuery} value={preview.text} />
+      </p>
       <div className="mt-auto flex items-center gap-2 text-sm text-muted">
         <Clock3 size={16} />
         <span>{post.minutes} 分钟阅读</span>
@@ -48,5 +56,20 @@ export function ArticleCard({ post, onOpen }: ArticleCardProps) {
         <ArrowRight size={18} />
       </span>
     </Link>
+  );
+}
+
+function HighlightedText({ value, query }: { value: string; query: string }) {
+  return getHighlightSegments(value, query).map((segment, index) =>
+    segment.highlighted ? (
+      <mark
+        className="rounded-sm bg-yellow-300 px-0.5 text-slate-950 dark:bg-yellow-200"
+        key={`${index}-${segment.text}`}
+      >
+        {segment.text}
+      </mark>
+    ) : (
+      segment.text
+    ),
   );
 }

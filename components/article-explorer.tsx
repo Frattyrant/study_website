@@ -113,9 +113,12 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
       </div>
 
       <div className="grid grid-cols-[minmax(210px,260px)_1fr] items-start gap-6 max-lg:grid-cols-1">
-        <aside className="sticky top-24 rounded-lg border border-line bg-surface p-4 max-lg:static" aria-label="文章分类">
-          <p className="mb-3 text-sm font-extrabold text-muted">分类</p>
-          <div className="grid gap-1">
+        <aside
+          className="sticky top-24 flex max-h-[calc(100dvh-7.5rem)] flex-col rounded-lg border border-line bg-surface p-4 max-lg:static max-lg:max-h-none"
+          aria-label="文章分类"
+        >
+          <p className="mb-3 shrink-0 text-sm font-extrabold text-muted">分类</p>
+          <div className="category-tree-scroll grid min-h-0 gap-1 overflow-y-auto pr-1 max-lg:overflow-visible max-lg:pr-0">
             <CategoryTree
               node={stats.categoryTree}
               activeCategory={activeCategory.key}
@@ -133,6 +136,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
                 <ArticleCard
                   key={post.slug}
                   post={post}
+                  searchQuery={query}
                   onOpen={() => emojiPileRef.current?.clear()}
                 />
               ))}

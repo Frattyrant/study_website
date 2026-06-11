@@ -4,12 +4,14 @@ const {
   hashPublicSafeLine,
   preparePublicContent,
 } = require("./content-security.cjs");
+const { createVaultAssetPublisher } = require("./content-assets.cjs");
 const { KnowledgeModuleRegistry } = require("./knowledge-module-registry.cjs");
 
 const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
 const vaultPath = process.argv[2] || defaultVault;
 const outputPath = path.resolve(__dirname, "..", "data", "content.json");
 const securityOutputPath = path.resolve(__dirname, "..", "data", "content-security.json");
+const contentAssetsPath = path.resolve(__dirname, "..", "public", "content-assets");
 const moduleRegistry = new KnowledgeModuleRegistry();
 
 function walk(dir) {
@@ -120,6 +122,10 @@ if (!fs.existsSync(vaultPath)) {
 }
 
 const allFiles = walk(vaultPath);
+const assetPublisher = createVaultAssetPublisher({
+  vaultPath,
+  outputDir: contentAssetsPath,
+});
 const publicRoots = new Set(moduleRegistry.discoverPublicRoots(vaultPath));
 const modulePaths = moduleRegistry.discoverModulePaths(vaultPath, publicRoots);
 const scopedFiles = allFiles.filter((filePath) => {
@@ -131,7 +137,11 @@ const allowedLineHashes = {};
 const posts = files
   .map((filePath) => {
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
-    const prepared = preparePublicContent(fs.readFileSync(filePath, "utf8"), relativePath);
+    const markdownWithPublishedImages = assetPublisher.rewrite(
+      fs.readFileSync(filePath, "utf8"),
+      relativePath.replaceAll("\\", "/"),
+    );
+    const prepared = preparePublicContent(markdownWithPublishedImages, relativePath);
     const allowedHashes = new Set(prepared.allowedLineHashes);
     const summaryContent = prepared.content
       .split("\n")

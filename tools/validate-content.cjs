@@ -4,6 +4,7 @@ const { findSecretFindings } = require("./content-security.cjs");
 
 const contentPath = path.resolve(__dirname, "..", "data", "content.json");
 const securityPath = path.resolve(__dirname, "..", "data", "content-security.json");
+const contentAssetsPath = path.resolve(__dirname, "..", "public", "content-assets");
 const data = JSON.parse(fs.readFileSync(contentPath, "utf8"));
 const security = JSON.parse(fs.readFileSync(securityPath, "utf8"));
 const requiredPostFields = ["slug", "title", "type", "date", "minutes", "category", "categoryPath", "tags", "summary", "body"];
@@ -21,6 +22,7 @@ if (!Array.isArray(security.publicRoots) || !security.allowedLineHashes) {
 const slugs = new Set();
 const publicRoots = new Set(security.publicRoots);
 const absoluteUserPath = /(?:[A-Z]:\\Users\\[^\\\s"]+|\/home\/[^/\s"]+)/i;
+const blockedLocalImageSyntax = /!\[\[|(?:file|obsidian):\/\//i;
 for (const [index, post] of data.posts.entries()) {
   for (const field of requiredPostFields) {
     if (!(field in post)) throw new Error(`Post ${index} is missing required field: ${field}`);
@@ -42,6 +44,26 @@ for (const [index, post] of data.posts.entries()) {
   ].join("\n");
   if (absoluteUserPath.test(publicText)) {
     throw new Error(`Post ${index} contains an absolute user path.`);
+  }
+  if (blockedLocalImageSyntax.test(post.body)) {
+    throw new Error(`Post ${index} contains an unpublished local image reference.`);
+  }
+  for (const match of post.body.matchAll(/!\[[^\]]*]\(([^)\s]+)\)/g)) {
+    const source = match[1];
+    if (/^https?:\/\//i.test(source)) continue;
+    if (!source.startsWith("/content-assets/")) {
+      throw new Error(`Post ${index} contains an unsupported local image URL.`);
+    }
+    const parsed = new URL(source, "https://content.local");
+    const relativeAssetPath = parsed.pathname.slice("/content-assets/".length);
+    if (
+      !/^[a-f0-9]{12}-[a-z0-9_-]+\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(
+        relativeAssetPath,
+      ) ||
+      !fs.existsSync(path.join(contentAssetsPath, relativeAssetPath))
+    ) {
+      throw new Error(`Post ${index} references a missing generated image.`);
+    }
   }
   const allowedHashes = new Set(security.allowedLineHashes[post.slug] || []);
   const findings = [
