@@ -53,6 +53,7 @@ body {
   line-height: 1.6;
 }
 button, input { font: inherit; }
+details[open] .toc-chevron { transform: rotate(180deg); }
 .break-anywhere { overflow-wrap: anywhere; }
 
 @keyframes emoji-pop {
