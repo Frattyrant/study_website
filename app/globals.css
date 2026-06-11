@@ -214,6 +214,88 @@ button, input { font: inherit; }
   background: color-mix(in srgb, var(--muted) 64%, transparent);
 }
 
+.animated-tagline {
+  min-height: 1.6em;
+}
+
+.animated-tagline-visual {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  animation: tagline-cycle var(--tagline-cycle) linear infinite;
+}
+
+.animated-tagline-token {
+  --tagline-jump-distance: 0.9em;
+  display: inline-block;
+  opacity: 0;
+  transform-origin: 50% 90%;
+  will-change: transform, opacity, text-shadow;
+  animation: tagline-token-jump var(--tagline-cycle) infinite;
+  animation-delay: var(--tagline-delay);
+}
+
+.animated-tagline-token-accent {
+  color: #fde047;
+  font-weight: 700;
+}
+
+.animated-tagline-space {
+  display: inline-block;
+  width: 0.35em;
+}
+
+@keyframes tagline-token-jump {
+  0%, 1.5% {
+    opacity: 0;
+    transform: translate3d(0, var(--tagline-jump-distance), 0) rotate(var(--tagline-tilt)) scale(0.82, 1.12);
+    text-shadow: 0 0 0 rgb(253 224 71 / 0);
+  }
+  4.6% {
+    opacity: 1;
+    transform: translate3d(0, -0.28em, 0) rotate(calc(var(--tagline-tilt) * -0.3)) scale(1.05, 0.94);
+  }
+  7.5% {
+    opacity: 1;
+    transform: translate3d(0, 0.09em, 0) rotate(calc(var(--tagline-tilt) * 0.16)) scale(0.98, 1.03);
+  }
+  10.8% {
+    opacity: 1;
+    transform: translate3d(0, -0.035em, 0) rotate(0deg) scale(1.01, 0.99);
+  }
+  14%, 70% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    text-shadow: 0 0 0 rgb(253 224 71 / 0);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(0, -0.035em, 0) rotate(0deg) scale(1.01);
+    text-shadow: 0 0 0.55em rgb(253 224 71 / 0.24);
+  }
+  82% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    text-shadow: 0 0 0 rgb(253 224 71 / 0);
+  }
+  88%, 100% {
+    opacity: 0;
+    transform: translate3d(0, -0.18em, 0) rotate(0deg) scale(0.98);
+  }
+}
+
+@keyframes tagline-cycle {
+  0%, 86% {
+    opacity: 1;
+  }
+  91%, 98% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 @keyframes rikka-breathe {
   0%, 100% {
     transform: translateY(0) scaleY(1);
@@ -275,6 +357,23 @@ button, input { font: inherit; }
 
   .rikka-peek-parallax {
     transform: none;
+  }
+
+  .animated-tagline-visual,
+  .animated-tagline-token {
+    animation: none;
+  }
+
+  .animated-tagline-token {
+    opacity: 1;
+    transform: none;
+    text-shadow: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .animated-tagline-token {
+    --tagline-jump-distance: 0.65em;
   }
 }
 

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 
 import siteBackground from "@/public/images/pawn-site-background.jpg";
+import { AnimatedTagline } from "@/components/animated-tagline";
 import { ArticleCard } from "@/components/article-card";
 import { CategoryTree } from "@/components/category-tree";
 import { EmojiLoopGame } from "@/components/emoji-loop-game";
@@ -77,7 +78,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             <h1 className="text-3xl font-bold drop-shadow-sm sm:text-5xl">
               pawn的个人学习网站
             </h1>
-            <p className="mt-4 max-w-2xl text-white/85">记录学习 IT 的过程</p>
+            <AnimatedTagline />
           </div>
           <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm max-md:max-w-none">
             <Search className="shrink-0 text-slate-600" size={20} />
