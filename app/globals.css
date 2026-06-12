@@ -104,6 +104,47 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   transition: opacity 180ms ease-out, scale 180ms ease-out;
 }
 
+.site-pet-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 28;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout style paint;
+}
+
+.site-pet {
+  position: absolute;
+  bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  left: 0;
+  width: 208px;
+  aspect-ratio: 192 / 208;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 800% 900%;
+  cursor: pointer;
+  filter: drop-shadow(0 8px 8px rgb(15 23 42 / 0.2));
+  pointer-events: auto;
+  transform: translate3d(12px, 0, 0);
+  transform-origin: 50% 100%;
+  user-select: none;
+  will-change: transform, background-position;
+}
+
+.site-pet:hover {
+  filter: drop-shadow(0 10px 10px rgb(15 23 42 / 0.28))
+    brightness(1.04);
+}
+
+.site-pet:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
 .category-tree-scroll {
   scrollbar-color: color-mix(in srgb, var(--muted) 42%, transparent) transparent;
   scrollbar-width: thin;
@@ -366,9 +407,19 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   .animated-title-ball {
     display: none;
   }
+
+  .site-pet {
+    transition: none;
+    will-change: auto;
+  }
 }
 
 @media (max-width: 767px) {
+  .site-pet {
+    width: 78px;
+    bottom: max(2px, env(safe-area-inset-bottom, 0px));
+  }
+
   .animated-title-ball {
     --ball-arc-x: 0.85em;
     --ball-hit-x: 1.25em;

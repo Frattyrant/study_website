@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { SiteHeader } from "@/components/site-header";
+import { SitePet } from "@/components/site-pet";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ThemeProvider>
           <SiteHeader />
           <main>{children}</main>
+          <SitePet />
         </ThemeProvider>
       </body>
     </html>
