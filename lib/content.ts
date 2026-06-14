@@ -1,4 +1,5 @@
 import content from "@/data/content.json";
+import { findNextPostInCategory } from "@/lib/post-navigation.js";
 import type { ContentData, Post } from "@/lib/types";
 
 const data = content as ContentData;
@@ -8,6 +9,10 @@ export const vaultStats = data.vaultStats;
 
 export function getPostBySlug(slug: string): Post | undefined {
   return posts.find((post) => post.slug === slug);
+}
+
+export function getNextPostInCategory(slug: string): Post | undefined {
+  return findNextPostInCategory(posts, slug);
 }
 
 export function normalizeObsidianMarkdown(markdown: string): string {

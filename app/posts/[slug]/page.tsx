@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock3, FolderOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock3, FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,7 +7,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { ArticleReadingLayout } from "@/components/article-reading-layout";
-import { getPostBySlug, normalizeObsidianMarkdown, posts } from "@/lib/content";
+import {
+  getNextPostInCategory,
+  getPostBySlug,
+  normalizeObsidianMarkdown,
+  posts,
+} from "@/lib/content";
 import { resolvePublishedImageSource } from "@/lib/content-image";
 import {
   createHeadingIdAllocator,
@@ -35,6 +40,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
   const post = getPostBySlug(decodeURIComponent(slug));
   if (!post) notFound();
+  const nextPost = getNextPostInCategory(post.slug);
 
   const markdown = normalizeObsidianMarkdown(
     post.body || "这篇笔记还没有可展示的正文。",
@@ -136,6 +142,26 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </ArticleReadingLayout>
         </div>
+        {nextPost ? (
+          <Link
+            className="group mt-10 flex min-h-24 items-center justify-between gap-5 rounded-lg border border-line bg-surface-strong px-5 py-4 text-text transition hover:border-green hover:bg-surface hover:text-green-dark"
+            href={`/posts/${nextPost.slug}`}
+          >
+            <span className="min-w-0">
+              <span className="block text-xs font-extrabold tracking-wide text-muted">
+                下一篇
+              </span>
+              <strong className="mt-1 block text-lg break-anywhere">
+                {nextPost.title}
+              </strong>
+            </span>
+            <ArrowRight
+              aria-hidden="true"
+              className="shrink-0 transition-transform group-hover:translate-x-1"
+              size={22}
+            />
+          </Link>
+        ) : null}
       </article>
     </section>
   );

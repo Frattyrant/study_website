@@ -5,6 +5,7 @@ const {
   preparePublicContent,
 } = require("./content-security.cjs");
 const { createVaultAssetPublisher } = require("./content-assets.cjs");
+const { orderPostsByVaultIndex } = require("./content-order.cjs");
 const { KnowledgeModuleRegistry } = require("./knowledge-module-registry.cjs");
 
 const defaultVault = "C:\\Users\\LENOVO\\Documents\\Obsidian Vault";
@@ -134,8 +135,10 @@ const scopedFiles = allFiles.filter((filePath) => {
 });
 const files = scopedFiles.filter((filePath) => shouldPublish(filePath, publicRoots));
 const allowedLineHashes = {};
-const posts = files
-  .map((filePath) => {
+const posts = orderPostsByVaultIndex({
+  vaultPath,
+  publicRoots: [...publicRoots],
+  posts: files.map((filePath) => {
     const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
     const markdownWithPublishedImages = assetPublisher.rewrite(
       fs.readFileSync(filePath, "utf8"),
@@ -167,8 +170,8 @@ const posts = files
       source: relativePath,
       body: detailMarkdown(content),
     };
-  })
-  .sort((a, b) => b.date.localeCompare(a.date) || a.source.localeCompare(b.source, "zh-CN"));
+  }),
+});
 
 const topCounts = scopedFiles.reduce((acc, filePath) => {
   const relativePath = path.relative(vaultPath, filePath);

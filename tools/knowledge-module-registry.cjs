@@ -108,6 +108,7 @@ class KnowledgeModuleRegistry {
     const sortChildren = (node, level = 0) => {
       node.children.sort((a, b) => {
         if (a.kind !== b.kind) return a.kind === "note" ? 1 : -1;
+        if (a.kind === "note") return 0;
         return level === 0
           ? this.compareLabels(a.label, b.label)
           : a.label.localeCompare(b.label, "zh-CN", {
