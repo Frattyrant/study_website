@@ -2,7 +2,14 @@
 
 import { ListFilter, Search, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
 import siteBackground from "@/public/images/pawn-site-background.jpg";
 import { AnimatedTagline } from "@/components/animated-tagline";
@@ -17,6 +24,14 @@ import {
   POST_PAGE_SIZE,
 } from "@/lib/pagination";
 import { postMatchesSearch } from "@/lib/search";
+import {
+  addSearchHistoryEntry,
+  SEARCH_HISTORY_CHANGE_EVENT,
+  parseSearchHistory,
+  removeSearchHistoryEntry,
+  SEARCH_HISTORY_STORAGE_KEY,
+  serializeSearchHistory,
+} from "@/lib/search-history";
 import type { CategoryNode, Post, VaultStats } from "@/lib/types";
 
 interface ArticleExplorerProps {
@@ -42,6 +57,15 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(POST_PAGE_SIZE);
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
+  const searchHistorySnapshot = useSyncExternalStore(
+    subscribeToSearchHistory,
+    getSearchHistorySnapshot,
+    () => "",
+  );
+  const searchHistory = useMemo(
+    () => parseSearchHistory(searchHistorySnapshot),
+    [searchHistorySnapshot],
+  );
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
@@ -126,6 +150,26 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
     setVisibleCount(POST_PAGE_SIZE);
   };
 
+  const persistSearchHistory = (nextHistory: string[]) => {
+    try {
+      window.localStorage.setItem(
+        SEARCH_HISTORY_STORAGE_KEY,
+        serializeSearchHistory(nextHistory),
+      );
+      window.dispatchEvent(new Event(SEARCH_HISTORY_CHANGE_EVENT));
+    } catch {
+      // Local storage can be unavailable in privacy modes; search still works.
+    }
+  };
+
+  const rememberSearchQuery = (value: string) => {
+    persistSearchHistory(addSearchHistoryEntry(searchHistory, value));
+  };
+
+  const removeSearchHistory = (value: string) => {
+    persistSearchHistory(removeSearchHistoryEntry(searchHistory, value));
+  };
+
   return (
     <section
       className="mx-auto mt-14 w-[min(1180px,calc(100%-36px))] pb-20"
@@ -150,7 +194,8 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             <AnimatedTitle />
             <AnimatedTagline />
           </div>
-          <label className="flex min-h-12 w-full max-w-90 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm max-md:max-w-none">
+          <div className="w-full max-w-90 max-md:max-w-none">
+            <label className="flex min-h-12 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm">
             <Search className="shrink-0 text-slate-600" size={20} />
             <input
               className="min-w-0 flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-500"
@@ -158,9 +203,47 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
               placeholder="搜索笔记..."
               autoComplete="off"
               value={query}
+              onBlur={() => rememberSearchQuery(query)}
               onChange={(event) => updateQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") rememberSearchQuery(query);
+              }}
             />
-          </label>
+            </label>
+            {searchHistory.length > 0 ? (
+              <div
+                className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-white/80"
+                aria-label="最近搜索"
+              >
+                <span className="font-bold">最近搜索</span>
+                {searchHistory.map((item) => (
+                  <span
+                    className="inline-flex max-w-full items-center overflow-hidden rounded-full border border-white/30 bg-white/15 backdrop-blur-sm"
+                    key={item}
+                  >
+                    <button
+                      className="min-w-0 truncate px-2.5 py-1 text-left transition hover:bg-white/15"
+                      type="button"
+                      onClick={() => {
+                        updateQuery(item);
+                        rememberSearchQuery(item);
+                      }}
+                    >
+                      {item}
+                    </button>
+                    <button
+                      className="grid size-6 shrink-0 place-items-center text-white/75 transition hover:bg-white/20 hover:text-white"
+                      type="button"
+                      aria-label={`删除搜索记录 ${item}`}
+                      onClick={() => removeSearchHistory(item)}
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -295,6 +378,27 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
       <EmojiPile ref={emojiPileRef} />
     </section>
   );
+}
+
+function getSearchHistorySnapshot() {
+  try {
+    return window.localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function subscribeToSearchHistory(onStoreChange: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === SEARCH_HISTORY_STORAGE_KEY) onStoreChange();
+  };
+
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(SEARCH_HISTORY_CHANGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(SEARCH_HISTORY_CHANGE_EVENT, onStoreChange);
+  };
 }
 
 function StatChip({ children }: { children: ReactNode }) {

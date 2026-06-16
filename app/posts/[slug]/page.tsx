@@ -10,6 +10,7 @@ import { ArticleReadingLayout } from "@/components/article-reading-layout";
 import {
   getNextPostInCategory,
   getPostBySlug,
+  getPostsInSameCategory,
   normalizeObsidianMarkdown,
   posts,
 } from "@/lib/content";
@@ -41,6 +42,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const post = getPostBySlug(decodeURIComponent(slug));
   if (!post) notFound();
   const nextPost = getNextPostInCategory(post.slug);
+  const sameCategoryPosts = getPostsInSameCategory(post.slug);
 
   const markdown = normalizeObsidianMarkdown(
     post.body || "这篇笔记还没有可展示的正文。",
@@ -161,6 +163,40 @@ export default async function PostPage({ params }: PostPageProps) {
               size={22}
             />
           </Link>
+        ) : null}
+        {sameCategoryPosts.length > 1 ? (
+          <nav
+            aria-label="本目录"
+            className="mt-6 rounded-lg border border-line bg-surface-strong p-4"
+          >
+            <h2 className="text-sm font-extrabold text-muted">本目录</h2>
+            <ol className="mt-3 grid gap-2">
+              {sameCategoryPosts.map((categoryPost, index) => {
+                const current = categoryPost.slug === post.slug;
+                const label = `${index + 1}. ${categoryPost.title}`;
+
+                return (
+                  <li key={categoryPost.slug}>
+                    {current ? (
+                      <span
+                        className="block rounded-md border border-green bg-surface px-3 py-2 text-sm font-bold text-green-dark break-anywhere"
+                        aria-current="page"
+                      >
+                        {label}
+                      </span>
+                    ) : (
+                      <Link
+                        className="block rounded-md border border-transparent px-3 py-2 text-sm text-text transition break-anywhere hover:border-green hover:bg-surface hover:text-green-dark"
+                        href={`/posts/${categoryPost.slug}`}
+                      >
+                        {label}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
         ) : null}
       </article>
     </section>

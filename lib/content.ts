@@ -1,5 +1,8 @@
 import content from "@/data/content.json";
-import { findNextPostInCategory } from "@/lib/post-navigation.js";
+import {
+  findNextPostInCategory,
+  findPostsInSameCategory,
+} from "@/lib/post-navigation.js";
 import type { ContentData, Post } from "@/lib/types";
 
 const data = content as ContentData;
@@ -13,6 +16,10 @@ export function getPostBySlug(slug: string): Post | undefined {
 
 export function getNextPostInCategory(slug: string): Post | undefined {
   return findNextPostInCategory(posts, slug);
+}
+
+export function getPostsInSameCategory(slug: string): Post[] {
+  return findPostsInSameCategory(posts, slug);
 }
 
 export function normalizeObsidianMarkdown(markdown: string): string {

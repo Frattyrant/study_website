@@ -160,7 +160,10 @@ test("category tree preserves post insertion order inside a directory", () => {
 });
 
 test("next post follows array order only inside the exact category", () => {
-  const { findNextPostInCategory } = require("../lib/post-navigation.js");
+  const {
+    findNextPostInCategory,
+    findPostsInSameCategory,
+  } = require("../lib/post-navigation.js");
   const orderedPosts = [
     post("Published\\Topic\\First.md"),
     post("Published\\Topic\\Second.md"),
@@ -173,6 +176,11 @@ test("next post follows array order only inside the exact category", () => {
   );
   assert.equal(findNextPostInCategory(orderedPosts, orderedPosts[1].slug), undefined);
   assert.equal(findNextPostInCategory(orderedPosts, "missing"), undefined);
+  assert.deepEqual(
+    findPostsInSameCategory(orderedPosts, orderedPosts[0].slug).map((item) => item.slug),
+    [orderedPosts[0].slug, orderedPosts[1].slug],
+  );
+  assert.deepEqual(findPostsInSameCategory(orderedPosts, "missing"), []);
 });
 
 test("article page renders a linked next-post card after the reading layout", () => {
@@ -188,4 +196,16 @@ test("article page renders a linked next-post card after the reading layout", ()
     page.indexOf("<ArticleReadingLayout") < page.indexOf(NEXT_LABEL),
     "next-post navigation should appear after the reading layout",
   );
+});
+
+test("article page renders a same-category navigation list and highlights the current post", () => {
+  const page = fs.readFileSync(
+    path.resolve(__dirname, "..", "app", "posts", "[slug]", "page.tsx"),
+    "utf8",
+  );
+
+  assert.match(page, /getPostsInSameCategory/);
+  assert.ok(page.includes("\u672c\u76ee\u5f55"));
+  assert.match(page, /sameCategoryPosts\.length > 1/);
+  assert.match(page, /categoryPost\.slug === post\.slug/);
 });
