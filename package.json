@@ -12,7 +12,7 @@
     "test:security": "node --test --test-isolation=none tools/*.test.cjs",
     "sync-content": "node tools/sync-obsidian.cjs",
     "validate-content": "node tools/validate-content.cjs",
-    "numpulish": "npm run sync-content && npm run validate-content && npm run test:security && npm run lint && npm run typecheck && npm run build"
+    "p-check": "npm run sync-content && npm run validate-content && npm run test:security && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -32,6 +32,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.2.7",
+    "sharp": "^0.34.5",
     "tailwindcss": "4.3.0",
     "typescript": "^5.9.0"
   }

@@ -1,6 +1,7 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const sharp = require("sharp");
 
 const SUPPORTED_IMAGE_EXTENSIONS = new Set([
   ".avif",
@@ -11,6 +12,8 @@ const SUPPORTED_IMAGE_EXTENSIONS = new Set([
   ".svg",
   ".webp",
 ]);
+const OPTIMIZABLE_IMAGE_EXTENSIONS = new Set([".jpeg", ".jpg", ".png"]);
+const OPTIMIZE_IMAGE_MIN_BYTES = 120 * 1024;
 
 function walkImages(directory) {
   if (!fs.existsSync(directory)) return [];
@@ -29,8 +32,7 @@ function isInside(root, candidate) {
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
-function safeAssetName(filePath) {
-  const extension = path.extname(filePath).toLowerCase();
+function safeAssetName(filePath, extension = path.extname(filePath).toLowerCase()) {
   const stem = path
     .basename(filePath, path.extname(filePath))
     .normalize("NFKD")
@@ -39,6 +41,32 @@ function safeAssetName(filePath) {
     .replace(/^-|-$/g, "")
     .toLowerCase();
   return `${stem || "image"}${extension}`;
+}
+
+async function optimizeImage(sourcePath) {
+  return sharp(sourcePath)
+    .rotate()
+    .resize({
+      width: 1600,
+      height: 1600,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: 82, effort: 4 })
+    .toBuffer();
+}
+
+async function replaceAsync(input, regex, replacer) {
+  let result = "";
+  let lastIndex = 0;
+
+  for (const match of input.matchAll(regex)) {
+    result += input.slice(lastIndex, match.index);
+    result += await replacer(match);
+    lastIndex = match.index + match[0].length;
+  }
+
+  return result + input.slice(lastIndex);
 }
 
 function lineForOffset(markdown, offset) {
@@ -113,15 +141,33 @@ function createVaultAssetPublisher({
     fail(notePath, line, "missing-image");
   }
 
-  function publishImage(target, notePath, line, width) {
+  async function publishImage(target, notePath, line, width) {
     const sourcePath = resolveImage(target, notePath, line);
     const bytes = fs.readFileSync(sourcePath);
     const hash = crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 12);
     let publishedName = publishedByHash.get(hash);
 
     if (!publishedName) {
-      publishedName = `${hash}-${safeAssetName(sourcePath)}`;
-      fs.copyFileSync(sourcePath, path.join(outputDir, publishedName));
+      let publishedBytes = bytes;
+      let publishedExtension = path.extname(sourcePath).toLowerCase();
+
+      if (
+        OPTIMIZABLE_IMAGE_EXTENSIONS.has(publishedExtension) &&
+        bytes.length >= OPTIMIZE_IMAGE_MIN_BYTES
+      ) {
+        try {
+          const optimizedBytes = await optimizeImage(sourcePath);
+          if (optimizedBytes.length < bytes.length) {
+            publishedBytes = optimizedBytes;
+            publishedExtension = ".webp";
+          }
+        } catch {
+          // Keep publishing robust: an unsupported/corrupt local image falls back to the original file.
+        }
+      }
+
+      publishedName = `${hash}-${safeAssetName(sourcePath, publishedExtension)}`;
+      fs.writeFileSync(path.join(outputDir, publishedName), publishedBytes);
       publishedByHash.set(hash, publishedName);
     }
 
@@ -129,28 +175,34 @@ function createVaultAssetPublisher({
     return `${assetUrlPrefix}/${publishedName}${widthQuery}`;
   }
 
-  function rewrite(markdown, notePath) {
-    const markdownImagesRewritten = markdown.replace(
+  async function rewrite(markdown, notePath) {
+    const markdownImagesRewritten = await replaceAsync(
+      markdown,
       /!\[([^\]\n]*)]\(\s*(<[^>\n]+>|[^)\s\n]+)(?:\s+["'][^"'\n]*["'])?\s*\)/g,
-      (match, alt, rawTarget, offset) => {
+      async (match) => {
+        const [, alt, rawTarget] = match;
+        const offset = match.index;
         const target = rawTarget.startsWith("<") ? rawTarget.slice(1, -1) : rawTarget;
-        if (/^https?:\/\//i.test(target)) return match;
+        if (/^https?:\/\//i.test(target)) return match[0];
         const line = lineForOffset(markdown, offset);
-        const url = publishImage(target, notePath, line);
+        const url = await publishImage(target, notePath, line);
         return `![${alt}](${url})`;
       },
     );
 
-    return markdownImagesRewritten.replace(
+    return replaceAsync(
+      markdownImagesRewritten,
       /!\[\[([^\]\n]+)]]/g,
-      (match, reference, offset) => {
+      async (match) => {
+        const [, reference] = match;
+        const offset = match.index;
         const [target, ...metadataParts] = reference.split("|");
         const metadata = metadataParts.join("|").trim();
         const dimensions = metadata.match(/^(\d{1,4})(?:x\d{1,4})?$/);
         const width = dimensions ? Math.min(Math.max(Number(dimensions[1]), 1), 2400) : undefined;
         const alt = dimensions || !metadata ? path.basename(target, path.extname(target)) : metadata;
         const line = lineForOffset(markdownImagesRewritten, offset);
-        const url = publishImage(target.trim(), notePath, line, width);
+        const url = await publishImage(target.trim(), notePath, line, width);
         return `![${alt}](${url})`;
       },
     );
@@ -160,6 +212,7 @@ function createVaultAssetPublisher({
 }
 
 module.exports = {
+  OPTIMIZE_IMAGE_MIN_BYTES,
   SUPPORTED_IMAGE_EXTENSIONS,
   createVaultAssetPublisher,
 };

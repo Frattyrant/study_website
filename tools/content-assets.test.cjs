@@ -3,8 +3,13 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
+const crypto = require("node:crypto");
+const sharp = require("sharp");
 
-const { createVaultAssetPublisher } = require("./content-assets.cjs");
+const {
+  OPTIMIZE_IMAGE_MIN_BYTES,
+  createVaultAssetPublisher,
+} = require("./content-assets.cjs");
 
 function createFixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "content-assets-"));
@@ -16,7 +21,7 @@ function createFixture() {
   return { root, vaultPath, outputDir };
 }
 
-test("copies Obsidian and Markdown images and rewrites their links", () => {
+test("copies Obsidian and Markdown images and rewrites their links", async () => {
   const fixture = createFixture();
   try {
     const publisher = createVaultAssetPublisher(fixture);
@@ -26,7 +31,7 @@ test("copies Obsidian and Markdown images and rewrites their links", () => {
       "![Remote](https://example.com/image.png)",
     ].join("\n");
 
-    const rewritten = publisher.rewrite(markdown, "Linux/note.md");
+    const rewritten = await publisher.rewrite(markdown, "Linux/note.md");
     const localUrls = [...rewritten.matchAll(/\/content-assets\/[^)\s?]+/g)].map(
       (match) => match[0],
     );
@@ -47,12 +52,12 @@ test("copies Obsidian and Markdown images and rewrites their links", () => {
   }
 });
 
-test("deduplicates identical image bytes", () => {
+test("deduplicates identical image bytes", async () => {
   const fixture = createFixture();
   try {
     fs.writeFileSync(path.join(fixture.vaultPath, "duplicate.png"), "same-image");
     const publisher = createVaultAssetPublisher(fixture);
-    const rewritten = publisher.rewrite(
+    const rewritten = await publisher.rewrite(
       "![[root image.png]]\n![[duplicate.png]]",
       "Linux/note.md",
     );
@@ -67,7 +72,36 @@ test("deduplicates identical image bytes", () => {
   }
 });
 
-test("reports missing, ambiguous, and escaping image references safely", () => {
+test("optimizes large publishable images to hashed webp assets", async () => {
+  const fixture = createFixture();
+  try {
+    const imagePath = path.join(fixture.vaultPath, "Linux", "large.jpg");
+    const width = 460;
+    const height = 460;
+    const pixels = Buffer.alloc(width * height * 3);
+    crypto.randomFillSync(pixels);
+    await sharp(pixels, { raw: { width, height, channels: 3 } })
+      .jpeg({ quality: 100 })
+      .toFile(imagePath);
+
+    assert.ok(fs.statSync(imagePath).size > OPTIMIZE_IMAGE_MIN_BYTES);
+
+    const publisher = createVaultAssetPublisher(fixture);
+    const rewritten = await publisher.rewrite("![[large.jpg]]", "Linux/note.md");
+    const match = rewritten.match(/\/content-assets\/([a-f0-9]{12}-large\.webp)/);
+
+    assert.ok(match);
+    assert.ok(fs.existsSync(path.join(fixture.outputDir, match[1])));
+    assert.ok(
+      fs.statSync(path.join(fixture.outputDir, match[1])).size <
+        fs.statSync(imagePath).size,
+    );
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("reports missing, ambiguous, and escaping image references safely", async () => {
   const fixture = createFixture();
   try {
     fs.mkdirSync(path.join(fixture.vaultPath, "Other"));
@@ -75,15 +109,15 @@ test("reports missing, ambiguous, and escaping image references safely", () => {
     fs.writeFileSync(path.join(fixture.vaultPath, "Other", "same.png"), "two");
     const publisher = createVaultAssetPublisher(fixture);
 
-    assert.throws(
+    await assert.rejects(
       () => publisher.rewrite("![[missing.png]]", "Linux/note.md"),
       /Linux[\\/]note\.md:1 \[missing-image]/,
     );
-    assert.throws(
+    await assert.rejects(
       () => publisher.rewrite("![[same.png]]", "Topic/note.md"),
       /Topic[\\/]note\.md:1 \[ambiguous-image]/,
     );
-    assert.throws(
+    await assert.rejects(
       () => publisher.rewrite("![[..\\secret.png]]", "Linux/note.md"),
       /Linux[\\/]note\.md:1 \[unsafe-image-path]/,
     );

@@ -55,3 +55,14 @@ test("article explorer renders recent search chips with removable tags", () => {
   assert.match(explorer, /removeSearchHistoryEntry/);
   assert.match(explorer, /aria-label=\{`\u5220\u9664\u641c\u7d22\u8bb0\u5f55/);
 });
+
+test("mobile category drawer uses near-full viewport width", () => {
+  const explorer = fs.readFileSync(
+    path.resolve(__dirname, "..", "components", "article-explorer.tsx"),
+    "utf8",
+  );
+
+  assert.match(explorer, /id="mobile-category-drawer"/);
+  assert.match(explorer, /w-\[calc\(100%-24px\)\]/);
+  assert.doesNotMatch(explorer, /w-\[min\(340px,calc\(100%-48px\)\)\]/);
+});

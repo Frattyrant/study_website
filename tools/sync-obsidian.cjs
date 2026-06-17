@@ -117,92 +117,102 @@ function shouldPublish(filePath, publicRoots) {
   return publicRoots.has(topLevel) && path.basename(filePath, ".md") !== "索引";
 }
 
-if (!fs.existsSync(vaultPath)) {
-  console.error(`Obsidian Vault not found: ${vaultPath}`);
-  process.exit(1);
+async function main() {
+  if (!fs.existsSync(vaultPath)) {
+    console.error(`Obsidian Vault not found: ${vaultPath}`);
+    process.exit(1);
+  }
+
+  const allFiles = walk(vaultPath);
+  const assetPublisher = createVaultAssetPublisher({
+    vaultPath,
+    outputDir: contentAssetsPath,
+  });
+  const publicRoots = new Set(moduleRegistry.discoverPublicRoots(vaultPath));
+  const modulePaths = moduleRegistry.discoverModulePaths(vaultPath, publicRoots);
+  const scopedFiles = allFiles.filter((filePath) => {
+    const relativePath = path.relative(vaultPath, filePath);
+    return publicRoots.has(relativePath.split(path.sep)[0]);
+  });
+  const files = scopedFiles.filter((filePath) => shouldPublish(filePath, publicRoots));
+  const allowedLineHashes = {};
+  const unorderedPosts = await Promise.all(
+    files.map(async (filePath) => {
+      const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
+      const markdownWithPublishedImages = await assetPublisher.rewrite(
+        fs.readFileSync(filePath, "utf8"),
+        relativePath.replaceAll("\\", "/"),
+      );
+      const prepared = preparePublicContent(markdownWithPublishedImages, relativePath);
+      const allowedHashes = new Set(prepared.allowedLineHashes);
+      const summaryContent = prepared.content
+        .split("\n")
+        .filter((line) => !allowedHashes.has(hashPublicSafeLine(line)))
+        .join("\n");
+      const content = prepared.content;
+      const title = titleFrom(content, filePath);
+      const categoryPath = moduleRegistry.categoryPathFor(relativePath);
+      const slug = slugFrom(relativePath);
+      if (prepared.allowedLineHashes.length > 0) {
+        allowedLineHashes[slug] = prepared.allowedLineHashes;
+      }
+      return {
+        slug,
+        title,
+        type: inferType(relativePath, title),
+        date: toDate(filePath),
+        minutes: minutesFor(content),
+        category: categoryKeyFrom(categoryPath),
+        categoryPath,
+        tags: categoryPath.slice(1),
+        summary: summaryFrom(summaryContent, title),
+        source: relativePath,
+        body: detailMarkdown(content),
+      };
+    }),
+  );
+  const posts = orderPostsByVaultIndex({
+    vaultPath,
+    publicRoots: [...publicRoots],
+    posts: unorderedPosts,
+  });
+
+  const topCounts = scopedFiles.reduce((acc, filePath) => {
+    const relativePath = path.relative(vaultPath, filePath);
+    const top = relativePath.split(path.sep)[0];
+    acc[top] = (acc[top] || 0) + 1;
+    return acc;
+  }, Object.fromEntries([...publicRoots].map((root) => [root, 0])));
+
+  const latestDate = allFiles
+    .filter((filePath) => scopedFiles.includes(filePath))
+    .map((filePath) => toDate(filePath))
+    .sort()
+    .at(-1);
+
+  const data = {
+    vaultStats: {
+      totalNotes: scopedFiles.length,
+      publishableNotes: posts.length,
+      focusCount: publicRoots.size,
+      latestDate,
+      topCounts,
+      categoryTree: moduleRegistry.buildCategoryTree(posts, modulePaths),
+    },
+    posts,
+  };
+
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+  fs.writeFileSync(
+    securityOutputPath,
+    `${JSON.stringify({ publicRoots: [...publicRoots], allowedLineHashes }, null, 2)}\n`,
+    "utf8",
+  );
+  console.log(`Synced ${posts.length} publishable notes from ${allFiles.length} markdown files.`);
 }
 
-const allFiles = walk(vaultPath);
-const assetPublisher = createVaultAssetPublisher({
-  vaultPath,
-  outputDir: contentAssetsPath,
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });
-const publicRoots = new Set(moduleRegistry.discoverPublicRoots(vaultPath));
-const modulePaths = moduleRegistry.discoverModulePaths(vaultPath, publicRoots);
-const scopedFiles = allFiles.filter((filePath) => {
-  const relativePath = path.relative(vaultPath, filePath);
-  return publicRoots.has(relativePath.split(path.sep)[0]);
-});
-const files = scopedFiles.filter((filePath) => shouldPublish(filePath, publicRoots));
-const allowedLineHashes = {};
-const posts = orderPostsByVaultIndex({
-  vaultPath,
-  publicRoots: [...publicRoots],
-  posts: files.map((filePath) => {
-    const relativePath = path.relative(vaultPath, filePath).replaceAll(path.sep, "\\");
-    const markdownWithPublishedImages = assetPublisher.rewrite(
-      fs.readFileSync(filePath, "utf8"),
-      relativePath.replaceAll("\\", "/"),
-    );
-    const prepared = preparePublicContent(markdownWithPublishedImages, relativePath);
-    const allowedHashes = new Set(prepared.allowedLineHashes);
-    const summaryContent = prepared.content
-      .split("\n")
-      .filter((line) => !allowedHashes.has(hashPublicSafeLine(line)))
-      .join("\n");
-    const content = prepared.content;
-    const title = titleFrom(content, filePath);
-    const categoryPath = moduleRegistry.categoryPathFor(relativePath);
-    const slug = slugFrom(relativePath);
-    if (prepared.allowedLineHashes.length > 0) {
-      allowedLineHashes[slug] = prepared.allowedLineHashes;
-    }
-    return {
-      slug,
-      title,
-      type: inferType(relativePath, title),
-      date: toDate(filePath),
-      minutes: minutesFor(content),
-      category: categoryKeyFrom(categoryPath),
-      categoryPath,
-      tags: categoryPath.slice(1),
-      summary: summaryFrom(summaryContent, title),
-      source: relativePath,
-      body: detailMarkdown(content),
-    };
-  }),
-});
-
-const topCounts = scopedFiles.reduce((acc, filePath) => {
-  const relativePath = path.relative(vaultPath, filePath);
-  const top = relativePath.split(path.sep)[0];
-  acc[top] = (acc[top] || 0) + 1;
-  return acc;
-}, Object.fromEntries([...publicRoots].map((root) => [root, 0])));
-
-const latestDate = allFiles
-  .filter((filePath) => scopedFiles.includes(filePath))
-  .map((filePath) => toDate(filePath))
-  .sort()
-  .at(-1);
-
-const data = {
-  vaultStats: {
-    totalNotes: scopedFiles.length,
-    publishableNotes: posts.length,
-    focusCount: publicRoots.size,
-    latestDate,
-    topCounts,
-    categoryTree: moduleRegistry.buildCategoryTree(posts, modulePaths),
-  },
-  posts,
-};
-
-fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-fs.writeFileSync(
-  securityOutputPath,
-  `${JSON.stringify({ publicRoots: [...publicRoots], allowedLineHashes }, null, 2)}\n`,
-  "utf8",
-);
-console.log(`Synced ${posts.length} publishable notes from ${allFiles.length} markdown files.`);

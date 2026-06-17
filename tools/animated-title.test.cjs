@@ -31,10 +31,12 @@ test("site metadata changes while the navigation brand remains unchanged", () =>
     path.join(root, "components", "site-header.tsx"),
     "utf8",
   );
+  const site = fs.readFileSync(path.join(root, "lib", "site.ts"), "utf8");
 
-  assert.match(layout, /default: "pawn的知识库"/);
-  assert.match(layout, /template: "%s \| pawn的知识库"/);
-  assert.match(layout, /个人技术学习笔记的知识库/);
+  assert.match(layout, /default: SITE_NAME/);
+  assert.match(layout, /template: `%s \| \$\{SITE_NAME\}`/);
+  assert.match(site, /SITE_NAME = "pawn的知识库"/);
+  assert.match(site, /个人技术学习笔记的知识库/);
   assert.match(header, />pawn的个人学习网站</);
   assert.doesNotMatch(header, />pawn的知识库</);
 });

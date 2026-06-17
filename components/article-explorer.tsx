@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 
-import siteBackground from "@/public/images/pawn-site-background.jpg";
+import siteBackground from "@/public/images/pawn-site-background.webp";
 import { AnimatedTagline } from "@/components/animated-tagline";
 import { AnimatedTitle } from "@/components/animated-title";
 import { ArticleCard } from "@/components/article-card";
@@ -287,7 +287,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             onClick={() => setCategoryDrawerOpen(false)}
           />
           <div
-            className="absolute inset-y-0 left-0 z-10 flex w-[min(340px,calc(100%-48px))] flex-col border-r border-line bg-surface shadow-[18px_0_48px_rgba(15,23,42,0.24)]"
+            className="absolute inset-y-0 left-0 z-10 flex w-[calc(100%-24px)] flex-col border-r border-line bg-surface shadow-[18px_0_48px_rgba(15,23,42,0.24)]"
             id="mobile-category-drawer"
             ref={categoryDrawerRef}
             role="dialog"

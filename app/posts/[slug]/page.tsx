@@ -19,6 +19,13 @@ import {
   createHeadingIdAllocator,
   extractMarkdownHeadings,
 } from "@/lib/markdown-headings";
+import {
+  SITE_AUTHOR,
+  SITE_DESCRIPTION,
+  SITE_LOCALE,
+  SITE_NAME,
+  getSiteUrl,
+} from "@/lib/site";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -34,7 +41,48 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(decodeURIComponent(slug));
-  return post ? { title: post.title, description: post.summary } : {};
+  if (!post) return {};
+
+  const url = getSiteUrl(`/posts/${post.slug}`);
+  const keywords = [
+    ...post.categoryPath,
+    ...post.tags,
+    post.type,
+    "技术笔记",
+    "个人知识库",
+  ].filter(Boolean);
+
+  return {
+    title: post.title,
+    description: post.summary || SITE_DESCRIPTION,
+    keywords,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      locale: SITE_LOCALE,
+      url,
+      siteName: SITE_NAME,
+      title: post.title,
+      description: post.summary || SITE_DESCRIPTION,
+      publishedTime: `${post.date}T00:00:00.000Z`,
+      modifiedTime: `${post.date}T00:00:00.000Z`,
+      tags: keywords,
+      images: [
+        {
+          url: getSiteUrl("/images/pawn-site-background.webp"),
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.summary || SITE_DESCRIPTION,
+      images: [getSiteUrl("/images/pawn-site-background.webp")],
+    },
+  };
 }
 
 export default async function PostPage({ params }: PostPageProps) {
@@ -49,6 +97,30 @@ export default async function PostPage({ params }: PostPageProps) {
   );
   const headings = extractMarkdownHeadings(markdown);
   const allocateHeadingId = createHeadingIdAllocator();
+  const articleUrl = getSiteUrl(`/posts/${post.slug}`);
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: post.title,
+    description: post.summary || SITE_DESCRIPTION,
+    datePublished: `${post.date}T00:00:00.000Z`,
+    dateModified: `${post.date}T00:00:00.000Z`,
+    author: {
+      "@type": "Person",
+      name: SITE_AUTHOR,
+      url: getSiteUrl("/"),
+    },
+    publisher: {
+      "@type": "Person",
+      name: SITE_AUTHOR,
+      url: getSiteUrl("/"),
+    },
+    mainEntityOfPage: articleUrl,
+    url: articleUrl,
+    inLanguage: "zh-CN",
+    keywords: [...post.categoryPath, ...post.tags].join(", "),
+    articleSection: post.categoryPath.join(" / ") || post.category,
+  };
   const heading = (level: 2 | 3 | 4) =>
     function MarkdownHeading({ children }: { children?: ReactNode }) {
       return (
@@ -60,6 +132,12 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <section className="mx-auto w-[min(1180px,calc(100%-36px))] py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <Link
         className="mb-4 inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-3.5 py-2.5 text-text transition hover:border-green hover:bg-surface-strong hover:text-green-dark"
         href="/"
