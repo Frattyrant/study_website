@@ -18,6 +18,9 @@ test("home article cards use visual bridge covers without reading minutes", () =
   assert.match(card, /article-card-cover/);
   assert.match(card, /article-card-right/);
   assert.match(card, /article-card-left/);
+  assert.match(card, /article-card-gradient/);
+  assert.match(card, /w-\[56%\]/);
+  assert.match(card, /imageTextVariant/);
   assert.match(card, /--article-card-image/);
   assert.match(card, /--article-card-right-image/);
   assert.match(card, /--article-card-left-image/);
@@ -54,6 +57,9 @@ test("home article cards use visual bridge covers without reading minutes", () =
   const globals = fs.readFileSync(path.join(root, "app", "globals.css"), "utf8");
   assert.match(globals, /@keyframes article-card-breathe/);
   assert.match(globals, /@keyframes article-card-side-breathe/);
+  assert.match(globals, /\.article-card-cover \.article-card-gradient/);
+  assert.match(globals, /\.article-card-right \.article-card-gradient/);
+  assert.match(globals, /\.article-card-left \.article-card-gradient/);
   assert.match(globals, /\.article-card-right::before/);
   assert.match(globals, /\.article-card-left::before/);
   assert.match(globals, /background-size: cover/);

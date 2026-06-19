@@ -200,6 +200,40 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   animation: article-card-side-breathe 9s ease-in-out infinite;
 }
 
+.article-card-gradient {
+  pointer-events: none;
+}
+
+.article-card-cover .article-card-gradient {
+  background:
+    linear-gradient(90deg, rgb(10 15 13 / 0.74), rgb(10 15 13 / 0.36) 48%, rgb(10 15 13 / 0.12)),
+    linear-gradient(180deg, rgb(255 248 232 / 0.2), rgb(8 14 12 / 0.22));
+}
+
+.article-card-right .article-card-gradient {
+  background:
+    linear-gradient(
+      90deg,
+      var(--surface) 0%,
+      var(--surface) 54%,
+      color-mix(in srgb, var(--surface) 70%, transparent) 72%,
+      transparent 100%
+    ),
+    linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(47 125 92 / 0.08));
+}
+
+.article-card-left .article-card-gradient {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(8 14 12 / 0.82) 0%,
+      rgb(8 14 12 / 0.62) 36%,
+      color-mix(in srgb, var(--surface) 82%, transparent) 58%,
+      var(--surface) 100%
+    ),
+    linear-gradient(180deg, rgb(255 248 232 / 0.12), rgb(47 125 92 / 0.1));
+}
+
 .article-card-right::before {
   right: 0;
   background-image: var(--article-card-right-image);
@@ -209,6 +243,7 @@ details[open] .toc-chevron { transform: rotate(180deg); }
 
 .article-card-left::before {
   left: 0;
+  width: min(56%, 520px);
   background-image: var(--article-card-left-image);
   transform: scale(1.01) translateX(0);
   transform-origin: center left;
