@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore, type CSSProperties } from "react";
 
+import footballBall from "@/public/images/football-ball.webp";
 import {
   ANIMATED_TITLE_CYCLE_MS,
   ANIMATED_TITLE_DEFAULT_EFFECT,
@@ -52,7 +53,15 @@ export function AnimatedTitle() {
             {token.text}
           </span>
         ))}
-        <span className="animated-title-ball" aria-hidden="true" />
+        <span
+          className="animated-title-ball"
+          aria-hidden="true"
+          style={
+            {
+              "--title-ball-image": `url("${footballBall.src}")`,
+            } as CSSProperties
+          }
+        />
       </span>
     </h1>
   );

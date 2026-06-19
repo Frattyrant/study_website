@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Clock3, FolderOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -158,10 +158,6 @@ export default async function PostPage({ params }: PostPageProps) {
           {post.title}
         </h1>
         <div className="mt-3.5 flex flex-wrap gap-4 text-sm text-muted">
-          <span className="inline-flex items-center gap-2">
-            <Clock3 size={16} />
-            {post.minutes} 分钟阅读
-          </span>
           {post.source ? (
             <span className="inline-flex min-w-0 items-center gap-2 break-anywhere">
               <FolderOpen className="shrink-0" size={16} />

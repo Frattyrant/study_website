@@ -13,12 +13,10 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run build
-
-
 ```
 
 一条命令式
 
 ```powershell
-npm run prepublish
+npm run p-check
 ```

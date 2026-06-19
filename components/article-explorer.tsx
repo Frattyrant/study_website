@@ -1,6 +1,6 @@
 "use client";
 
-import { ListFilter, Search, X } from "lucide-react";
+import { ListFilter, PanelRight, Rows3, Search, X } from "lucide-react";
 import Image from "next/image";
 import {
   useEffect,
@@ -34,6 +34,7 @@ import {
   serializeSearchHistory,
 } from "@/lib/search-history";
 import type { CategoryNode, Post, VaultStats } from "@/lib/types";
+import type { ArticleCardVariant } from "@/components/article-card";
 
 interface ArticleExplorerProps {
   posts: Post[];
@@ -63,6 +64,12 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
     getHeaderSearchHostSnapshot,
     () => null,
   );
+  const cardLayoutHost = useSyncExternalStore(
+    subscribeToHeaderCardLayoutHost,
+    getHeaderCardLayoutHostSnapshot,
+    () => null,
+  );
+  const [cardVariant, setCardVariant] = useState<ArticleCardVariant>("cover");
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const searchHistorySnapshot = useSyncExternalStore(
     subscribeToSearchHistory,
@@ -193,6 +200,17 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
               onClearSearchHistory={() => persistSearchHistory([])}
             />,
             searchHost,
+          )
+        : null}
+      {cardLayoutHost
+        ? createPortal(
+            <CardLayoutToggle
+              variant={cardVariant}
+              onToggle={() =>
+                setCardVariant((current) => (current === "cover" ? "side" : "cover"))
+              }
+            />,
+            cardLayoutHost,
           )
         : null}
       <section
@@ -368,12 +386,13 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
 
         <div className="min-w-0">
           {filteredPosts.length ? (
-            <div className="grid min-w-0 grid-cols-3 gap-4 max-xl:grid-cols-2 max-sm:grid-cols-1">
+            <div className="grid min-w-0 grid-cols-1 gap-4">
               {visiblePosts.map((post) => (
                 <ArticleCard
                   key={post.slug}
                   post={post}
                   searchQuery={query}
+                  variant={cardVariant}
                   onOpen={() => emojiPileRef.current?.clear()}
                 />
               ))}
@@ -434,6 +453,38 @@ function getHeaderSearchHostSnapshot() {
 function subscribeToHeaderSearchHost(onStoreChange: () => void) {
   queueMicrotask(onStoreChange);
   return () => {};
+}
+
+function getHeaderCardLayoutHostSnapshot() {
+  return document.getElementById("site-header-card-layout");
+}
+
+function subscribeToHeaderCardLayoutHost(onStoreChange: () => void) {
+  queueMicrotask(onStoreChange);
+  return () => {};
+}
+
+function CardLayoutToggle({
+  onToggle,
+  variant,
+}: {
+  onToggle: () => void;
+  variant: ArticleCardVariant;
+}) {
+  const side = variant === "side";
+  const Icon = side ? Rows3 : PanelRight;
+
+  return (
+    <button
+      className="grid size-11 cursor-pointer place-items-center rounded-lg border border-line bg-surface text-text transition hover:border-green hover:bg-surface-strong hover:text-green-dark"
+      type="button"
+      aria-label={side ? "切换为沉浸背景卡片" : "切换为右侧图片卡片"}
+      title={side ? "沉浸卡片" : "右图卡片"}
+      onClick={onToggle}
+    >
+      <Icon size={20} />
+    </button>
+  );
 }
 
 interface HeaderSearchProps {

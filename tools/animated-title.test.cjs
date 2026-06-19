@@ -50,8 +50,15 @@ test("site metadata changes while the navigation brand remains unchanged", () =>
   assert.match(layout, /default: SITE_NAME/);
   assert.match(layout, /template: `%s \| \$\{SITE_NAME\}`/);
   assert.match(title, /animated-title-effect-\$\{titleEffect\}/);
+  assert.match(title, /footballBall/);
+  assert.match(title, /--title-ball-image/);
+  assert.ok(
+    fs.existsSync(path.join(root, "public", "images", "football-ball.webp")),
+    "optimized football title asset should exist",
+  );
   assert.match(globals, /title-ball-bicycle/);
   assert.match(globals, /title-ball-penalty/);
+  assert.match(globals, /background-image: var\(--title-ball-image\)/);
   assert.match(globals, /prefers-reduced-motion: reduce/);
   assert.match(site, /SITE_NAME = "pawn的知识库"/);
   assert.match(site, /个人技术学习笔记的知识库/);
