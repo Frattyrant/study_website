@@ -1,4 +1,6 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const test = require("node:test");
 
 test("emoji pool is unique and covers the agreed face categories", async () => {
@@ -22,23 +24,35 @@ test("random emoji selection stays in range and avoids the current emoji", async
   }
 });
 
-test("emoji scale grows from its current visual size and caps at three times", async () => {
+test("emoji scale stays at its original visual size", async () => {
   const { getNextEmojiScale } = await import("../lib/emoji-game.ts");
 
-  assert.equal(getNextEmojiScale(1), 1.1);
-  assert.equal(getNextEmojiScale(1.7), 1.8);
-  assert.equal(getNextEmojiScale(2.95), 3);
-  assert.equal(getNextEmojiScale(3), 3);
-  assert.equal(getNextEmojiScale(-1), 1.1);
-  assert.equal(getNextEmojiScale(Number.NaN), 1.1);
+  assert.equal(getNextEmojiScale(1), 1);
+  assert.equal(getNextEmojiScale(1.7), 1);
+  assert.equal(getNextEmojiScale(3), 1);
+  assert.equal(getNextEmojiScale(-1), 1);
+  assert.equal(getNextEmojiScale(Number.NaN), 1);
 });
 
-test("emoji scale decays linearly to one over three seconds", async () => {
+test("emoji scale reset remains at one", async () => {
   const { getDecayedEmojiScale } = await import("../lib/emoji-game.ts");
 
-  assert.equal(getDecayedEmojiScale(3, 0), 3);
-  assert.equal(getDecayedEmojiScale(3, 1_500), 2);
+  assert.equal(getDecayedEmojiScale(3, 0), 1);
+  assert.equal(getDecayedEmojiScale(3, 1_500), 1);
   assert.equal(getDecayedEmojiScale(3, 3_000), 1);
   assert.equal(getDecayedEmojiScale(3, 4_000), 1);
   assert.equal(getDecayedEmojiScale(0, 1_500), 1);
+});
+
+test("emoji pile uses the button-sized visual and collision radius", () => {
+  const root = path.resolve(__dirname, "..");
+  const pile = fs.readFileSync(path.join(root, "components", "emoji-pile.tsx"), "utf8");
+  const globals = fs.readFileSync(path.join(root, "app", "globals.css"), "utf8");
+
+  assert.match(pile, /export const EMOJI_SIZE = 24/);
+  assert.match(pile, /const EMOJI_RADIUS = EMOJI_SIZE \/ 2/);
+  assert.match(pile, /Bodies\.circle\(x, y, EMOJI_RADIUS/);
+  assert.match(globals, /\.emoji-pile-item[\s\S]*width: 24px/);
+  assert.match(globals, /\.emoji-pile-item[\s\S]*height: 24px/);
+  assert.match(globals, /\.emoji-pile-item[\s\S]*font-size: 24px/);
 });

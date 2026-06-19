@@ -49,20 +49,41 @@ test("article explorer renders recent search chips with removable tags", () => {
     path.resolve(__dirname, "..", "components", "article-explorer.tsx"),
     "utf8",
   );
+  const header = fs.readFileSync(
+    path.resolve(__dirname, "..", "components", "site-header.tsx"),
+    "utf8",
+  );
 
   assert.match(explorer, /SEARCH_HISTORY_STORAGE_KEY/);
-  assert.ok(explorer.includes("\u6700\u8fd1\u641c\u7d22"));
+  assert.match(header, /id="site-header-search"/);
+  assert.match(explorer, /createPortal/);
+  assert.match(explorer, /site-header-search/);
+  assert.ok(explorer.includes("\u641c\u7d22\u5386\u53f2"));
   assert.match(explorer, /removeSearchHistoryEntry/);
   assert.match(explorer, /aria-label=\{`\u5220\u9664\u641c\u7d22\u8bb0\u5f55/);
 });
 
-test("mobile category drawer uses near-full viewport width", () => {
+test("mobile category drawer uses compact index width", () => {
   const explorer = fs.readFileSync(
     path.resolve(__dirname, "..", "components", "article-explorer.tsx"),
     "utf8",
   );
 
   assert.match(explorer, /id="mobile-category-drawer"/);
-  assert.match(explorer, /w-\[calc\(100%-24px\)\]/);
+  const drawerIdIndex = explorer.indexOf('id="mobile-category-drawer"');
+  const drawerClassIndex = explorer.lastIndexOf("className=", drawerIdIndex);
+  const drawerOpeningTag = explorer.slice(drawerClassIndex, drawerIdIndex);
+  const drawerTreeIndex = explorer.indexOf("<CategoryTree", drawerIdIndex);
+  const drawerTreeCall = explorer.slice(drawerTreeIndex, explorer.indexOf("/>", drawerTreeIndex));
+  const categoryTree = fs.readFileSync(
+    path.resolve(__dirname, "..", "components", "category-tree.tsx"),
+    "utf8",
+  );
+
+  assert.match(drawerOpeningTag, /w-\[min\(195px,100%\)\]/);
+  assert.doesNotMatch(drawerOpeningTag, /w-full/);
+  assert.match(drawerTreeCall, /compact/);
+  assert.match(categoryTree, /text-\[12px\]/);
+  assert.doesNotMatch(explorer, /w-\[calc\(100%-24px\)\]/);
   assert.doesNotMatch(explorer, /w-\[min\(340px,calc\(100%-48px\)\)\]/);
 });

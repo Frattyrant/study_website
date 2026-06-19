@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 import siteBackground from "@/public/images/pawn-site-background.webp";
 import { AnimatedTagline } from "@/components/animated-tagline";
@@ -57,6 +58,12 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(POST_PAGE_SIZE);
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
+  const searchHost = useSyncExternalStore(
+    subscribeToHeaderSearchHost,
+    getHeaderSearchHostSnapshot,
+    () => null,
+  );
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const searchHistorySnapshot = useSyncExternalStore(
     subscribeToSearchHistory,
     getSearchHistorySnapshot,
@@ -171,14 +178,31 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
   };
 
   return (
-    <section
+    <>
+      {searchHost
+        ? createPortal(
+            <HeaderSearch
+              query={query}
+              searchHistory={searchHistory}
+              searchPanelOpen={searchPanelOpen}
+              onFocus={() => setSearchPanelOpen(true)}
+              onPanelOpenChange={setSearchPanelOpen}
+              onQueryChange={updateQuery}
+              onRememberSearch={rememberSearchQuery}
+              onRemoveSearch={removeSearchHistory}
+              onClearSearchHistory={() => persistSearchHistory([])}
+            />,
+            searchHost,
+          )
+        : null}
+      <section
       className="mx-auto mt-14 w-[min(1180px,calc(100%-36px))] pb-20"
       data-site-id="study-website"
       id="articles"
     >
       <div className="relative mb-6 min-h-80 overflow-hidden rounded-xl border border-line shadow-[0_18px_50px_rgba(23,32,28,0.14)]">
         <Image
-          className="object-cover object-center"
+          className="object-cover object-center max-md:object-top"
           src={siteBackground}
           alt=""
           fill
@@ -186,7 +210,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           sizes="(max-width: 1200px) 100vw, 1180px"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,8,38,0.82),rgba(32,12,54,0.46)_58%,rgba(32,12,54,0.16))]" />
-        <div className="relative z-10 flex min-h-80 items-end justify-between gap-8 p-[clamp(24px,5vw,56px)] max-md:flex-col max-md:items-stretch max-md:justify-end">
+        <div className="relative z-10 flex min-h-80 items-end p-[clamp(24px,5vw,56px)] max-md:items-start max-md:pt-9">
           <div className="text-white">
             <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-yellow-300">
               Notes
@@ -194,7 +218,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             <AnimatedTitle />
             <AnimatedTagline />
           </div>
-          <div className="w-full max-w-90 max-md:max-w-none">
+          <div className="hidden">
             <label className="flex min-h-12 items-center gap-2.5 rounded-lg border border-white/35 bg-white/90 px-3.5 shadow-lg backdrop-blur-sm">
             <Search className="shrink-0 text-slate-600" size={20} />
             <input
@@ -287,35 +311,36 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
             onClick={() => setCategoryDrawerOpen(false)}
           />
           <div
-            className="absolute inset-y-0 left-0 z-10 flex w-[calc(100%-24px)] flex-col border-r border-line bg-surface shadow-[18px_0_48px_rgba(15,23,42,0.24)]"
+            className="absolute inset-y-0 left-0 z-10 flex w-[min(195px,100%)] flex-col bg-surface shadow-[0_18px_48px_rgba(15,23,42,0.24)]"
             id="mobile-category-drawer"
             ref={categoryDrawerRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="mobile-category-title"
           >
-            <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+            <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
               <div>
-                <h2 className="font-bold" id="mobile-category-title">
+                <h2 className="text-[12px] font-bold" id="mobile-category-title">
                   分类筛选
                 </h2>
-                <p className="text-xs text-muted">{filteredPosts.length} 篇匹配笔记</p>
+                <p className="text-[12px] text-muted">{filteredPosts.length} 篇匹配笔记</p>
               </div>
               <button
-                className="grid size-10 place-items-center rounded-lg border border-line text-muted transition hover:border-green hover:bg-surface-strong hover:text-green-dark"
+                className="grid size-7 place-items-center rounded-lg border border-line text-muted transition hover:border-green hover:bg-surface-strong hover:text-green-dark"
                 type="button"
                 ref={categoryCloseRef}
                 aria-label="关闭分类筛选"
                 onClick={() => setCategoryDrawerOpen(false)}
               >
-                <X size={18} />
+                <X size={12} />
               </button>
             </div>
-            <div className="category-tree-scroll min-h-0 flex-1 overflow-y-auto p-4">
+            <div className="category-tree-scroll min-h-0 flex-1 overflow-y-auto p-2">
               <CategoryTree
                 node={stats.categoryTree}
                 activeCategory={activeCategory.key}
                 expandedCategories={expandedCategories}
+                compact
                 onSelect={selectCategory}
                 onToggle={toggleCategory}
               />
@@ -377,6 +402,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
       </div>
       <EmojiPile ref={emojiPileRef} />
     </section>
+    </>
   );
 }
 
@@ -399,6 +425,121 @@ function subscribeToSearchHistory(onStoreChange: () => void) {
     window.removeEventListener("storage", handleStorage);
     window.removeEventListener(SEARCH_HISTORY_CHANGE_EVENT, onStoreChange);
   };
+}
+
+function getHeaderSearchHostSnapshot() {
+  return document.getElementById("site-header-search");
+}
+
+function subscribeToHeaderSearchHost(onStoreChange: () => void) {
+  queueMicrotask(onStoreChange);
+  return () => {};
+}
+
+interface HeaderSearchProps {
+  query: string;
+  searchHistory: string[];
+  searchPanelOpen: boolean;
+  onFocus: () => void;
+  onPanelOpenChange: (open: boolean) => void;
+  onQueryChange: (value: string) => void;
+  onRememberSearch: (value: string) => void;
+  onRemoveSearch: (value: string) => void;
+  onClearSearchHistory: () => void;
+}
+
+function HeaderSearch({
+  query,
+  searchHistory,
+  searchPanelOpen,
+  onFocus,
+  onPanelOpenChange,
+  onQueryChange,
+  onRememberSearch,
+  onRemoveSearch,
+  onClearSearchHistory,
+}: HeaderSearchProps) {
+  const showPanel = searchPanelOpen;
+
+  return (
+    <div
+      className="relative mx-auto w-full max-w-xl"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          onPanelOpenChange(false);
+          const input = event.currentTarget.querySelector("input");
+          onRememberSearch(input?.value ?? query);
+        }
+      }}
+    >
+      <label className="flex min-h-10 items-center overflow-hidden rounded-lg border border-line bg-surface-strong/95 shadow-sm transition focus-within:border-green focus-within:bg-surface">
+        <input
+          className="min-w-0 flex-1 bg-transparent px-3 text-sm text-text outline-none placeholder:text-muted"
+          type="search"
+          placeholder="搜索笔记..."
+          autoComplete="off"
+          value={query}
+          onFocus={onFocus}
+          onChange={(event) => onQueryChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") onRememberSearch(event.currentTarget.value);
+          }}
+        />
+        <span className="grid h-10 w-12 shrink-0 place-items-center border-l border-line bg-surface text-text">
+          <Search size={20} />
+        </span>
+      </label>
+      {showPanel ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-lg border border-line bg-surface p-4 shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-text">搜索历史</p>
+            <button
+              className="text-xs text-muted transition hover:text-green-dark"
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={onClearSearchHistory}
+            >
+              清空
+            </button>
+          </div>
+          {searchHistory.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {searchHistory.map((item) => (
+                <span
+                  className="inline-flex max-w-full items-center overflow-hidden rounded-md bg-surface-strong text-sm text-text"
+                  key={item}
+                >
+                  <button
+                    className="min-w-0 truncate px-3 py-1.5 text-left transition hover:text-green-dark"
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      onQueryChange(item);
+                      onRememberSearch(item);
+                      onPanelOpenChange(false);
+                    }}
+                  >
+                    {item}
+                  </button>
+                  <button
+                    className="grid size-7 shrink-0 place-items-center text-muted transition hover:bg-surface hover:text-green-dark"
+                    type="button"
+                    aria-label={`删除搜索记录 ${item}`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => onRemoveSearch(item)}
+                  >
+                    <X size={13} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">暂无搜索记录</p>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function StatChip({ children }: { children: ReactNode }) {

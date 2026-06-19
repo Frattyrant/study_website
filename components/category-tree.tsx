@@ -8,6 +8,7 @@ interface CategoryTreeProps {
   node: CategoryNode;
   activeCategory: string;
   expandedCategories: Set<string>;
+  compact?: boolean;
   level?: number;
   onSelect: (category: CategoryNode) => void;
   onToggle: (category: string) => void;
@@ -17,6 +18,7 @@ export function CategoryTree({
   node,
   activeCategory,
   expandedCategories,
+  compact = false,
   level = 0,
   onSelect,
   onToggle,
@@ -28,12 +30,16 @@ export function CategoryTree({
   return (
     <>
       <div
-        className="grid grid-cols-[28px_1fr] items-center gap-1"
-        style={{ paddingLeft: `${level * 16}px` }}
+        className={`grid items-center ${
+          compact ? "grid-cols-[20px_1fr] gap-0.5" : "grid-cols-[28px_1fr] gap-1"
+        }`}
+        style={{ paddingLeft: `${level * (compact ? 8 : 16)}px` }}
       >
         {isDirectory ? (
           <button
-            className="grid h-9 w-8 cursor-pointer place-items-center rounded-lg text-muted transition hover:bg-surface-strong hover:text-green-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green"
+            className={`grid cursor-pointer place-items-center text-muted transition hover:bg-surface-strong hover:text-green-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green ${
+              compact ? "h-6 w-5 rounded-md" : "h-9 w-8 rounded-lg"
+            }`}
             type="button"
             aria-label={`${isExpanded ? "收起" : "展开"}${node.label}`}
             aria-expanded={isExpanded}
@@ -43,33 +49,51 @@ export function CategoryTree({
           >
             <ChevronRight
               className={`transition-transform ${isExpanded ? "rotate-90" : ""}`}
-              size={16}
+              size={compact ? 10 : 16}
             />
           </button>
         ) : (
-          <span className="h-9 w-8" />
+          <span className={compact ? "h-6 w-5" : "h-9 w-8"} />
         )}
         <button
-          className={`flex min-h-9 w-full cursor-pointer items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 text-left text-sm transition ${
+          className={`flex w-full cursor-pointer items-center justify-between rounded-lg border text-left transition ${
+            compact
+              ? "min-h-6 gap-1.5 px-1.5 py-1 text-[12px] leading-snug"
+              : "min-h-9 gap-3 px-2.5 py-1.5 text-sm"
+          } ${
             node.key === activeCategory
               ? "border-green bg-surface-strong text-green-dark"
               : "border-transparent text-muted hover:border-green hover:bg-surface-strong hover:text-green-dark"
           }`}
           type="button"
+          style={
+            compact
+              ? {
+                  fontSize: "12px",
+                  lineHeight: 1.25,
+                }
+              : undefined
+          }
           onClick={() => onSelect(node)}
         >
-          <span>{node.label}</span>
-          <small className="text-xs">{node.count}</small>
+          <span className="min-w-0">{node.label}</span>
+          <small
+            className={compact ? "text-[12px]" : "text-xs"}
+            style={compact ? { fontSize: "12px", lineHeight: 1.2 } : undefined}
+          >
+            {node.count}
+          </small>
         </button>
       </div>
       {isDirectory && isExpanded && node.children.length > 0 ? (
-        <div className="grid gap-1" id={childrenId}>
+        <div className={compact ? "grid gap-0.5" : "grid gap-1"} id={childrenId}>
           {node.children.map((child) => (
             <CategoryTree
               key={child.key}
               node={child}
               activeCategory={activeCategory}
               expandedCategories={expandedCategories}
+              compact={compact}
               level={level + 1}
               onSelect={onSelect}
               onToggle={onToggle}

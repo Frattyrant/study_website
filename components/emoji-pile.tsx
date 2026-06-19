@@ -18,7 +18,7 @@ import {
   type IBodyDefinition,
 } from "matter-js";
 
-const EMOJI_SIZE = 36;
+export const EMOJI_SIZE = 24;
 const EMOJI_RADIUS = EMOJI_SIZE / 2;
 const MAX_EMOJIS = 30;
 const EDGE_THICKNESS = 80;

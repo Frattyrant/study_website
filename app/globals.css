@@ -88,10 +88,10 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   top: 0;
   left: 0;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   place-items: center;
-  font-size: 36px;
+  font-size: 24px;
   line-height: 1;
   transform-origin: center;
   user-select: none;
@@ -225,6 +225,42 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   animation: title-ball-pass var(--title-cycle) cubic-bezier(0.36, 0.02, 0.21, 1) infinite;
 }
 
+.animated-title-effect-bicycle .animated-title-token-kicker,
+.animated-title-effect-bicycle .animated-title-token-connector {
+  animation-name: title-bicycle-kicker;
+}
+
+.animated-title-effect-bicycle .animated-title-token-receiver {
+  animation-name: title-bicycle-receiver;
+}
+
+.animated-title-effect-bicycle .animated-title-ball {
+  --ball-arc-x: 0.95em;
+  --ball-hit-x: 1.75em;
+  --ball-land-x: 2.6em;
+  --ball-rest-x: 3.15em;
+  --ball-arc-y: -1.85em;
+  animation-name: title-ball-bicycle;
+}
+
+.animated-title-effect-penalty .animated-title-token-kicker,
+.animated-title-effect-penalty .animated-title-token-connector {
+  animation-name: title-penalty-kicker;
+}
+
+.animated-title-effect-penalty .animated-title-token-receiver {
+  animation-name: title-penalty-receiver;
+}
+
+.animated-title-effect-penalty .animated-title-ball {
+  --ball-arc-x: 0.55em;
+  --ball-hit-x: 1.42em;
+  --ball-land-x: 2.35em;
+  --ball-rest-x: 2.95em;
+  --ball-arc-y: -0.28em;
+  animation-name: title-ball-penalty;
+}
+
 @keyframes title-kicker-enter {
   0%, 2% {
     opacity: 0;
@@ -293,6 +329,146 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   89%, 100% {
     opacity: 0;
     transform: translate3d(calc(-50% + var(--ball-rest-x)), calc(-35% + 0.32em), 0) rotate(800deg) scale(0.72);
+  }
+}
+
+@keyframes title-bicycle-kicker {
+  0%, 4% {
+    opacity: 0;
+    transform: translate3d(0, 0.36em, 0) rotate(var(--title-tilt)) scale(0.9);
+  }
+  9%, 38% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  45% {
+    transform: translate3d(0, -0.16em, 0) rotate(calc(var(--title-tilt) * -0.8)) scale(1.04, 0.96);
+  }
+  53%, 84% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translate3d(0, -0.1em, 0) rotate(0deg) scale(0.98);
+  }
+}
+
+@keyframes title-bicycle-receiver {
+  0%, 35% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  43% {
+    transform: translate3d(0, -0.24em, 0) rotate(-8deg) scale(0.96, 1.08);
+  }
+  50% {
+    transform: translate3d(0.08em, 0.05em, 0) rotate(5deg) scale(1.08, 0.9);
+  }
+  58%, 84% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translate3d(0, -0.12em, 0) scale(0.98);
+  }
+}
+
+@keyframes title-ball-bicycle {
+  0%, 24% {
+    opacity: 0;
+    transform: translate3d(-50%, 65%, 0) rotate(0deg) scale(0.58);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(-50%, 0%, 0) rotate(120deg) scale(0.9);
+  }
+  40% {
+    opacity: 1;
+    transform: translate3d(calc(-50% + var(--ball-arc-x)), calc(35% + var(--ball-arc-y)), 0) rotate(340deg) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(calc(-50% + var(--ball-hit-x)), calc(-35% - 0.12em), 0) rotate(560deg) scale(0.92);
+  }
+  62%, 82% {
+    opacity: 1;
+    transform: translate3d(calc(-50% + var(--ball-rest-x)), calc(-35% + 0.36em), 0) rotate(820deg) scale(0.84);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--ball-rest-x)), calc(-35% + 0.28em), 0) rotate(880deg) scale(0.72);
+  }
+}
+
+@keyframes title-penalty-kicker {
+  0%, 5% {
+    opacity: 0;
+    transform: translate3d(-0.1em, 0.2em, 0) rotate(var(--title-tilt)) scale(0.94);
+  }
+  10%, 30% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  37% {
+    transform: translate3d(0.08em, 0, 0) rotate(calc(var(--title-tilt) * 0.45)) scale(0.98, 1.04);
+  }
+  43%, 84% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translate3d(0, -0.08em, 0) scale(0.98);
+  }
+}
+
+@keyframes title-penalty-receiver {
+  0%, 38% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  43% {
+    transform: translate3d(0.12em, 0, 0) rotate(2deg) scale(0.86, 1.08);
+  }
+  48% {
+    transform: translate3d(-0.06em, 0, 0) rotate(-2deg) scale(1.08, 0.92);
+  }
+  56%, 84% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translate3d(0, -0.1em, 0) scale(0.98);
+  }
+}
+
+@keyframes title-ball-penalty {
+  0%, 28% {
+    opacity: 0;
+    transform: translate3d(-50%, -35%, 0) rotate(0deg) scale(0.6);
+  }
+  33% {
+    opacity: 1;
+    transform: translate3d(-50%, -35%, 0) rotate(40deg) scale(0.8);
+  }
+  43% {
+    opacity: 1;
+    transform: translate3d(calc(-50% + var(--ball-hit-x)), calc(-35% + var(--ball-arc-y)), 0) rotate(390deg) scale(1);
+  }
+  53% {
+    opacity: 1;
+    transform: translate3d(calc(-50% + var(--ball-land-x)), calc(-35% + 0.18em), 0) rotate(620deg) scale(0.9);
+  }
+  62%, 82% {
+    opacity: 1;
+    transform: translate3d(calc(-50% + var(--ball-rest-x)), calc(-35% + 0.34em), 0) rotate(760deg) scale(0.84);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--ball-rest-x)), calc(-35% + 0.28em), 0) rotate(800deg) scale(0.72);
   }
 }
 
