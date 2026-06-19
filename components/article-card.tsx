@@ -4,10 +4,11 @@ import type { CSSProperties } from "react";
 
 import articleCardBridge from "@/public/images/article-card-bridge.webp";
 import articleCardTower from "@/public/images/article-card-tower.webp";
+import articleCardWater from "@/public/images/article-card-water.webp";
 import { getHighlightSegments, getSearchPreview } from "@/lib/search";
 import type { Post } from "@/lib/types";
 
-export type ArticleCardVariant = "cover" | "side";
+export type ArticleCardVariant = "cover" | "right" | "left";
 
 interface ArticleCardProps {
   post: Post;
@@ -23,16 +24,20 @@ export function ArticleCard({
   onOpen,
 }: ArticleCardProps) {
   const preview = getSearchPreview(post, searchQuery);
-  const sideVariant = variant === "side";
-  const tagClass = sideVariant
+  const splitVariant = variant !== "cover";
+  const leftVariant = variant === "left";
+  const tagClass = splitVariant
     ? "rounded-md border border-line bg-surface-strong px-2 py-1 text-xs font-bold text-blue"
     : "rounded-md border border-white/35 bg-white/16 px-2 py-1 text-xs font-bold text-white/90 backdrop-blur-sm";
+  const contentAlignment = leftVariant
+    ? "ml-auto w-[62%] max-sm:ml-0 max-sm:w-full"
+    : "w-full";
 
   return (
     <Link
       className={`group relative flex min-h-[260px] min-w-0 overflow-hidden rounded-lg border border-line bg-surface text-left shadow-[0_12px_30px_rgba(23,32,28,0.08)] transition duration-200 hover:-translate-y-1 hover:border-green hover:shadow-[0_18px_42px_rgba(47,125,92,0.16)] focus-visible:outline-3 focus-visible:outline-green ${
-        sideVariant
-          ? "article-card-side text-text max-sm:min-h-[300px]"
+        splitVariant
+          ? `${leftVariant ? "article-card-left" : "article-card-right"} text-text max-sm:min-h-[300px]`
           : "article-card-cover text-white max-sm:min-h-[330px]"
       }`}
       href={`/posts/${post.slug}`}
@@ -41,23 +46,30 @@ export function ArticleCard({
       style={
         {
           "--article-card-image": `url("${articleCardBridge.src}")`,
-          "--article-card-side-image": `url("${articleCardTower.src}")`,
+          "--article-card-right-image": `url("${articleCardTower.src}")`,
+          "--article-card-left-image": `url("${articleCardWater.src}")`,
         } as CSSProperties
       }
     >
-      {sideVariant ? (
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--surface)_0%,var(--surface)_54%,color-mix(in_srgb,var(--surface)_70%,transparent)_72%,transparent_100%)]" />
+      {splitVariant ? (
+        <div
+          className={
+            leftVariant
+              ? "absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,color-mix(in_srgb,var(--surface)_76%,transparent)_36%,var(--surface)_52%,var(--surface)_100%)]"
+              : "absolute inset-0 bg-[linear-gradient(90deg,var(--surface)_0%,var(--surface)_54%,color-mix(in_srgb,var(--surface)_70%,transparent)_72%,transparent_100%)]"
+          }
+        />
       ) : (
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,15,13,0.74),rgba(10,15,13,0.36)_48%,rgba(10,15,13,0.12)),linear-gradient(180deg,rgba(255,248,232,0.2),rgba(8,14,12,0.22))]" />
       )}
-      <div className="relative z-10 flex min-h-full w-full flex-col p-5.5 sm:p-7">
+      <div className={`relative z-10 flex min-h-full flex-col p-5.5 sm:p-7 ${contentAlignment}`}>
         <div
           className="mb-5 flex flex-wrap items-center gap-1.5"
           aria-hidden="true"
         >
           <span
             className={
-              sideVariant
+              splitVariant
                 ? "rounded-sm border border-line bg-surface-strong px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-green-dark"
                 : "rounded-sm border border-white/55 bg-white/20 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white backdrop-blur-sm"
             }
@@ -66,7 +78,7 @@ export function ArticleCard({
           </span>
           <time
             className={
-              sideVariant
+              splitVariant
                 ? "rounded-sm border border-line bg-surface-strong px-1.5 py-0.5 text-[10px] font-bold text-muted"
                 : "rounded-sm border border-white/45 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
             }
@@ -78,7 +90,7 @@ export function ArticleCard({
 
         <h2
           className={`max-w-2xl text-2xl font-extrabold leading-tight break-anywhere max-sm:text-xl ${
-            sideVariant
+            splitVariant
               ? "text-text"
               : "text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.42)]"
           }`}
@@ -87,7 +99,7 @@ export function ArticleCard({
         </h2>
         <p
           className={`mt-3 line-clamp-3 max-w-2xl text-sm break-anywhere sm:text-base ${
-            sideVariant
+            splitVariant
               ? "text-muted"
               : "text-white/88 drop-shadow-[0_1px_6px_rgba(0,0,0,0.38)]"
           }`}
@@ -97,7 +109,7 @@ export function ArticleCard({
         {post.source ? (
           <div
             className={`mt-4 flex min-w-0 items-center gap-2 text-xs ${
-              sideVariant ? "text-muted" : "text-white/78"
+              splitVariant ? "text-muted" : "text-white/78"
             }`}
           >
             <FolderOpen className="shrink-0" size={15} />
@@ -113,7 +125,7 @@ export function ArticleCard({
         </div>
         <span
           className={`mt-4 inline-flex items-center gap-2 font-extrabold ${
-            sideVariant
+            splitVariant
               ? "text-green-dark"
               : "text-yellow-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.38)]"
           }`}

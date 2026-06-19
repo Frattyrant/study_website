@@ -1,6 +1,6 @@
 "use client";
 
-import { ListFilter, PanelRight, Rows3, Search, X } from "lucide-react";
+import { ListFilter, PanelLeft, PanelRight, Rows3, Search, X } from "lucide-react";
 import Image from "next/image";
 import {
   useEffect,
@@ -206,9 +206,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         ? createPortal(
             <CardLayoutToggle
               variant={cardVariant}
-              onToggle={() =>
-                setCardVariant((current) => (current === "cover" ? "side" : "cover"))
-              }
+              onToggle={() => setCardVariant(getNextCardVariant)}
             />,
             cardLayoutHost,
           )
@@ -471,20 +469,43 @@ function CardLayoutToggle({
   onToggle: () => void;
   variant: ArticleCardVariant;
 }) {
-  const side = variant === "side";
-  const Icon = side ? Rows3 : PanelRight;
+  const config =
+    variant === "cover"
+      ? {
+          Icon: PanelRight,
+          label: "切换为右侧图片卡片",
+          title: "右图卡片",
+        }
+      : variant === "right"
+        ? {
+            Icon: PanelLeft,
+            label: "切换为左侧图片卡片",
+            title: "左图卡片",
+          }
+        : {
+            Icon: Rows3,
+            label: "切换为沉浸背景卡片",
+            title: "沉浸卡片",
+          };
+  const Icon = config.Icon;
 
   return (
     <button
       className="grid size-11 cursor-pointer place-items-center rounded-lg border border-line bg-surface text-text transition hover:border-green hover:bg-surface-strong hover:text-green-dark"
       type="button"
-      aria-label={side ? "切换为沉浸背景卡片" : "切换为右侧图片卡片"}
-      title={side ? "沉浸卡片" : "右图卡片"}
+      aria-label={config.label}
+      title={config.title}
       onClick={onToggle}
     >
       <Icon size={20} />
     </button>
   );
+}
+
+function getNextCardVariant(current: ArticleCardVariant): ArticleCardVariant {
+  if (current === "cover") return "right";
+  if (current === "right") return "left";
+  return "cover";
 }
 
 interface HeaderSearchProps {

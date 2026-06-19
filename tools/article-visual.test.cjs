@@ -13,11 +13,14 @@ test("home article cards use visual bridge covers without reading minutes", () =
 
   assert.match(card, /article-card-bridge\.webp/);
   assert.match(card, /article-card-tower\.webp/);
-  assert.match(card, /ArticleCardVariant = "cover" \| "side"/);
+  assert.match(card, /article-card-water\.webp/);
+  assert.match(card, /ArticleCardVariant = "cover" \| "right" \| "left"/);
   assert.match(card, /article-card-cover/);
-  assert.match(card, /article-card-side/);
+  assert.match(card, /article-card-right/);
+  assert.match(card, /article-card-left/);
   assert.match(card, /--article-card-image/);
-  assert.match(card, /--article-card-side-image/);
+  assert.match(card, /--article-card-right-image/);
+  assert.match(card, /--article-card-left-image/);
   assert.match(card, /line-clamp-3/);
   assert.doesNotMatch(card, /Clock3/);
   assert.doesNotMatch(card, /minutes/);
@@ -30,6 +33,10 @@ test("home article cards use visual bridge covers without reading minutes", () =
     fs.existsSync(path.join(root, "public", "images", "article-card-tower.webp")),
     "optimized tower side background should exist",
   );
+  assert.ok(
+    fs.existsSync(path.join(root, "public", "images", "article-card-water.webp")),
+    "optimized water side background should exist",
+  );
 
   const explorer = fs.readFileSync(
     path.join(root, "components", "article-explorer.tsx"),
@@ -39,12 +46,16 @@ test("home article cards use visual bridge covers without reading minutes", () =
   assert.match(explorer, /CardLayoutToggle/);
   assert.match(explorer, /site-header-card-layout/);
   assert.match(explorer, /variant=\{cardVariant\}/);
+  assert.match(explorer, /getNextCardVariant/);
+  assert.match(explorer, /current === "cover"/);
+  assert.match(explorer, /current === "right"/);
   assert.doesNotMatch(explorer, /grid-cols-3/);
 
   const globals = fs.readFileSync(path.join(root, "app", "globals.css"), "utf8");
   assert.match(globals, /@keyframes article-card-breathe/);
   assert.match(globals, /@keyframes article-card-side-breathe/);
-  assert.match(globals, /\.article-card-side::before/);
+  assert.match(globals, /\.article-card-right::before/);
+  assert.match(globals, /\.article-card-left::before/);
   assert.match(globals, /background-size: cover/);
 
   const header = fs.readFileSync(

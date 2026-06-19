@@ -186,21 +186,32 @@ details[open] .toc-chevron { transform: rotate(180deg); }
   animation-duration: 5.8s;
 }
 
-.article-card-side::before {
+.article-card-right::before,
+.article-card-left::before {
   position: absolute;
   inset-block: 0;
-  right: 0;
   width: min(42%, 360px);
   content: "";
-  background-image: var(--article-card-side-image);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   opacity: 0.94;
-  transform: scale(1.01) translateX(0);
-  transform-origin: center right;
   will-change: transform;
   animation: article-card-side-breathe 9s ease-in-out infinite;
+}
+
+.article-card-right::before {
+  right: 0;
+  background-image: var(--article-card-right-image);
+  transform: scale(1.01) translateX(0);
+  transform-origin: center right;
+}
+
+.article-card-left::before {
+  left: 0;
+  background-image: var(--article-card-left-image);
+  transform: scale(1.01) translateX(0);
+  transform-origin: center left;
 }
 
 @keyframes article-card-breathe {
@@ -700,7 +711,8 @@ details[open] .toc-chevron { transform: rotate(180deg); }
     transform: scale(1.02);
   }
 
-  .article-card-side::before {
+  .article-card-right::before,
+  .article-card-left::before {
     animation: none;
     transform: scale(1.01);
   }
@@ -756,7 +768,8 @@ details[open] .toc-chevron { transform: rotate(180deg); }
     --tagline-jump-distance: 0.65em;
   }
 
-  .article-card-side::before {
+  .article-card-right::before,
+  .article-card-left::before {
     width: 58%;
     opacity: 0.72;
   }
