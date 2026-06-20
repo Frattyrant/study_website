@@ -41,7 +41,7 @@ export function AnimatedTitle() {
       <span className="animated-title-visual" aria-hidden="true">
         {ANIMATED_TITLE_TOKENS.map((token, index) => (
           <span
-            className={`animated-title-token animated-title-token-${token.role}`}
+            className={`animated-title-token animated-title-token-${token.role} animated-title-token-index-${index}`}
             key={`${token.text}-${index}`}
             style={
               {

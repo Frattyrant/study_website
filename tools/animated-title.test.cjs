@@ -16,10 +16,11 @@ test("animated title keeps the knowledge-base wording and receiving order", asyn
   assert.equal(ANIMATED_TITLE_LABEL, "pawn的知识库");
   assert.equal(ANIMATED_TITLE_CYCLE_MS, 5000);
   assert.equal(ANIMATED_TITLE_DEFAULT_EFFECT, "pass");
-  assert.deepEqual(ANIMATED_TITLE_EFFECTS, ["pass"]);
+  assert.deepEqual(ANIMATED_TITLE_EFFECTS, ["pass", "typewriter"]);
   assert.equal(getRandomTitleEffect(() => 0), "pass");
   assert.equal(getRandomTitleEffect(() => 0.34), "pass");
-  assert.equal(getRandomTitleEffect(() => 0.67), "pass");
+  assert.equal(getRandomTitleEffect(() => 0.5), "typewriter");
+  assert.equal(getRandomTitleEffect(() => 0.67), "typewriter");
   assert.equal(getRandomTitleEffect(() => Number.NaN), "pass");
   assert.deepEqual(
     ANIMATED_TITLE_TOKENS.map((token) => token.text),
@@ -50,6 +51,7 @@ test("site metadata changes while the navigation brand remains unchanged", () =>
   assert.match(layout, /default: SITE_NAME/);
   assert.match(layout, /template: `%s \| \$\{SITE_NAME\}`/);
   assert.match(title, /animated-title-effect-\$\{titleEffect\}/);
+  assert.match(title, /animated-title-token-index-\$\{index\}/);
   assert.match(title, /footballBall/);
   assert.match(title, /--title-ball-image/);
   assert.ok(
@@ -60,6 +62,12 @@ test("site metadata changes while the navigation brand remains unchanged", () =>
   assert.doesNotMatch(globals, /title-ball-penalty/);
   assert.doesNotMatch(globals, /title-shine/);
   assert.match(globals, /background-image: var\(--title-ball-image\)/);
+  assert.match(globals, /\.animated-title-effect-typewriter/);
+  assert.match(globals, /title-typewriter-0/);
+  assert.match(globals, /title-typewriter-7/);
+  assert.doesNotMatch(globals, /title-typewriter-cursor/);
+  assert.doesNotMatch(globals, /cursor-x/);
+  assert.match(globals, /\.animated-title-effect-typewriter \.animated-title-ball\s*\{\s*display: none;/);
   assert.match(globals, /prefers-reduced-motion: reduce/);
   assert.match(site, /SITE_NAME = "pawn的知识库"/);
   assert.match(site, /个人技术学习笔记的知识库/);

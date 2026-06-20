@@ -1,7 +1,7 @@
 export const ANIMATED_TITLE_LABEL = "pawn的知识库";
 export const ANIMATED_TITLE_CYCLE_MS = 5000;
 export const ANIMATED_TITLE_DEFAULT_EFFECT = "pass";
-export const ANIMATED_TITLE_EFFECTS = ["pass"] as const;
+export const ANIMATED_TITLE_EFFECTS = ["pass", "typewriter"] as const;
 export type AnimatedTitleEffect = (typeof ANIMATED_TITLE_EFFECTS)[number];
 
 export const ANIMATED_TITLE_TOKENS = [

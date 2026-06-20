@@ -1,4 +1,4 @@
-export const POST_PAGE_SIZE = 12;
+export const POST_PAGE_SIZE = 6;
 
 export function getVisibleItems<T>(items: T[], visibleCount: number): T[] {
   return items.slice(0, Math.max(0, visibleCount));

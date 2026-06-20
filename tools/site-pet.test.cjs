@@ -44,12 +44,33 @@ test("pet frames loop and produce valid atlas background positions", async () =>
 });
 
 test("desktop and mobile pets rest at the viewport bottom-right", async () => {
-  const { PET_WIDTHS, getPetRestingX } = await import("../lib/site-pet.ts");
+  const {
+    PET_WIDTHS,
+    clampPetPosition,
+    getPetRestingPosition,
+    getPetRestingX,
+  } = await import("../lib/site-pet.ts");
 
   assert.deepEqual(PET_WIDTHS, { desktop: 208, mobile: 78 });
   assert.equal(getPetRestingX(1280, PET_WIDTHS.desktop), 1060);
   assert.equal(getPetRestingX(390, PET_WIDTHS.mobile), 300);
   assert.equal(getPetRestingX(70, PET_WIDTHS.mobile), 12);
+  assert.deepEqual(getPetRestingPosition(1280, 720, 208, 225, true), {
+    x: 1060,
+    y: 491,
+  });
+  assert.deepEqual(getPetRestingPosition(1280, 720, 208, 225, false), {
+    x: 1060,
+    y: 505,
+  });
+  assert.deepEqual(clampPetPosition({ x: -100, y: 900 }, 390, 720, 78, 85), {
+    x: 12,
+    y: 623,
+  });
+  assert.deepEqual(clampPetPosition({ x: 180, y: 200 }, 390, 720, 78, 85), {
+    x: 180,
+    y: 200,
+  });
 });
 
 test("site pet is mounted globally with accessible and reduced-motion behavior", () => {
@@ -65,9 +86,14 @@ test("site pet is mounted globally with accessible and reduced-motion behavior",
   assert.match(layout, /<SitePet \/>/);
   assert.match(component, /aria-label="和六花互动"/);
   assert.match(component, /prefers-reduced-motion: reduce/);
+  assert.match(component, /localStorage/);
+  assert.match(component, /onPointerDown/);
+  assert.match(component, /setPointerCapture/);
   assert.doesNotMatch(component, /PATROL_SPEED|ROUTE_EXIT_SPEED|choosePatrolTarget/);
   assert.match(styles, /\.site-pet-layer/);
   assert.match(styles, /\.site-pet[\s\S]*width: 208px/);
+  assert.match(styles, /\.site-pet[\s\S]*height: 225px/);
   assert.match(styles, /@media \(max-width: 767px\)[\s\S]*width: 78px/);
+  assert.match(styles, /@media \(max-width: 767px\)[\s\S]*height: 85px/);
   assert.match(styles, /prefers-reduced-motion: reduce[\s\S]*\.site-pet/);
 });

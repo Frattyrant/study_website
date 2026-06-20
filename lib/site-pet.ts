@@ -6,6 +6,12 @@ export const PET_WIDTHS = {
   desktop: 208,
   mobile: 78,
 } as const;
+export const PET_DEFAULT_BOTTOM_OFFSET = 4;
+
+export type PetPosition = {
+  x: number;
+  y: number;
+};
 
 export const PET_ANIMATIONS = {
   idle: { row: 0, frames: 6 },
@@ -50,4 +56,39 @@ export function getPetRestingX(
 ): number {
   const safeMargin = Math.max(0, margin);
   return Math.max(safeMargin, viewportWidth - petWidth - safeMargin);
+}
+
+export function getPetRestingPosition(
+  viewportWidth: number,
+  viewportHeight: number,
+  petWidth: number,
+  petHeight: number,
+  isHome: boolean,
+  margin = PET_EDGE_MARGIN,
+): PetPosition {
+  return {
+    x: getPetRestingX(viewportWidth, petWidth, margin),
+    y: Math.max(
+      Math.max(0, margin),
+      viewportHeight - petHeight - PET_DEFAULT_BOTTOM_OFFSET + (isHome ? 0 : 14),
+    ),
+  };
+}
+
+export function clampPetPosition(
+  position: PetPosition,
+  viewportWidth: number,
+  viewportHeight: number,
+  petWidth: number,
+  petHeight: number,
+  margin = PET_EDGE_MARGIN,
+): PetPosition {
+  const safeMargin = Math.max(0, margin);
+  const maxX = Math.max(safeMargin, viewportWidth - petWidth - safeMargin);
+  const maxY = Math.max(safeMargin, viewportHeight - petHeight - safeMargin);
+
+  return {
+    x: Math.min(maxX, Math.max(safeMargin, position.x)),
+    y: Math.min(maxY, Math.max(safeMargin, position.y)),
+  };
 }
