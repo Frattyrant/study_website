@@ -2,7 +2,9 @@ const { execFileSync } = require("node:child_process");
 const path = require("node:path");
 
 function normalizePath(value) {
-  return path.resolve(value).replace(/\\/g, "/").toLowerCase();
+  const raw = String(value || "").replace(/\\/g, "/");
+  if (/^[a-z]:\//i.test(raw)) return raw.toLowerCase();
+  return path.resolve(raw).replace(/\\/g, "/").toLowerCase();
 }
 
 function normalizeCommandLine(value) {
