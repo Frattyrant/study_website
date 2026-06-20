@@ -101,6 +101,8 @@ test("article detail header no longer renders reading minutes", () => {
   assert.match(postPage, /article-shell/);
   assert.match(postPage, /ReactMarkdown/);
   assert.match(postPage, /ArticleReadingLayout/);
+  assert.match(postPage, /renderMarkdownBlockquote/);
+  assert.match(postPage, /parseMarkdownCalloutLabel/);
   assert.match(postPage, /loading="lazy"/);
   assert.match(postPage, /decoding="async"/);
 
@@ -109,8 +111,13 @@ test("article detail header no longer renders reading minutes", () => {
   assert.match(globals, /\.article-hero/);
   assert.match(globals, /\.article-dek/);
   assert.match(globals, /\.note-body\s*\{/);
-  assert.match(globals, /line-height: 1\.9/);
+  assert.match(globals, /--article-line-height, 1\.9/);
   assert.match(globals, /\.note-body blockquote/);
+  assert.match(globals, /\.note-callout/);
+  assert.match(globals, /\.note-callout-title/);
+  assert.match(globals, /\.note-callout-note/);
+  assert.match(globals, /\.note-callout-warning/);
+  assert.match(globals, /\.note-callout-danger/);
   assert.match(globals, /\.note-body table/);
   assert.match(globals, /\.note-body pre/);
   assert.match(globals, /\.note-body img/);

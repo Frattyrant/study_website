@@ -23,6 +23,17 @@ const slugs = new Set();
 const publicRoots = new Set(security.publicRoots);
 const absoluteUserPath = /(?:[A-Z]:\\Users\\[^\\\s"]+|\/home\/[^/\s"]+)/i;
 const blockedLocalImageSyntax = /!\[\[|(?:file|obsidian):\/\//i;
+const supportedCalloutTypes = new Set([
+  "caution",
+  "danger",
+  "error",
+  "important",
+  "info",
+  "note",
+  "success",
+  "tip",
+  "warning",
+]);
 for (const [index, post] of data.posts.entries()) {
   for (const field of requiredPostFields) {
     if (!(field in post)) throw new Error(`Post ${index} is missing required field: ${field}`);
@@ -47,6 +58,12 @@ for (const [index, post] of data.posts.entries()) {
   }
   if (blockedLocalImageSyntax.test(post.body)) {
     throw new Error(`Post ${index} contains an unpublished local image reference.`);
+  }
+  for (const match of post.body.matchAll(/^>\s*\[!([a-z]+)]/gim)) {
+    const calloutType = match[1].toLowerCase();
+    if (!supportedCalloutTypes.has(calloutType)) {
+      throw new Error(`Post ${index} contains an unsupported callout type: ${calloutType}.`);
+    }
   }
   for (const match of post.body.matchAll(/!\[[^\]]*]\(([^)\s]+)\)/g)) {
     const source = match[1];

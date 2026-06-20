@@ -2,7 +2,13 @@ import { ArrowLeft, ArrowRight, FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { isValidElement, type ReactNode } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -19,6 +25,7 @@ import {
   createHeadingIdAllocator,
   extractMarkdownHeadings,
 } from "@/lib/markdown-headings";
+import { parseMarkdownCalloutLabel } from "@/lib/markdown-callouts";
 import {
   SITE_AUTHOR,
   SITE_DESCRIPTION,
@@ -191,6 +198,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   h2: heading(2),
                   h3: heading(3),
                   h4: heading(4),
+                  blockquote: ({ children }) => renderMarkdownBlockquote(children),
                   a: ({ href, children }) => {
                     const external = Boolean(href?.startsWith("http"));
                     return (
@@ -291,6 +299,67 @@ function getNodeText(node: ReactNode): string {
     return getNodeText(node.props.children);
   }
   return "";
+}
+
+function renderMarkdownBlockquote(children?: ReactNode) {
+  const childArray = Children.toArray(children);
+  const firstParagraphIndex = childArray.findIndex((child) =>
+    isElementWithChildren(child),
+  );
+  const firstParagraph = childArray[firstParagraphIndex];
+
+  if (!isElementWithChildren(firstParagraph)) {
+    return <blockquote>{children}</blockquote>;
+  }
+
+  const firstText = getNodeText(firstParagraph.props.children);
+  const firstLine = firstText.split(/\r?\n/)[0] ?? firstText;
+  const callout = parseMarkdownCalloutLabel(firstLine);
+
+  if (!callout) {
+    return <blockquote>{children}</blockquote>;
+  }
+
+  const remainingChildren = childArray.slice();
+  const strippedFirstParagraph = stripCalloutMarker(firstParagraph);
+
+  if (strippedFirstParagraph) {
+    remainingChildren[firstParagraphIndex] = strippedFirstParagraph;
+  } else {
+    remainingChildren.splice(firstParagraphIndex, 1);
+  }
+
+  return (
+    <blockquote className={`note-callout note-callout-${callout.type}`}>
+      <p className="note-callout-title">{callout.title}</p>
+      {remainingChildren}
+    </blockquote>
+  );
+}
+
+function stripCalloutMarker(element: ReactElement<{ children?: ReactNode }>) {
+  const children = Children.toArray(element.props.children);
+  let stripped = false;
+  const nextChildren = children
+    .map((child) => {
+      if (stripped || typeof child !== "string") return child;
+      const nextValue = child.replace(/^\s*\[![a-z]+\]\s*[^\r\n]*(?:\r?\n)?/i, "");
+      stripped = true;
+      return nextValue;
+    })
+    .filter((child) => child !== "");
+
+  if (nextChildren.length === 0 || getNodeText(nextChildren).trim() === "") {
+    return undefined;
+  }
+
+  return cloneElement(element, element.props, nextChildren);
+}
+
+function isElementWithChildren(
+  node: ReactNode,
+): node is ReactElement<{ children?: ReactNode }> {
+  return isValidElement<{ children?: ReactNode }>(node);
 }
 
 function HeadingTag({
