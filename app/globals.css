@@ -637,6 +637,13 @@ details[open] .toc-chevron { transform: rotate(180deg); }
     inset: -2%;
     opacity: 1;
     filter: saturate(1.08) contrast(1.02) brightness(1.02);
+    animation: none;
+    transform: scale(1);
+  }
+
+  .article-card-cover::before {
+    animation: none;
+    transform: scale(1);
   }
 }
 

@@ -80,6 +80,10 @@ test("home article cards use visual bridge covers without reading minutes", () =
     "utf8",
   );
   assert.match(header, /site-header-card-layout/);
+  assert.doesNotMatch(header, /id="site-header-card-layout" className="hidden/);
+  assert.match(header, /id="site-header-card-layout" className="shrink-0"/);
+  assert.match(globals, /@media \(max-width: 767px\)[\s\S]*\.article-card-cover::before[\s\S]*animation: none/);
+  assert.match(globals, /@media \(max-width: 767px\)[\s\S]*\.article-card-right::before[\s\S]*\.article-card-left::before[\s\S]*animation: none/);
 });
 
 test("article detail header no longer renders reading minutes", () => {

@@ -15,7 +15,7 @@ export function SiteHeader() {
         </span>
       </Link>
       <div id="site-header-search" className="min-w-0" />
-      <div id="site-header-card-layout" className="hidden sm:block" />
+      <div id="site-header-card-layout" className="shrink-0" />
       <ThemeToggle />
     </header>
   );
