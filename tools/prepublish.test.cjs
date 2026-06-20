@@ -12,6 +12,11 @@ test("p-check runs sync, validation, tests, lint, typecheck, and build in order"
     packageJson.scripts["p-check"],
     "npm run sync-content && npm run validate-content && npm run test:security && npm run lint && npm run typecheck && npm run build",
   );
+  assert.equal(
+    packageJson.scripts.build,
+    "node tools/prepare-build.cjs && npm run build:next && node tools/prepare-build.cjs",
+  );
+  assert.equal(packageJson.scripts["build:next"], "next build");
   assert.equal(packageJson.scripts.prepublish, undefined);
   assert.equal(packageJson.scripts.numpulish, undefined);
 });

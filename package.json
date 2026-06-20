@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node tools/dev-server.cjs",
     "dev:next": "next dev",
-    "build": "next build",
+    "build": "node tools/prepare-build.cjs && npm run build:next && node tools/prepare-build.cjs",
+    "build:next": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

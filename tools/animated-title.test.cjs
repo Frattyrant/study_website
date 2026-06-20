@@ -16,10 +16,10 @@ test("animated title keeps the knowledge-base wording and receiving order", asyn
   assert.equal(ANIMATED_TITLE_LABEL, "pawn的知识库");
   assert.equal(ANIMATED_TITLE_CYCLE_MS, 5000);
   assert.equal(ANIMATED_TITLE_DEFAULT_EFFECT, "pass");
-  assert.deepEqual(ANIMATED_TITLE_EFFECTS, ["pass", "bicycle", "penalty"]);
+  assert.deepEqual(ANIMATED_TITLE_EFFECTS, ["pass"]);
   assert.equal(getRandomTitleEffect(() => 0), "pass");
-  assert.equal(getRandomTitleEffect(() => 0.34), "bicycle");
-  assert.equal(getRandomTitleEffect(() => 0.67), "penalty");
+  assert.equal(getRandomTitleEffect(() => 0.34), "pass");
+  assert.equal(getRandomTitleEffect(() => 0.67), "pass");
   assert.equal(getRandomTitleEffect(() => Number.NaN), "pass");
   assert.deepEqual(
     ANIMATED_TITLE_TOKENS.map((token) => token.text),
@@ -56,8 +56,9 @@ test("site metadata changes while the navigation brand remains unchanged", () =>
     fs.existsSync(path.join(root, "public", "images", "football-ball.webp")),
     "optimized football title asset should exist",
   );
-  assert.match(globals, /title-ball-bicycle/);
-  assert.match(globals, /title-ball-penalty/);
+  assert.doesNotMatch(globals, /title-ball-bicycle/);
+  assert.doesNotMatch(globals, /title-ball-penalty/);
+  assert.doesNotMatch(globals, /title-shine/);
   assert.match(globals, /background-image: var\(--title-ball-image\)/);
   assert.match(globals, /prefers-reduced-motion: reduce/);
   assert.match(site, /SITE_NAME = "pawn的知识库"/);

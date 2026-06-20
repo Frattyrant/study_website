@@ -225,7 +225,7 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
           priority
           sizes="(max-width: 1200px) 100vw, 1180px"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,8,38,0.82),rgba(32,12,54,0.46)_58%,rgba(32,12,54,0.16))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,8,38,0.38),rgba(32,12,54,0.18)_58%,rgba(255,255,255,0.04))]" />
         <div className="relative z-10 flex min-h-80 items-end p-[clamp(24px,5vw,56px)] max-md:items-start max-md:pt-9">
           <div className="text-white">
             <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-yellow-300">
@@ -473,19 +473,19 @@ function CardLayoutToggle({
     variant === "cover"
       ? {
           Icon: PanelRight,
-          label: "切换为右侧图片卡片",
-          title: "右图卡片",
+          label: "切换电线杆背景",
+          title: "切换电线杆背景",
         }
       : variant === "right"
         ? {
             Icon: PanelLeft,
-            label: "切换为左侧图片卡片",
-            title: "左图卡片",
+            label: "切换溪流背景",
+            title: "切换溪流背景",
           }
         : {
             Icon: Rows3,
-            label: "切换为沉浸背景卡片",
-            title: "沉浸卡片",
+            label: "切换为桥水背景",
+            title: "切换为桥水背景",
           };
   const Icon = config.Icon;
 

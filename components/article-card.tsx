@@ -24,13 +24,12 @@ export function ArticleCard({
   onOpen,
 }: ArticleCardProps) {
   const preview = getSearchPreview(post, searchQuery);
-  const rightVariant = variant === "right";
-  const leftVariant = variant === "left";
-  const imageTextVariant = variant === "cover" || leftVariant;
+  const sideVariant = variant === "right" || variant === "left";
+  const imageTextVariant = variant === "cover" || sideVariant;
   const tagClass = imageTextVariant
     ? "rounded-md border border-white/35 bg-white/16 px-2 py-1 text-xs font-bold text-white/90 backdrop-blur-sm"
     : "rounded-md border border-line bg-surface-strong px-2 py-1 text-xs font-bold text-blue";
-  const contentAlignment = leftVariant ? "w-[56%] max-md:w-full" : "w-full";
+  const contentAlignment = sideVariant ? "w-[56%] max-md:w-full" : "w-full";
 
   return (
     <Link
@@ -51,26 +50,18 @@ export function ArticleCard({
       }
     >
       <div className="article-card-gradient absolute inset-0" />
-      <div className={`relative z-10 flex min-h-full flex-col p-5.5 sm:p-7 ${contentAlignment}`}>
+      <div className={`article-card-copy relative z-10 flex min-h-full flex-col p-5.5 sm:p-7 ${contentAlignment}`}>
         <div
           className="mb-5 flex flex-wrap items-center gap-1.5"
           aria-hidden="true"
         >
           <span
-            className={
-              rightVariant
-                ? "rounded-sm border border-line bg-surface-strong px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-green-dark"
-                : "rounded-sm border border-white/55 bg-white/20 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white backdrop-blur-sm"
-            }
+            className="rounded-sm border border-white/55 bg-white/20 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white backdrop-blur-sm"
           >
             {post.type}
           </span>
           <time
-            className={
-              rightVariant
-                ? "rounded-sm border border-line bg-surface-strong px-1.5 py-0.5 text-[10px] font-bold text-muted"
-                : "rounded-sm border border-white/45 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
-            }
+            className="rounded-sm border border-white/45 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
             dateTime={post.date}
           >
             {post.date.slice(5)}

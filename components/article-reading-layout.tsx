@@ -78,7 +78,8 @@ export function ArticleReadingLayout({
     if (!target) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    const top = window.scrollY + target.getBoundingClientRect().top - 88;
+    window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
     window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
     setActiveId(id);
   };
