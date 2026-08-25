@@ -107,10 +107,6 @@ function toDate(filePath) {
   return fs.statSync(filePath).mtime.toISOString().slice(0, 10);
 }
 
-function minutesFor(content) {
-  return Math.max(3, Math.min(14, Math.ceil(cleanMarkdown(content).length / 360)));
-}
-
 function shouldPublish(filePath, publicRoots) {
   const relativePath = path.relative(vaultPath, filePath);
   const topLevel = relativePath.split(path.sep)[0];
@@ -161,7 +157,6 @@ async function main() {
         title,
         type: inferType(relativePath, title),
         date: toDate(filePath),
-        minutes: minutesFor(content),
         category: categoryKeyFrom(categoryPath),
         categoryPath,
         tags: categoryPath.slice(1),

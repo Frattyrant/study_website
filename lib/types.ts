@@ -12,7 +12,6 @@ export interface Post {
   title: string;
   type: string;
   date: string;
-  minutes: number;
   category: string;
   categoryPath: string[];
   tags: string[];

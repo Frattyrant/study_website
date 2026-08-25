@@ -430,7 +430,6 @@
       "title": "常用命令",
       "type": "Linux",
       "date": "2026-06-11",
-      "minutes": 7,
       "category": "Linux入门",
       "categoryPath": [
         "Linux入门"
@@ -445,7 +444,6 @@
       "title": "VIM编辑器",
       "type": "Linux",
       "date": "2026-06-10",
-      "minutes": 3,
       "category": "Linux入门",
       "categoryPath": [
         "Linux入门"
@@ -460,7 +458,6 @@
       "title": "WSL代理 apt和Docker下载卡住",
       "type": "问题记录",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "Linux入门/问题记录",
       "categoryPath": [
         "Linux入门",
@@ -478,7 +475,6 @@
       "title": "venv 激活",
       "type": "问题记录",
       "date": "2026-06-02",
-      "minutes": 3,
       "category": "Linux入门/问题记录",
       "categoryPath": [
         "Linux入门",
@@ -496,7 +492,6 @@
       "title": "MYSQL",
       "type": "数据库",
       "date": "2026-03-23",
-      "minutes": 14,
       "category": "PYTHON后端/DB/数据库相关学习",
       "categoryPath": [
         "PYTHON后端",
@@ -516,7 +511,6 @@
       "title": "SQlite锁冲突问题",
       "type": "问题记录",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/DB/数据库相关学习/问题记录",
       "categoryPath": [
         "PYTHON后端",
@@ -538,7 +532,6 @@
       "title": "Docker 安装与 hello world 验证：WSL",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
@@ -558,7 +551,6 @@
       "title": "Nginx 端口映射：8080 到 80",
       "type": "Docker",
       "date": "2026-06-09",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
@@ -578,7 +570,6 @@
       "title": "Docker 容器管理：查看、启动、日志、停止和删除",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
@@ -598,7 +589,6 @@
       "title": "Docker 后台运行与 exec 进入容器",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/01-Docker基础",
       "categoryPath": [
         "PYTHON后端",
@@ -618,7 +608,6 @@
       "title": "Dockerfile：准备 FastAPI 构建文件",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
@@ -638,7 +627,6 @@
       "title": "docker build：构建 FastAPI 镜像",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
@@ -658,7 +646,6 @@
       "title": "docker run：运行 FastAPI 容器",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
@@ -678,7 +665,6 @@
       "title": "镜像重建与 .dockerignore",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/02-Dockerfile",
       "categoryPath": [
         "PYTHON后端",
@@ -698,7 +684,6 @@
       "title": "compose.yaml：管理 FastAPI 服务",
       "type": "Docker",
       "date": "2026-06-11",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/03-Docker-Compose",
       "categoryPath": [
         "PYTHON后端",
@@ -718,7 +703,6 @@
       "title": "Bind Mount：开发时同步代码",
       "type": "Docker",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/03-Docker-Compose",
       "categoryPath": [
         "PYTHON后端",
@@ -738,7 +722,6 @@
       "title": "FastAPI：通过 Docker 运行 CRUD",
       "type": "Docker",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/Docker/04-docker+fastapi",
       "categoryPath": [
         "PYTHON后端",
@@ -758,7 +741,6 @@
       "title": "schemas.py 拆分请求模型",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/请求响应模型",
       "categoryPath": [
         "PYTHON后端",
@@ -778,7 +760,6 @@
       "title": "schemas.py 添加响应模型",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/请求响应模型",
       "categoryPath": [
         "PYTHON后端",
@@ -798,7 +779,6 @@
       "title": "response_model 完整规范所有接口",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/请求响应模型",
       "categoryPath": [
         "PYTHON后端",
@@ -818,7 +798,6 @@
       "title": "PATCH tasks task_id 局部更新任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/请求响应模型",
       "categoryPath": [
         "PYTHON后端",
@@ -838,7 +817,6 @@
       "title": "schemas 拼写错误导致ForwardRef报错",
       "type": "问题记录",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/请求响应模型",
       "categoryPath": [
         "PYTHON后端",
@@ -858,7 +836,6 @@
       "title": "SQLite 数据库地址",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -878,7 +855,6 @@
       "title": "models.py 定义任务表模型",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -898,7 +874,6 @@
       "title": "main.py 自动创建数据库表",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -918,7 +893,6 @@
       "title": "get_db 数据库会话依赖",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -938,7 +912,6 @@
       "title": "GET tasks 查询数据库任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -958,7 +931,6 @@
       "title": "POST tasks 新增数据库任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -978,7 +950,6 @@
       "title": "GET tasks task_id 查询单个数据库任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -998,7 +969,6 @@
       "title": "PUT tasks task_id 更新数据库任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -1018,7 +988,6 @@
       "title": "DELETE tasks task_id 删除数据库任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/数据库接入",
       "categoryPath": [
         "PYTHON后端",
@@ -1038,7 +1007,6 @@
       "title": "PUT 更新任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/CRUD接口",
       "categoryPath": [
         "PYTHON后端",
@@ -1058,7 +1026,6 @@
       "title": "DELETE tasks task_id 删除任务",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/CRUD接口",
       "categoryPath": [
         "PYTHON后端",
@@ -1078,7 +1045,6 @@
       "title": "routers tasks.py 迁移任务接口",
       "type": "FastAPI",
       "date": "2026-06-06",
-      "minutes": 3,
       "category": "PYTHON后端/FASTAPI/routers",
       "categoryPath": [
         "PYTHON后端",
