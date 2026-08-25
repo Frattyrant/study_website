@@ -291,7 +291,6 @@ export function ArticleExplorer({ posts, stats }: ArticleExplorerProps) {
         <div className="flex flex-wrap gap-2.5">
           <StatChip><strong>{stats.publishableNotes || posts.length}</strong> 篇笔记</StatChip>
           <StatChip><strong>{stats.focusCount}</strong> 个方向</StatChip>
-          <StatChip>最近更新 <strong>{stats.latestDate?.slice(5) ?? "--"}</strong></StatChip>
         </div>
         <div className="ml-auto flex items-center gap-2 max-sm:mx-auto max-sm:w-full max-sm:justify-center">
           <EmojiLoopGame

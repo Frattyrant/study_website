@@ -26,7 +26,7 @@ test("SEO routes expose sitemap and robots entries", () => {
 
   assert.match(sitemap, /posts\.map/);
   assert.match(sitemap, /getSiteUrl\("\/"\)/);
-  assert.match(sitemap, /lastModified/);
+  assert.doesNotMatch(sitemap, /lastModified/);
   assert.match(robots, /allow: "\/"/);
   assert.match(robots, /getSiteUrl\("\/sitemap\.xml"\)/);
 });

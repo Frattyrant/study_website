@@ -11,7 +11,6 @@ export interface Post {
   slug: string;
   title: string;
   type: string;
-  date: string;
   category: string;
   categoryPath: string[];
   tags: string[];
@@ -24,7 +23,6 @@ export interface VaultStats {
   totalNotes: number;
   publishableNotes: number;
   focusCount: number;
-  latestDate?: string;
   topCounts: Record<string, number>;
   categoryTree: CategoryNode;
 }

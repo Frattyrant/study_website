@@ -28,6 +28,7 @@ test("home article cards use visual bridge covers without reading minutes", () =
   assert.match(card, /line-clamp-3/);
   assert.doesNotMatch(card, /Clock3/);
   assert.doesNotMatch(card, /minutes/);
+  assert.doesNotMatch(card, /post\.date/);
   assert.doesNotMatch(card, /\u5206\u949f\u9605\u8bfb/);
   assert.ok(
     fs.existsSync(path.join(root, "public", "images", "article-card-bridge.webp")),
@@ -94,6 +95,7 @@ test("article detail header no longer renders reading minutes", () => {
 
   assert.doesNotMatch(postPage, /Clock3/);
   assert.doesNotMatch(postPage, /post\.minutes/);
+  assert.doesNotMatch(postPage, /post\.date/);
   assert.doesNotMatch(postPage, /\u5206\u949f\u9605\u8bfb/);
   assert.match(postPage, /FolderOpen/);
   assert.match(postPage, /getNextPostInCategory/);

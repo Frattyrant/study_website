@@ -7,7 +7,7 @@ const securityPath = path.resolve(__dirname, "..", "data", "content-security.jso
 const contentAssetsPath = path.resolve(__dirname, "..", "public", "content-assets");
 const data = JSON.parse(fs.readFileSync(contentPath, "utf8"));
 const security = JSON.parse(fs.readFileSync(securityPath, "utf8"));
-const requiredPostFields = ["slug", "title", "type", "date", "category", "categoryPath", "tags", "summary", "body"];
+const requiredPostFields = ["slug", "title", "type", "category", "categoryPath", "tags", "summary", "body"];
 
 if (!data.vaultStats || !Array.isArray(data.posts)) {
   throw new Error("content.json must contain vaultStats and posts.");
@@ -43,6 +43,9 @@ for (const [index, post] of data.posts.entries()) {
   }
   if ("minutes" in post) {
     throw new Error(`Post ${index} must not publish a learning-time field.`);
+  }
+  if ("date" in post) {
+    throw new Error(`Post ${index} must not publish a date field.`);
   }
   slugs.add(post.slug);
   if (!post.categoryPath.length || !publicRoots.has(post.categoryPath[0])) {

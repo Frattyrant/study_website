@@ -60,12 +60,6 @@ export function ArticleCard({
           >
             {post.type}
           </span>
-          <time
-            className="rounded-sm border border-white/45 bg-white/15 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
-            dateTime={post.date}
-          >
-            {post.date.slice(5)}
-          </time>
         </div>
 
         <h2
@@ -121,7 +115,7 @@ export function ArticleCard({
         className="sr-only"
         aria-hidden={false}
       >
-        {post.type} {post.date}
+        {post.type}
       </span>
     </Link>
   );

@@ -71,8 +71,6 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       siteName: SITE_NAME,
       title: post.title,
       description: post.summary || SITE_DESCRIPTION,
-      publishedTime: `${post.date}T00:00:00.000Z`,
-      modifiedTime: `${post.date}T00:00:00.000Z`,
       tags: keywords,
       images: [
         {
@@ -110,8 +108,6 @@ export default async function PostPage({ params }: PostPageProps) {
     "@type": "TechArticle",
     headline: post.title,
     description: post.summary || SITE_DESCRIPTION,
-    datePublished: `${post.date}T00:00:00.000Z`,
-    dateModified: `${post.date}T00:00:00.000Z`,
     author: {
       "@type": "Person",
       name: SITE_AUTHOR,
@@ -158,9 +154,6 @@ export default async function PostPage({ params }: PostPageProps) {
             <span className="rounded-md bg-green-dark px-2 py-0.5 text-xs font-extrabold text-white">
               {post.type}
             </span>
-            <time className="text-sm text-muted" dateTime={post.date}>
-              {post.date}
-            </time>
           </div>
           <h1 className="max-w-4xl text-[clamp(2rem,4vw,3rem)] font-extrabold leading-tight tracking-tight break-anywhere">
             {post.title}

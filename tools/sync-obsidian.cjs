@@ -103,10 +103,6 @@ function summaryFrom(content, title) {
   return (fallback || "这篇笔记来自 Obsidian，等待继续补充正文和复盘。").slice(0, 108);
 }
 
-function toDate(filePath) {
-  return fs.statSync(filePath).mtime.toISOString().slice(0, 10);
-}
-
 function shouldPublish(filePath, publicRoots) {
   const relativePath = path.relative(vaultPath, filePath);
   const topLevel = relativePath.split(path.sep)[0];
@@ -156,7 +152,6 @@ async function main() {
         slug,
         title,
         type: inferType(relativePath, title),
-        date: toDate(filePath),
         category: categoryKeyFrom(categoryPath),
         categoryPath,
         tags: categoryPath.slice(1),
@@ -179,18 +174,11 @@ async function main() {
     return acc;
   }, Object.fromEntries([...publicRoots].map((root) => [root, 0])));
 
-  const latestDate = allFiles
-    .filter((filePath) => scopedFiles.includes(filePath))
-    .map((filePath) => toDate(filePath))
-    .sort()
-    .at(-1);
-
   const data = {
     vaultStats: {
       totalNotes: scopedFiles.length,
       publishableNotes: posts.length,
       focusCount: publicRoots.size,
-      latestDate,
       topCounts,
       categoryTree: moduleRegistry.buildCategoryTree(posts, modulePaths),
     },
